@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Coins, Star } from "lucide-react";
@@ -6,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import ClubeHeader from "@/components/clube/ClubeHeader";
 import IdentidadeClube from "@/components/clube/IdentidadeClube";
+import { useClube, useEvoluirAtributo } from "@/hooks/useClube";
 import {
   ATRIBUTOS_INICIAIS,
   CATEGORIAS,
@@ -15,52 +17,30 @@ import {
 } from "@/lib/tactical";
 
 export default function Equipe() {
-  const [clube, setClube] = useState(null);
-  const [atributos, setAtributos] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState("");
-  const [evoluindo, setEvoluindo] = useState("");
+  const { data: clube, isLoading, error, refetch } = useClube();
+  const { data: atributos = [] } = useQuery({
+    queryKey: ["atributos", clube?.id],
+    queryFn: () => base44.entities.AtributoTatico.filter({ clube_id: clube.id }),
+    enabled: !!clube?.id,
+  });
+  const evoluirMutation = useEvoluirAtributo(clube?.id);
 
-  const carregar = async () => {
-    try {
-      const user = await base44.auth.me();
-      const clubes = await base44.entities.Clube.filter({ user_id: user.id });
-      const c = clubes[0];
-      setClube(c);
-      if (c) {
-        const attrs = await base44.entities.AtributoTatico.filter({ clube_id: c.id });
-        setAtributos(attrs);
-      }
-    } catch (e) {
-      setErro(e.message || "Erro ao carregar equipe");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { carregar(); }, []);
-
-  const nivelDe = (nome) =>
-    atributos.find((a) => a.nome_atributo === nome)?.nivel || 1;
+  const nivelDe = (nome) => atributos.find((a) => a.nome_atributo === nome)?.nivel || 1;
 
   const evoluir = async (nome) => {
-    setEvoluindo(nome);
+    const nivel = nivelDe(nome);
+    const custo = calcularCustoEvolucao(nivel, nome, clube.especializacao, clube.ct_nivel);
     setErro("");
     try {
-      await base44.functions.invoke("evoluirAtributo", {
-        clube_id: clube.id,
-        nome_atributo: nome,
-      });
-      await carregar();
+      await evoluirMutation.mutateAsync({ nome_atributo: nome, custo });
     } catch (e) {
       setErro(e.response?.data?.error || e.message || "Erro ao evoluir atributo");
-    } finally {
-      setEvoluindo("");
     }
   };
 
-  if (loading) return <div className="p-8 text-center text-muted-foreground">Carregando...</div>;
-  if (erro && !clube) return <div className="p-8 text-center text-destructive">{erro}</div>;
+  if (isLoading) return <div className="p-8 text-center text-muted-foreground">Carregando...</div>;
+  if (error && !clube) return <div className="p-8 text-center text-destructive">{error.message}</div>;
   if (!clube) return (
     <div className="p-8 text-center">
       <p className="mb-4 text-muted-foreground">Você ainda não tem um clube.</p>
@@ -69,6 +49,7 @@ export default function Equipe() {
   );
 
   const catFav = CATEGORIA_DA_ESPECIALIZACAO[clube.especializacao];
+  const evoluindoNome = evoluirMutation.isPending ? evoluirMutation.variables?.nome_atributo : null;
 
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6">
@@ -77,7 +58,7 @@ export default function Equipe() {
       </Link>
 
       <ClubeHeader clube={clube} />
-      <IdentidadeClube clube={clube} onSalvo={carregar} />
+      <IdentidadeClube clube={clube} onSalvo={refetch} />
 
       {erro && <p className="text-sm text-destructive">{erro}</p>}
 
@@ -97,6 +78,7 @@ export default function Equipe() {
               const custo = calcularCustoEvolucao(nivel, a.nome, clube.especializacao, clube.ct_nivel);
               const comDesconto = catFav === a.categoria;
               const podePagar = (clube.moedas || 0) >= custo;
+              const evoluindo = evoluindoNome === a.nome;
               return (
                 <Card key={a.nome} className="p-3 flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -116,10 +98,10 @@ export default function Equipe() {
                     </span>
                     <Button
                       size="sm"
-                      disabled={!podePagar || evoluindo === a.nome}
+                      disabled={!podePagar || evoluindo}
                       onClick={() => evoluir(a.nome)}
                     >
-                      {evoluindo === a.nome ? "..." : "Evoluir"}
+                      {evoluindo ? "..." : "Evoluir"}
                     </Button>
                   </div>
                 </Card>

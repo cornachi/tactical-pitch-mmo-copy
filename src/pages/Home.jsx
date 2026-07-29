@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import React, { useState } from "react";
+import { useClube } from "@/hooks/useClube";
 import { Link, useLocation } from "react-router-dom";
 import { Coins, Trophy, Flame, Zap, Swords, Activity, Users, Award, Building, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,34 +20,18 @@ import PullToRefresh from "@/components/PullToRefresh";
 import { useI18n } from "@/i18n/I18nContext";
 
 export default function Home() {
-  const [clube, setClube] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [erro, setErro] = useState("");
   const [desafioOpen, setDesafioOpen] = useState(false);
   const [conquistasOpen, setConquistasOpen] = useState(false);
   const { t } = useI18n();
   const { pathname } = useLocation();
+  const { data: clube, isLoading, error, refetch } = useClube();
 
-  const carregar = async () => {
-    try {
-      const user = await base44.auth.me();
-      const clubes = await base44.entities.Clube.filter({ user_id: user.id });
-      setClube(clubes[0] || null);
-    } catch (e) {
-      setErro(e.message || "Erro ao carregar clube");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { carregar(); }, []);
-
-  if (loading) return <div className="p-8 text-center text-muted-foreground">{t("common.carregando")}</div>;
-  if (erro) return <div className="p-8 text-center text-destructive">{erro}</div>;
-  if (!clube) return <CriarClubeForm onCriado={carregar} />;
+  if (isLoading) return <div className="p-8 text-center text-muted-foreground">{t("common.carregando")}</div>;
+  if (error) return <div className="p-8 text-center text-destructive">{error.message}</div>;
+  if (!clube) return <CriarClubeForm onCriado={refetch} />;
 
   return (
-    <PullToRefresh onRefresh={carregar} enabled={pathname === "/"}>
+    <PullToRefresh onRefresh={refetch} enabled={pathname === "/"}>
     <div className="max-w-4xl mx-auto p-4 space-y-6">
       <MetaBanner />
       <ClubeHeader clube={clube} />
@@ -103,7 +87,7 @@ export default function Home() {
       <Button variant="outline" className="w-full" size="lg" onClick={() => setConquistasOpen(true)}>
         <Award className="w-4 h-4 mr-2" />{t("home.conquistas")}
       </Button>
-      <ModalConquistas clubeId={clube.id} open={conquistasOpen} onOpenChange={setConquistasOpen} onResgatado={carregar} />
+      <ModalConquistas clubeId={clube.id} open={conquistasOpen} onOpenChange={setConquistasOpen} onResgatado={refetch} />
       <Button asChild className="w-full" size="lg">
         <Link to="/equipe"><Users className="w-4 h-4 mr-2" />{t("home.gerenciarEquipe")}</Link>
       </Button>

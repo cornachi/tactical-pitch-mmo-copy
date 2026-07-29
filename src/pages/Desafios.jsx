@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
 import { Swords, Coins, Check, X, Loader2, ArrowLeft, History, Inbox, Send } from "lucide-react";
@@ -6,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import EscudoClube from "@/components/clube/EscudoClube";
 import PullToRefresh from "@/components/PullToRefresh";
+import { useClube } from "@/hooks/useClube";
 
 const STATUS_LABEL = {
   PENDENTE: "Pendente",
@@ -17,29 +19,17 @@ const STATUS_LABEL = {
 
 export default function Desafios() {
   const navigate = useNavigate();
-  const [clube, setClube] = useState(null);
-  const [recebidos, setRecebidos] = useState([]);
-  const [enviados, setEnviados] = useState([]);
-  const [clubesMap, setClubesMap] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [processando, setProcessando] = useState(null);
+  const qc = useQueryClient();
   const [erro, setErro] = useState("");
 
-  const carregar = async () => {
-    try {
-      const user = await base44.auth.me();
-      const clubes = await base44.entities.Clube.filter({ user_id: user.id });
-      const meu = clubes[0];
-      setClube(meu);
-      if (!meu) { setLoading(false); return; }
-
+  const { data: clube, isLoading: clubeLoading } = useClube();
+  const { data: desafiosData, refetch, isLoading: desafiosLoading } = useQuery({
+    queryKey: ["desafios", clube?.id],
+    queryFn: async () => {
       const [rec, env] = await Promise.all([
-        base44.entities.DesafioPendente.filter({ desafiado_id: meu.id }, "-created_date", 100),
-        base44.entities.DesafioPendente.filter({ desafiante_id: meu.id }, "-created_date", 100),
+        base44.entities.DesafioPendente.filter({ desafiado_id: clube.id }, "-created_date", 100),
+        base44.entities.DesafioPendente.filter({ desafiante_id: clube.id }, "-created_date", 100),
       ]);
-      setRecebidos(rec);
-      setEnviados(env);
-
       const ids = new Set([
         ...rec.map((d) => d.desafiante_id),
         ...env.map((d) => d.desafiado_id),
@@ -48,36 +38,35 @@ export default function Desafios() {
       await Promise.all([...ids].map(async (id) => {
         try { map[id] = await base44.entities.Clube.get(id); } catch (e) { /* ignore */ }
       }));
-      setClubesMap(map);
-    } catch (e) {
-      setErro(e.message || "Erro ao carregar desafios");
-    } finally {
-      setLoading(false);
-    }
-  };
+      return { recebidos: rec, enviados: env, clubesMap: map };
+    },
+    enabled: !!clube?.id,
+  });
 
-  useEffect(() => { carregar(); }, []);
-
-  const responder = async (d, acao) => {
-    setProcessando(d.id + acao);
-    setErro("");
-    try {
-      const res = await base44.functions.invoke("responderDesafio", { desafio_id: d.id, acao });
-      const data = res?.data ?? res;
-      if (data?.error) { setErro(data.error); return; }
-      if (acao === "aceitar") {
+  const responderMutation = useMutation({
+    mutationFn: async ({ desafio_id, acao }) => {
+      const res = await base44.functions.invoke("responderDesafio", { desafio_id, acao });
+      return res?.data ?? res;
+    },
+    onSuccess: (data, vars) => {
+      if (vars.acao === "aceitar") {
         navigate("/simular-partida", { state: { result: data } });
-        return;
+      } else {
+        qc.invalidateQueries({ queryKey: ["desafios", clube.id] });
       }
-      carregar();
-    } catch (e) {
+    },
+    onError: (e) => {
       setErro(e.response?.data?.error || e.message || "Falha ao processar desafio");
-    } finally {
-      setProcessando(null);
-    }
-  };
+    },
+  });
 
-  if (loading) return <div className="p-8 text-center text-muted-foreground">Carregando...</div>;
+  const recebidos = desafiosData?.recebidos || [];
+  const enviados = desafiosData?.enviados || [];
+  const clubesMap = desafiosData?.clubesMap || {};
+
+  if (clubeLoading || (clube && desafiosLoading)) {
+    return <div className="p-8 text-center text-muted-foreground">Carregando...</div>;
+  }
   if (!clube) return <div className="p-8 text-center text-muted-foreground">Crie um clube primeiro.</div>;
 
   const recebidosPendentes = recebidos.filter((d) => d.status === "PENDENTE");
@@ -85,6 +74,11 @@ export default function Desafios() {
   const recentes = [...recebidos, ...enviados]
     .filter((d) => d.status === "CONCLUIDO")
     .sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+
+  const procId = responderMutation.isPending ? responderMutation.variables?.desafio_id : null;
+  const procAcao = responderMutation.isPending ? responderMutation.variables?.acao : null;
+
+  const responder = (d, acao) => responderMutation.mutate({ desafio_id: d.id, acao });
 
   const CartaoDesafio = ({ d, tipo }) => {
     const rivalId = tipo === "recebido" ? d.desafiante_id : d.desafiado_id;
@@ -107,16 +101,16 @@ export default function Desafios() {
 
         {tipo === "recebido" ? (
           <div className="flex gap-2">
-            <Button className="flex-1 bg-emerald-600 hover:bg-emerald-700" disabled={!!processando} onClick={() => responder(d, "aceitar")}>
-              {processando === d.id + "aceitar" ? <><Loader2 className="w-4 h-4 mr-1 animate-spin" />Simulando...</> : <><Check className="w-4 h-4 mr-1" />Aceitar</>}
+            <Button className="flex-1 bg-emerald-600 hover:bg-emerald-700" disabled={responderMutation.isPending} onClick={() => responder(d, "aceitar")}>
+              {procId === d.id && procAcao === "aceitar" ? <><Loader2 className="w-4 h-4 mr-1 animate-spin" />Simulando...</> : <><Check className="w-4 h-4 mr-1" />Aceitar</>}
             </Button>
-            <Button variant="outline" className="flex-1 text-rose-600 border-rose-300 hover:bg-rose-50" disabled={!!processando} onClick={() => responder(d, "recusar")}>
-              {processando === d.id + "recusar" ? <Loader2 className="w-4 h-4 animate-spin" /> : <><X className="w-4 h-4 mr-1" />Recusar</>}
+            <Button variant="outline" className="flex-1 text-rose-600 border-rose-300 hover:bg-rose-50" disabled={responderMutation.isPending} onClick={() => responder(d, "recusar")}>
+              {procId === d.id && procAcao === "recusar" ? <Loader2 className="w-4 h-4 animate-spin" /> : <><X className="w-4 h-4 mr-1" />Recusar</>}
             </Button>
           </div>
         ) : (
-          <Button variant="outline" className="w-full" disabled={!!processando} onClick={() => responder(d, "cancelar")}>
-            {processando === d.id + "cancelar" ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : "Cancelar Desafio"}
+          <Button variant="outline" className="w-full" disabled={responderMutation.isPending} onClick={() => responder(d, "cancelar")}>
+            {procId === d.id && procAcao === "cancelar" ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : "Cancelar Desafio"}
           </Button>
         )}
       </Card>
@@ -124,7 +118,7 @@ export default function Desafios() {
   };
 
   return (
-    <PullToRefresh onRefresh={carregar}>
+    <PullToRefresh onRefresh={refetch}>
     <div className="max-w-4xl mx-auto p-4 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold flex items-center gap-2"><Swords className="w-6 h-6 text-rose-500" /> Central de Desafios</h1>

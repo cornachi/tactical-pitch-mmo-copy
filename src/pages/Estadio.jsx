@@ -1,49 +1,32 @@
-import React, { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useClube, useEvoluirInstalacao } from "@/hooks/useClube";
 import {
   INSTALACOES, TIPOS_INSTALACAO, TIPOS_COMISSAO, CAMPO_NIVEL, custoInstalacao,
 } from "@/lib/instalacoes";
 
 export default function Estadio() {
-  const [clube, setClube] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [evoluindo, setEvoluindo] = useState("");
   const [erro, setErro] = useState("");
-
-  const carregar = async () => {
-    try {
-      const user = await base44.auth.me();
-      const clubes = await base44.entities.Clube.filter({ user_id: user.id });
-      setClube(clubes[0] || null);
-    } catch (e) {
-      setErro(e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { carregar(); }, []);
+  const { data: clube, isLoading } = useClube();
+  const upgrade = useEvoluirInstalacao();
 
   const evoluir = async (tipo) => {
-    setEvoluindo(tipo);
+    const campo = CAMPO_NIVEL[tipo];
+    const nivel = clube[campo] || 0;
+    const custo = custoInstalacao(tipo, nivel);
     setErro("");
     try {
-      const res = await base44.functions.invoke("evoluirInstalacao", { clube_id: clube.id, tipo });
-      const data = res?.data ?? res;
-      if (data?.error) setErro(data.error);
-      else await carregar();
+      await upgrade.mutateAsync({ clube_id: clube.id, tipo, custo, campo });
     } catch (e) {
-      setErro(e.response?.data?.error || e.message);
-    } finally {
-      setEvoluindo("");
+      const data = e.response?.data;
+      setErro(data?.error || e.message);
     }
   };
 
-  if (loading) return <div className="p-8 text-center text-muted-foreground">Carregando...</div>;
+  if (isLoading) return <div className="p-8 text-center text-muted-foreground">Carregando...</div>;
   if (!clube) {
     return (
       <div className="p-8 text-center">
@@ -52,11 +35,14 @@ export default function Estadio() {
     );
   }
 
+  const evoluindoTipo = upgrade.isPending ? upgrade.variables?.tipo : null;
+
   const renderItem = (tipo) => {
     const c = INSTALACOES[tipo];
     const nivel = clube[CAMPO_NIVEL[tipo]] || 0;
     const custo = custoInstalacao(tipo, nivel);
     const pode = (clube.moedas || 0) >= custo;
+    const evoluindo = evoluindoTipo === tipo;
     return (
       <Card key={tipo} className="p-4 space-y-2">
         <div className="flex items-center gap-3">
@@ -75,8 +61,8 @@ export default function Estadio() {
             <Coins className="w-4 h-4 mr-1 text-amber-500" />
             {custo.toLocaleString("pt-BR")}
           </span>
-          <Button size="sm" disabled={!pode || evoluindo === tipo} onClick={() => evoluir(tipo)}>
-            {evoluindo === tipo ? "..." : "Evoluir"}
+          <Button size="sm" disabled={!pode || evoluindo} onClick={() => evoluir(tipo)}>
+            {evoluindo ? "..." : "Evoluir"}
           </Button>
         </div>
       </Card>

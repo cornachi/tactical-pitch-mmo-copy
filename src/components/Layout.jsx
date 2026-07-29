@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Shield, Home, Users, Trophy, ShoppingBag, Building, Medal, ChevronLeft } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -29,6 +29,16 @@ const MOBILE_TABS = [
 
 const MAIN_TABS = ["/", "/equipe", "/estadio", "/copa", "/loja"];
 
+// Mapeia qualquer caminho à aba dona (para memória de navegação entre abas).
+function tabOf(p) {
+  if (p.startsWith("/equipe")) return "/equipe";
+  if (p.startsWith("/estadio")) return "/estadio";
+  if (p.startsWith("/copa")) return "/copa";
+  if (p.startsWith("/loja")) return "/loja";
+  if (p.startsWith("/torneios")) return "/copa";
+  return "/";
+}
+
 function resolveHeader(pathname) {
   if (MAIN_TABS.includes(pathname)) return { sub: false };
   const staticMap = {
@@ -55,6 +65,7 @@ export default function Layout() {
   const navigate = useNavigate();
   const { t } = useI18n();
   const [torneioNome, setTorneioNome] = useState(null);
+  const lastPaths = useRef({});
 
   const headerInfo = resolveHeader(pathname);
 
@@ -68,6 +79,11 @@ export default function Layout() {
       setTorneioNome(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  // Memória de navegação: guarda o último caminho ativo de cada aba.
+  useEffect(() => {
+    lastPaths.current[tabOf(pathname)] = pathname;
   }, [pathname]);
 
   const mobileTitle = headerInfo.sub
@@ -161,14 +177,15 @@ export default function Layout() {
         <div className="flex items-stretch justify-around h-14">
           {MOBILE_TABS.map((item) => {
             const Icon = item.icon;
-            const active = pathname === item.to;
+            const activeTab = tabOf(pathname) === item.to;
+            const dest = activeTab ? pathname : (lastPaths.current[item.to] || item.to);
             return (
               <Link
                 key={item.to}
-                to={item.to}
+                to={dest}
                 className={cn(
                   "flex flex-col items-center justify-center gap-0.5 flex-1 text-[11px] font-medium transition-colors",
-                  active ? "text-primary" : "text-muted-foreground"
+                  activeTab ? "text-primary" : "text-muted-foreground"
                 )}
               >
                 <Icon className="w-5 h-5" />
