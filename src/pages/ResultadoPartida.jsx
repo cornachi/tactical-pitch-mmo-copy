@@ -108,13 +108,14 @@ export default function ResultadoPartida() {
         </Card>
       )}
 
-      <div className="space-y-3">
+      <div className="space-y-3 selectable-content">
         <h2 className="font-semibold flex items-center gap-2">
           <Lightbulb className="w-5 h-5 text-amber-500" /> Insights do Treinador
         </h2>
         <InsightsTreinador insights={r.insights} />
       </div>
 
+      <div className="selectable-content">
       <VozTorcida
         placarHome={r.placar_home}
         placarAway={r.placar_away}
@@ -123,6 +124,7 @@ export default function ResultadoPartida() {
         momentum={r.momentum}
         expulsoes={r.expulsoes}
       />
+      </div>
         </TabsContent>
         <TabsContent value="momentum" className="space-y-6 mt-4">
           {r.momentum ? (

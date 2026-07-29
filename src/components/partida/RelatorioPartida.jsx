@@ -131,7 +131,7 @@ export default function RelatorioPartida({ partida, clubeHome, clubeAway, meuClu
         {lances.length === 0 ? (
           <p className="text-sm text-muted-foreground">Sem lances registrados.</p>
         ) : (
-          <div className="space-y-1 max-h-72 overflow-y-auto">
+          <div className="space-y-1 max-h-72 overflow-y-auto selectable-content">
             {lances.map((l, i) => {
               const ehHome = l.clube_autor_id === clubeHome.id;
               return (
@@ -184,12 +184,12 @@ export default function RelatorioPartida({ partida, clubeHome, clubeAway, meuClu
         </div>
         <div className="flex gap-2 p-3 rounded-lg bg-card border">
           <Shield className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-          <p className="text-sm">{analise}</p>
+          <p className="text-sm selectable-content">{analise}</p>
         </div>
       </Card>
 
       {/* Insights do treinador */}
-      <div className="space-y-3">
+      <div className="space-y-3 selectable-content">
         <h2 className="font-semibold flex items-center gap-2"><Activity className="w-5 h-5 text-amber-500" /> Insights do Treinador</h2>
         <InsightsTreinador insights={ins.insights || []} />
       </div>

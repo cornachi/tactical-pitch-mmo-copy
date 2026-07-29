@@ -165,7 +165,7 @@ export default function Layout() {
       </header>
 
       {/* Page content: keep-alive para abas + transição para sub-rotas */}
-      <main className="pb-20 md:pb-0">
+      <main className="pt-[calc(3rem+env(safe-area-inset-top))] md:pt-[calc(3.5rem+env(safe-area-inset-top))] pb-20 md:pb-0">
         <KeepAliveOutlet />
       </main>
 
@@ -178,7 +178,7 @@ export default function Layout() {
           {MOBILE_TABS.map((item) => {
             const Icon = item.icon;
             const activeTab = tabOf(pathname) === item.to;
-            const dest = activeTab ? pathname : (lastPaths.current[item.to] || item.to);
+            const dest = activeTab ? item.to : (lastPaths.current[item.to] || item.to);
             return (
               <Link
                 key={item.to}

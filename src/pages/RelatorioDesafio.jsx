@@ -47,6 +47,7 @@ export default function RelatorioDesafio() {
         <Button asChild variant="outline" size="sm"><Link to="/desafios">Voltar</Link></Button>
       </div>
       <RelatorioPartida partida={data.partida} clubeHome={data.home} clubeAway={data.away} meuClubeId={data.meuClubeId} />
+      <div className="selectable-content">
       <VozTorcida
         placarHome={data.partida.placar_home}
         placarAway={data.partida.placar_away}
@@ -55,6 +56,7 @@ export default function RelatorioDesafio() {
         momentum={data.partida.insights?.momentum}
         expulsoes={(data.partida.insights?.lances_narracao || []).filter((l) => l.tipo === "CARTAO_VERMELHO")}
       />
+      </div>
     </div>
   );
 }

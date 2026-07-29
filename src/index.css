@@ -101,4 +101,9 @@
     -webkit-user-select: text;
     user-select: text;
   }
+
+  .selectable-content {
+    user-select: text;
+    -webkit-user-select: text;
+  }
 }
