@@ -15,6 +15,7 @@ import Ranking from './pages/Ranking';
 import SimularPartida from './pages/SimularPartida';
 import Loja from './pages/Loja';
 import Estadio from './pages/Estadio';
+import Missoes from './pages/Missoes';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
@@ -61,6 +62,7 @@ const AuthenticatedApp = () => {
           <Route path="/ranking" element={<Ranking />} />
           <Route path="/loja" element={<Loja />} />
           <Route path="/estadio" element={<Estadio />} />
+          <Route path="/missoes" element={<Missoes />} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />

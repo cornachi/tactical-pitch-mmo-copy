@@ -2,6 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import {
   poderAtaque,
   poderDefesa,
+  poderFisico,
   calcularDominancia,
   amostraPoisson,
   atualizarElo,
@@ -9,6 +10,7 @@ import {
   gerarLances,
 } from "../../shared/tactical.ts";
 import { getMeta, aplicarMetaEfeito } from "../../shared/metas.ts";
+import { registrarProgresso } from "../../shared/missoes.ts";
 
 export default async function(req) {
   try {
@@ -57,6 +59,8 @@ export default async function(req) {
     // Carrega os 18 atributos táticos de cada clube.
     const attrsHome = await base44.asServiceRole.entities.AtributoTatico.filter({ clube_id: desafiante_id });
     const attrsAway = await base44.asServiceRole.entities.AtributoTatico.filter({ clube_id: desafiado_id });
+    const fisHome = poderFisico(attrsHome);
+    const fisAway = poderFisico(attrsAway);
 
     let atkHomeBase = poderAtaque(attrsHome);
     let defHomeBase = poderDefesa(attrsHome);
@@ -219,13 +223,22 @@ Retorne JSON no formato {"insights": ["insight1", "insight2", "insight3"]}.`;
       });
     }
 
+    // Registra progresso de missões diárias do desafiante (best-effort).
+    try {
+      await registrarProgresso(base44.asServiceRole, desafiante_id, 'PARTIDAS', 1);
+      await registrarProgresso(base44.asServiceRole, desafiante_id, 'GOLS', placar_home);
+      if (tipo_partida === 'DESAFIO' && vencedor === 'home') {
+        await registrarProgresso(base44.asServiceRole, desafiante_id, 'VENCER_DESAFIO', 1);
+      }
+    } catch (e) { /* missões são best-effort, não podem quebrar a partida */ }
+
     return Response.json({
       success: true,
       partida_id: historico.id,
       meta_evento: meta ? { nome: meta.nome, descricao: meta.descricao } : null,
       tipo_partida,
-      desafiante: { id: desafiante.id, nome_clube: desafiante.nome_clube, especializacao: desafiante.especializacao, cor_principal: desafiante.cor_principal, cor_secundaria: desafiante.cor_secundaria, icone_escudo: desafiante.icone_escudo },
-      desafiado: { id: desafiado.id, nome_clube: desafiado.nome_clube, especializacao: desafiado.especializacao, cor_principal: desafiado.cor_principal, cor_secundaria: desafiado.cor_secundaria, icone_escudo: desafiado.icone_escudo },
+      desafiante: { id: desafiante.id, nome_clube: desafiante.nome_clube, especializacao: desafiante.especializacao, cor_principal: desafiante.cor_principal, cor_secundaria: desafiante.cor_secundaria, icone_escudo: desafiante.icone_escudo, comissao_prep_fisico: desafiante.comissao_prep_fisico || 0, fisico: fisHome },
+      desafiado: { id: desafiado.id, nome_clube: desafiado.nome_clube, especializacao: desafiado.especializacao, cor_principal: desafiado.cor_principal, cor_secundaria: desafiado.cor_secundaria, icone_escudo: desafiado.icone_escudo, comissao_prep_fisico: desafiado.comissao_prep_fisico || 0, fisico: fisAway },
       placar_home,
       placar_away,
       xg_home: dom.xg_home,

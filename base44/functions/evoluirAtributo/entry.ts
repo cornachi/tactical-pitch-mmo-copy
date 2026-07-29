@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { calcularCustoEvolucaoComCT, CATEGORIA_POR_ATRIBUTO } from "../../shared/tactical.ts";
+import { registrarProgresso } from "../../shared/missoes.ts";
 
 export default async function(req) {
   try {
@@ -50,6 +51,10 @@ export default async function(req) {
     await base44.asServiceRole.entities.AtributoTatico.update(atributo.id, {
       nivel: nivelAtual + 1,
     });
+
+    try {
+      await registrarProgresso(base44.asServiceRole, clube_id, 'EVOLUIR', 1);
+    } catch (e) { /* missões são best-effort */ }
 
     return Response.json({
       success: true,

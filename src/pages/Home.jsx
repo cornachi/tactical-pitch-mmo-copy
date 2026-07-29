@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
-import { Coins, Trophy, Flame, Zap, Swords, Activity, Users, Award, Building } from "lucide-react";
+import { Coins, Trophy, Flame, Zap, Swords, Activity, Users, Award, Building, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import ClubeHeader from "@/components/clube/ClubeHeader";
@@ -80,6 +80,9 @@ export default function Home() {
       </Button>
       <ModalDesafio clube={clube} open={desafioOpen} onOpenChange={setDesafioOpen} />
 
+      <Button asChild variant="outline" className="w-full" size="lg">
+        <Link to="/missoes"><Target className="w-4 h-4 mr-2" />Missões Diárias</Link>
+      </Button>
       <Button asChild variant="outline" className="w-full" size="lg">
         <Link to="/ranking"><Trophy className="w-4 h-4 mr-2" />Ranking Global</Link>
       </Button>

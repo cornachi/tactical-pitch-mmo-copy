@@ -1,0 +1,70 @@
+{
+  "name": "MissaoDiaria",
+  "type": "object",
+  "properties": {
+    "clube_id": {
+      "type": "string",
+      "title": "Clube ID",
+      "description": "ID do clube dono da miss\u00e3o"
+    },
+    "tipo": {
+      "type": "string",
+      "title": "Tipo",
+      "enum": [
+        "PARTIDAS",
+        "GOLS",
+        "EVOLUIR",
+        "VENCER_DESAFIO"
+      ]
+    },
+    "descricao": {
+      "type": "string",
+      "title": "Descri\u00e7\u00e3o"
+    },
+    "objetivo": {
+      "type": "integer",
+      "title": "Objetivo",
+      "default": 1
+    },
+    "progresso": {
+      "type": "integer",
+      "title": "Progresso",
+      "default": 0
+    },
+    "concluida": {
+      "type": "boolean",
+      "title": "Conclu\u00edda",
+      "default": false
+    },
+    "resgatada": {
+      "type": "boolean",
+      "title": "Resgatada",
+      "default": false,
+      "description": "Indica se a recompensa individual j\u00e1 foi resgatada"
+    },
+    "recompensa_moedas": {
+      "type": "integer",
+      "title": "Recompensa em Moedas",
+      "default": 100
+    },
+    "bonus_resgatado": {
+      "type": "boolean",
+      "title": "B\u00f4nus Resgatado",
+      "default": false,
+      "description": "Indica se o b\u00f4nus di\u00e1rio de conclus\u00e3o total j\u00e1 foi resgatado"
+    },
+    "data": {
+      "type": "string",
+      "format": "date",
+      "title": "Data",
+      "description": "Data de refer\u00eancia (YYYY-MM-DD) para reset autom\u00e1tico \u00e0 meia-noite"
+    }
+  },
+  "required": [
+    "clube_id",
+    "tipo",
+    "descricao",
+    "objetivo",
+    "data"
+  ]
+}
