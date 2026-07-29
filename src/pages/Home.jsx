@@ -15,6 +15,7 @@ import AlertaTatico from "@/components/relatorio/AlertaTatico";
 import ModalConquistas from "@/components/conquistas/ModalConquistas";
 import TermometroTorcida from "@/components/clube/TermometroTorcida";
 import SalaTrofeus from "@/components/clube/SalaTrofeus";
+import DeletarConta from "@/components/clube/DeletarConta";
 import { useI18n } from "@/i18n/I18nContext";
 
 export default function Home() {
@@ -106,6 +107,8 @@ export default function Home() {
       <Button asChild variant="outline" className="w-full" size="lg">
         <Link to="/estadio"><Building className="w-4 h-4 mr-2" />{t("home.estadioComissao")}</Link>
       </Button>
+
+      <DeletarConta />
     </div>
   );
 }
