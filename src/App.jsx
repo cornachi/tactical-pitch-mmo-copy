@@ -13,6 +13,7 @@ import Equipe from './pages/Equipe';
 import ResultadoPartida from './pages/ResultadoPartida';
 import Ranking from './pages/Ranking';
 import SimularPartida from './pages/SimularPartida';
+import PrePartida from './pages/PrePartida';
 import Loja from './pages/Loja';
 import Estadio from './pages/Estadio';
 import Missoes from './pages/Missoes';
@@ -66,6 +67,7 @@ const AuthenticatedApp = () => {
           <Route path="/" element={<Home />} />
           <Route path="/equipe" element={<Equipe />} />
           <Route path="/simular-partida" element={<SimularPartida />} />
+          <Route path="/pre-partida" element={<PrePartida />} />
           <Route path="/resultado-partida" element={<ResultadoPartida />} />
           <Route path="/ranking" element={<Ranking />} />
           <Route path="/loja" element={<Loja />} />

@@ -22,16 +22,9 @@ export default function PartidaRapida({ clube }) {
         return;
       }
       const adversario = outros[Math.floor(Math.random() * outros.length)];
-      const res = await base44.functions.invoke("simularPartida", {
-        desafiante_id: clube.id,
-        desafiado_id: adversario.id,
-        tipo_partida: "MATCHMAKING",
-      });
-      const data = res?.data ?? res;
-      if (data?.error) { setErro(data.error); return; }
-      navigate("/simular-partida", { state: { result: data } });
+      navigate("/pre-partida", { state: { desafiante_id: clube.id, desafiado_id: adversario.id } });
     } catch (e) {
-      setErro(e.response?.data?.error || e.message || "Erro ao simular partida");
+      setErro(e.response?.data?.error || e.message || "Erro ao buscar adversário");
     } finally {
       setBuscando(false);
     }
@@ -49,7 +42,7 @@ export default function PartidaRapida({ clube }) {
       {erro && <p className="text-sm text-destructive">{erro}</p>}
       <Button className="w-full" disabled={buscando || semEnergia} onClick={jogar}>
         <Swords className="w-4 h-4 mr-2" />
-        {buscando ? "Simulando partida..." : "Jogar Matchmaking"}
+        {buscando ? "Buscando adversário..." : "Jogar Matchmaking"}
       </Button>
       {semEnergia && <p className="text-xs text-destructive text-center">Sem energia de matchmaking</p>}
     </Card>

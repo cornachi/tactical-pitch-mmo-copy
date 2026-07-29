@@ -8,6 +8,9 @@ import {
   gerarMomentum,
   gerarLances,
   gerarCartoes,
+  CLIMAS,
+  MODELO_CONTRA,
+  preverModeloJogo,
 } from "./tactical.ts";
 import { getMeta, aplicarMetaEfeito } from "./metas.ts";
 import { registrarProgresso } from "./missoes.ts";
@@ -23,6 +26,7 @@ export async function simularCore(base44, opts) {
   const {
     desafiante, desafiado, desafianteId, desafiadoId,
     tipoPartida, aposta, consumirEnergia, potReservado,
+    modeloJogoHome, clima: climaForcado,
   } = opts;
 
   const attrsHome = await base44.asServiceRole.entities.AtributoTatico.filter({ clube_id: desafianteId });
@@ -51,12 +55,9 @@ export async function simularCore(base44, opts) {
   let defAway = awayEf.def;
 
   // Condições climáticas sorteadas no início da partida.
-  const CLIMAS = [
-    { key: "ENSOLARADO", label: "Ensolarado", emoji: "☀️" },
-    { key: "CHUVA", label: "Chuva Forte", emoji: "🌧️" },
-    { key: "CALOR", label: "Calor Extremo", emoji: "🫠" },
-  ];
-  const clima = CLIMAS[Math.floor(Math.random() * CLIMAS.length)];
+  const clima = climaForcado
+    ? (CLIMAS.find((c) => c.key === climaForcado) || CLIMAS[Math.floor(Math.random() * CLIMAS.length)])
+    : CLIMAS[Math.floor(Math.random() * CLIMAS.length)];
   if (clima.key === "CHUVA") {
     // Penaliza a posse curta; beneficia o passe longo / força física (defesa).
     if (desafiante.especializacao === "POSSE") atkHome = Math.round(atkHome * 0.85);
@@ -65,7 +66,36 @@ export async function simularCore(base44, opts) {
     defAway += Math.round(fisAway * 0.1);
   }
 
-  const dom = calcularDominancia(atkHome, defAway, atkAway, defHome);
+  // --- Cartões e expulsões gerados cedo (penalizam o placar, não só o visual) ---
+  const { eventos: cartoes, expulsoes } = gerarCartoes(defHome, defAway);
+  const expHome = expulsoes.filter((e) => e.lado === "home").length;
+  const expAway = expulsoes.filter((e) => e.lado === "away").length;
+
+  // --- Matriz de Vantagem Tática: modelo de jogo escolhido x modelo adversário ---
+  const modeloAdversario = preverModeloJogo(attrsAway, desafiado.especializacao);
+  let vantagemTatica = false;
+  if (modeloJogoHome && MODELO_CONTRA[modeloJogoHome] === modeloAdversario) {
+    atkHome = Math.round(atkHome * 1.25); // +25% de efetividade nas jogadas
+    vantagemTatica = true;
+  }
+
+  // --- Rebalanceamento de expulsões (aplicado ANTES do placar) ---
+  // 1 expulsão: -20% defesa + 25% desgaste de stamina.
+  // 2+ expulsões: -50% defesa, ataque zerado, +60% na taxa de gols do adversário.
+  let oppXgHomeMult = 1;
+  let oppXgAwayMult = 1;
+  if (expHome >= 2) { defHome = Math.round(defHome * 0.5); atkHome = 0; oppXgAwayMult = 1.6; }
+  else if (expHome === 1) { defHome = Math.round(defHome * 0.8); }
+  if (expAway >= 2) { defAway = Math.round(defAway * 0.5); atkAway = 0; oppXgHomeMult = 1.6; }
+  else if (expAway === 1) { defAway = Math.round(defAway * 0.8); }
+
+  const domBase = calcularDominancia(atkHome, defAway, atkAway, defHome);
+  const xgHomeAdj = +(domBase.xg_home * oppXgHomeMult).toFixed(2);
+  const xgAwayAdj = +(domBase.xg_away * oppXgAwayMult).toFixed(2);
+  const totalXg = xgHomeAdj + xgAwayAdj;
+  const dominancia_home = totalXg === 0 ? 50 : Math.round((xgHomeAdj / totalXg) * 100);
+  const dom = { dominancia_home, dominancia_away: 100 - dominancia_home, xg_home: xgHomeAdj, xg_away: xgAwayAdj };
+
   const placar_home = amostraPoisson(dom.xg_home);
   const placar_away = amostraPoisson(dom.xg_away);
   const vencedor = placar_home > placar_away ? "home" : placar_home < placar_away ? "away" : "empate";
@@ -73,19 +103,30 @@ export async function simularCore(base44, opts) {
 
   const momentum = gerarMomentum(attrsHome, attrsAway, dom, placar_home, placar_away, desafiante.comissao_prep_fisico, desafiado.comissao_prep_fisico);
 
-  // Cartões e expulsões baseados na agressividade/defesa de cada lado.
-  const { eventos: cartoes, expulsoes } = gerarCartoes(defHome, defAway);
-  // Penalidade permanente de -20% na força de momentum do time com jogador expulso.
+  // Penalidade visual no momentum + desgaste extra de stamina nos blocos finais.
+  const fatorExpulsao = (n) => (n >= 2 ? 0.5 : n === 1 ? 0.8 : 1);
   expulsoes.forEach((exp) => {
     const pen = exp.lado;
     const out = pen === "home" ? "away" : "home";
+    const fator = fatorExpulsao(pen === "home" ? expHome : expAway);
     momentum.forEach((b) => {
       if (b.fim >= exp.minuto) {
-        b.dominancia_pct[pen] = Math.round(b.dominancia_pct[pen] * 0.8);
+        b.dominancia_pct[pen] = Math.round(b.dominancia_pct[pen] * fator);
         b.dominancia_pct[out] = 100 - b.dominancia_pct[pen];
       }
     });
   });
+  if (expHome >= 1 || expAway >= 1) {
+    momentum.forEach((b) => {
+      if (b.inicio >= 46) {
+        if (expHome >= 1) b.dominancia_pct.home = Math.round(b.dominancia_pct.home * 0.9);
+        if (expAway >= 1) b.dominancia_pct.away = Math.round(b.dominancia_pct.away * 0.9);
+        const s = b.dominancia_pct.home + b.dominancia_pct.away;
+        b.dominancia_pct.home = s > 0 ? Math.round((b.dominancia_pct.home / s) * 100) : 50;
+        b.dominancia_pct.away = 100 - b.dominancia_pct.home;
+      }
+    });
+  }
 
   const lancesBase = gerarLances(desafiante, desafiado, placar_home, placar_away, momentum);
   const cartoesNarr = cartoes.map((c) => {
@@ -243,6 +284,9 @@ Retorne JSON no formato {"insights": ["insight1", "insight2", "insight3"]}.`;
     lances_narracao,
     expulsoes,
     clima,
+    modelo_jogo_home: modeloJogoHome || null,
+    modelo_adversario: modeloAdversario,
+    vantagem_tatica: vantagemTatica,
     insights,
   };
 }

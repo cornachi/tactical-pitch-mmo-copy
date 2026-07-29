@@ -51,9 +51,17 @@ export function gerarVozTorcida(ctx = {}) {
 
   if (nExpulsoes >= 2) {
     return pick([
-      `O árbitro distribuiu mais cartões hoje do que a torcida distribuiu panfletos na entrada do estádio.`,
-      `Com ${nExpulsoes} expulsões, o jogo virou roleta russa — a torcida rezou mais do que torceu.`,
-      `O plantão de ambulância atendeu mais jogadores do que a cantina do estádio. Sobrou ${maior} na rede.`,
+      `Tentar jogar com ${nExpulsoes} a menos virou piada: a torcida sugeriu trocar o técnico por um aluno de kart — pelo menos lá 2 rodas funcionam.`,
+      `O árbitro distribuiu mais cartões do que a torcida distribuiu panfletos na entrada. Com ${nExpulsoes} expulsões, o time virou piada pronta: "escala 11, joga 9, reclama dos 2 que faltam".`,
+      `Com ${nExpulsoes} expulsões, a arquibancada gritou "sobe o goleiro pra centroavante" — e não era piada, era o plano de jogo. Sobrou ${maior} na rede e vergonha na bola.`,
+      `O plantão de ambulância atendeu mais jogadores do que a cantina do estádio. O time tentou jogar deitado e levou ${maior} a ${menor} de cortesia.`,
+    ]);
+  }
+  if (nExpulsoes === 1) {
+    return pick([
+      `Com um a menos, o time tentou virar herói de filme B — a torcida já pede a comédia na sequência.`,
+      `Jogar com 10 é feio; jogar com 10 e ainda retrancar é obra de arte moderna que a arquibancada não entendeu.`,
+      `Expulso e o técnico faz cara de quem previu tudo. A torcida respondeu com vaia prevista também.`,
     ]);
   }
 

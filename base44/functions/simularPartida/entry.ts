@@ -9,7 +9,7 @@ export default async function(req) {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { desafiante_id, desafiado_id, tipo_partida } = await req.json();
+    const { desafiante_id, desafiado_id, tipo_partida, modelo_jogo, clima } = await req.json();
     if (!desafiante_id || !desafiado_id) {
       return Response.json({ error: 'desafiante_id e desafiado_id são obrigatórios' }, { status: 400 });
     }
@@ -46,6 +46,8 @@ export default async function(req) {
       aposta: 0,
       consumirEnergia: true,
       potReservado: false,
+      modeloJogoHome: modelo_jogo,
+      clima,
     });
 
     result.viewer_side = 'home';

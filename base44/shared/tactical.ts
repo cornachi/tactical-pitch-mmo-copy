@@ -36,6 +36,44 @@ export const CATEGORIA_DA_ESPECIALIZACAO = {
   EQUILIBRADO: null,
 };
 
+// --- Modelos de Jogo (escolha pré-partida) e Matriz de Vantagem Tática ---
+// Cycle: ATAQUE_POSICIONAL > BLOCO_BAIXO > TRANSICAO_OFENSIVA > PRESSAO_ALTA > ATAQUE_POSICIONAL
+export const MODELOS_JOGO = [
+  { key: "ATAQUE_POSICIONAL", label: "Ataque Posicional", emoji: "🎯" },
+  { key: "BLOCO_BAIXO", label: "Bloco Baixo / Retranca", emoji: "🛡️" },
+  { key: "TRANSICAO_OFENSIVA", label: "Transição Ofensiva", emoji: "⚡" },
+  { key: "PRESSAO_ALTA", label: "Pressão Alta (Perda-Pressiona)", emoji: "🔥" },
+];
+
+export const MODELO_CONTRA = {
+  ATAQUE_POSICIONAL: "BLOCO_BAIXO",
+  BLOCO_BAIXO: "TRANSICAO_OFENSIVA",
+  TRANSICAO_OFENSIVA: "PRESSAO_ALTA",
+  PRESSAO_ALTA: "ATAQUE_POSICIONAL",
+};
+
+export const CLIMAS = [
+  { key: "ENSOLARADO", label: "Ensolarado", emoji: "☀️" },
+  { key: "CHUVA", label: "Chuva Forte", emoji: "🌧️" },
+  { key: "CALOR", label: "Calor Extremo", emoji: "🫠" },
+];
+
+// Prevê o modelo de jogo mais provável do adversário a partir do seu atributo
+// mais forte (categoria) com fallback na especialização.
+export function preverModeloJogo(attrs, especializacao) {
+  if (attrs && attrs.length) {
+    const top = [...attrs].sort((a, b) => (b.nivel || 1) - (a.nivel || 1))[0];
+    const cat = CATEGORIA_POR_ATRIBUTO[top.nome_atributo];
+    if (cat === "POSSE") return "ATAQUE_POSICIONAL";
+    if (cat === "TRANSICAO") return "TRANSICAO_OFENSIVA";
+    if (cat === "PRESSAO") return "PRESSAO_ALTA";
+  }
+  if (especializacao === "POSSE") return "ATAQUE_POSICIONAL";
+  if (especializacao === "CONTRA_ATAQUE") return "TRANSICAO_OFENSIVA";
+  if (especializacao === "PRESSAO") return "PRESSAO_ALTA";
+  return "BLOCO_BAIXO";
+}
+
 // Custo exponencial para evoluir do nível atual para o próximo:
 //   100 * 1.15^(nivel_atual - 1)
 // Aplica 10% de desconto quando a categoria do atributo é a favorecida
