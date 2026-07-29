@@ -41,7 +41,11 @@ export default function ModalDesafio({ clube, open, onOpenChange }) {
     setErro("");
     try {
       const res = await base44.functions.invoke("espionarClube", { clube_id: rival.id });
-      setEspionagem(res);
+      if (res && res.error) {
+        setErro(res.error);
+      } else {
+        setEspionagem(res);
+      }
     } catch (e) {
       setErro(e.response?.data?.error || e.message || "Falha ao espionar");
     }
@@ -127,7 +131,7 @@ export default function ModalDesafio({ clube, open, onOpenChange }) {
                 <div className="space-y-2">
                   <p className="text-sm">Especialização: <strong>{ESPECIALIZACAO_LABELS[espionagem.especializacao] || espionagem.especializacao}</strong></p>
                   <p className="text-xs text-muted-foreground">Atributos mais fortes (pista tática):</p>
-                  {espionagem.atributos_top.map((a, i) => (
+                  {(espionagem.atributos_top || []).map((a, i) => (
                     <div key={i} className="flex justify-between text-sm bg-muted/50 rounded px-2 py-1">
                       <span>{a.nome}</span>
                       <span className="font-semibold">Nv {a.nivel}</span>
