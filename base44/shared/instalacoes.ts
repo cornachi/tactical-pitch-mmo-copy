@@ -1,11 +1,11 @@
 // Configuração de Infraestrutura e Comissão Técnica (evolução infinita, custo exponencial).
 export const INSTALACOES = {
-  estadio: { label: "Estádio", emoji: "🏟️", descricao: "+2% de bônus de moedas como mandante por nível", base: 500, fator: 1.18 },
-  ct: { label: "Centro de Treinamento", emoji: "🏋️", descricao: "+1% de desconto no custo dos atributos por nível (teto 85%)", base: 400, fator: 1.18 },
-  medico: { label: "Departamento Médico", emoji: "🏥", descricao: "Aumenta o teto e a recuperação de energia", base: 350, fator: 1.18 },
-  prep_fisico: { label: "Preparador Físico", emoji: "🏃", descricao: "Reduz a perda de dominância por cansaço nos 15' finais", base: 450, fator: 1.2 },
-  analista: { label: "Analista de Desempenho", emoji: "📊", descricao: "+1,5% de bônus de moedas em vitórias por nível", base: 450, fator: 1.2 },
-  auxiliar_tatico: { label: "Auxiliar Tático", emoji: "🧠", descricao: "Bônus de pontos táticos no atributo mais forte", base: 500, fator: 1.2 },
+  estadio: { label: "Estádio", emoji: "🏟️", descricao: "+2% de bônus de moedas como mandante por nível", base: 150, fator: 1.28 },
+  ct: { label: "Centro de Treinamento", emoji: "🏋️", descricao: "+1% de desconto no custo dos atributos por nível (teto 85%)", base: 150, fator: 1.28 },
+  medico: { label: "Departamento Médico", emoji: "🏥", descricao: "Aumenta o teto e a recuperação de energia", base: 150, fator: 1.28 },
+  prep_fisico: { label: "Preparador Físico", emoji: "🏃", descricao: "Reduz a perda de dominância por cansaço nos 15' finais", base: 150, fator: 1.28 },
+  analista: { label: "Analista de Desempenho", emoji: "📊", descricao: "+1,5% de bônus de moedas em vitórias por nível", base: 150, fator: 1.28 },
+  auxiliar_tatico: { label: "Auxiliar Tático", emoji: "🧠", descricao: "Bônus de pontos táticos no atributo mais forte", base: 150, fator: 1.28 },
 };
 
 export const CAMPO_NIVEL = {
