@@ -27,7 +27,7 @@ export default function PartidaRapida({ clube }) {
         desafiado_id: adversario.id,
         tipo_partida: "MATCHMAKING",
       });
-      navigate("/resultado-partida", { state: { result: res } });
+      navigate("/simular-partida", { state: { result: res } });
     } catch (e) {
       setErro(e.response?.data?.error || e.message || "Erro ao simular partida");
     } finally {
