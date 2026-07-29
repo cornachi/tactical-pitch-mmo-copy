@@ -8,11 +8,13 @@ import ClubeHeader from "@/components/clube/ClubeHeader";
 import StatCard from "@/components/clube/StatCard";
 import CriarClubeForm from "@/components/clube/CriarClubeForm";
 import PartidaRapida from "@/components/partida/PartidaRapida";
+import ModalDesafio from "@/components/partida/ModalDesafio";
 
 export default function Home() {
   const [clube, setClube] = useState(null);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState("");
+  const [desafioOpen, setDesafioOpen] = useState(false);
 
   const carregar = async () => {
     try {
@@ -65,6 +67,11 @@ export default function Home() {
       </div>
 
       <PartidaRapida clube={clube} />
+
+      <Button variant="outline" className="w-full" size="lg" onClick={() => setDesafioOpen(true)}>
+        <Swords className="w-4 h-4 mr-2" />Desafiar Adversário
+      </Button>
+      <ModalDesafio clube={clube} open={desafioOpen} onOpenChange={setDesafioOpen} />
 
       <Button asChild className="w-full" size="lg">
         <Link to="/equipe"><Users className="w-4 h-4 mr-2" />Gerenciar Equipe (Árvore Tática)</Link>

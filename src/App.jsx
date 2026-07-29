@@ -11,6 +11,7 @@ import Home from './pages/Home';
 import Equipe from './pages/Equipe';
 import ResultadoPartida from './pages/ResultadoPartida';
 import SimularPartida from './pages/SimularPartida';
+import Layout from './components/Layout';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -39,10 +40,12 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       {/* Add your page Route elements here */}
-      <Route path="/" element={<Home />} />
-      <Route path="/equipe" element={<Equipe />} />
-      <Route path="/simular-partida" element={<SimularPartida />} />
-      <Route path="/resultado-partida" element={<ResultadoPartida />} />
+      <Route element={<Layout />}>
+        <Route path="/" element={<Home />} />
+        <Route path="/equipe" element={<Equipe />} />
+        <Route path="/simular-partida" element={<SimularPartida />} />
+        <Route path="/resultado-partida" element={<ResultadoPartida />} />
+      </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

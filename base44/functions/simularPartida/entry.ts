@@ -125,18 +125,6 @@ export default async function(req) {
         updateAway.moedas = (desafiado.moedas || 0) + aposta;
       }
       moedas_ganhas = transfer;
-
-      const resultadoTxt = vencedor === 'home'
-        ? 'você perdeu'
-        : vencedor === 'away'
-          ? 'você venceu'
-          : 'empatou';
-      await base44.asServiceRole.entities.Notificacao.create({
-        clube_id: desafiado_id,
-        titulo: 'Você foi desafiado!',
-        mensagem: `${desafiante.nome_clube} desafiou você para uma partida apostando ${aposta} moedas. Resultado: ${resultadoTxt} (${placar_home}x${placar_away}).`,
-        lida: false,
-      });
     }
 
     await base44.asServiceRole.entities.Clube.update(desafiante_id, updateHome);
@@ -188,6 +176,21 @@ Retorne JSON no formato {"insights": ["insight1", "insight2", "insight3"]}.`;
       aposta_moedas: tipo_partida === 'DESAFIO' ? aposta : 0,
       insights: { insights, dominancia_home: dom.dominancia_home, dominancia_away: dom.dominancia_away, atkHome, atkAway, defHome, defAway },
     });
+
+    if (tipo_partida === 'DESAFIO') {
+      const resultadoTxt = vencedor === 'home'
+        ? 'você perdeu'
+        : vencedor === 'away'
+          ? 'você venceu'
+          : 'empatou';
+      await base44.asServiceRole.entities.Notificacao.create({
+        clube_id: desafiado_id,
+        partida_id: historico.id,
+        titulo: 'Você foi desafiado!',
+        mensagem: `${desafiante.nome_clube} desafiou você para uma partida apostando ${aposta} moedas. Resultado: ${resultadoTxt} (${placar_home}x${placar_away}).`,
+        lida: false,
+      });
+    }
 
     return Response.json({
       success: true,
