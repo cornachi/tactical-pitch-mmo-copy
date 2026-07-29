@@ -56,7 +56,6 @@ export async function calcularRankingsMensais(base44, clubes, anoMes) {
     global,
     vitorias: top(jogadores, (a, b) => b.vitorias - a.vitorias, "vitorias"),
     ataque: top(jogadores, (a, b) => b.gols_pro - a.gols_pro, "gols_pro"),
-    defesa: top(jogadores, (a, b) => a.gols_contra - b.gols_contra, "gols_contra"),
     desafios: top(jogadores, (a, b) => b.vitorias_desafio - a.vitorias_desafio, "vitorias_desafio"),
     infra,
     comissao,

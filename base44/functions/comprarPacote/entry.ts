@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { getPacote } from "../../shared/pacotes.ts";
+import { acrescentarPote } from "../../shared/pote.ts";
 
 export default async function(req) {
   try {
@@ -28,6 +29,8 @@ export default async function(req) {
 
     const novo_saldo = (clube.moedas || 0) + pacote.moedas;
     await base44.asServiceRole.entities.Clube.update(clube.id, { moedas: novo_saldo });
+
+    try { await acrescentarPote(base44, Math.round(pacote.moedas * 0.05)); } catch (e) {}
 
     return Response.json({
       success: true,

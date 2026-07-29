@@ -6,12 +6,12 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import EscudoClube from "@/components/clube/EscudoClube";
+import PoteTemporada from "@/components/ranking/PoteTemporada";
 
 const RANKINGS = [
   { key: "global", label: "🏆 Global (ELO)", valorLabel: "Pontos ELO" },
   { key: "vitorias", label: "⚔️ Mais Vitórias", valorLabel: "Vitórias no mês" },
   { key: "ataque", label: "⚽ Melhor Ataque", valorLabel: "Gols pró no mês" },
-  { key: "defesa", label: "🛡️ Melhor Defesa", valorLabel: "Gols sofridos no mês" },
   { key: "desafios", label: "🔥 Rei dos Desafios", valorLabel: "Vitórias em Desafio" },
   { key: "infra", label: "🏛️ Maior Infraestrutura", valorLabel: "Soma dos níveis" },
   { key: "comissao", label: "🎓 Melhor Comissão", valorLabel: "Soma dos níveis" },
@@ -21,6 +21,7 @@ export default function Ranking() {
   const [dados, setDados] = useState(null);
   const [meuClubeId, setMeuClubeId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [pote, setPote] = useState(5000);
 
   useEffect(() => {
     (async () => {
@@ -30,6 +31,7 @@ export default function Ranking() {
         if (data && !data.error) {
           setDados(data.rankings);
           setMeuClubeId(data.meu_clube_id);
+          if (data.pote_global != null) setPote(data.pote_global);
         }
       } catch (e) {
         /* ignore */
@@ -84,6 +86,8 @@ export default function Ranking() {
           <Link to="/">Voltar</Link>
         </Button>
       </div>
+
+      <PoteTemporada pote={pote} />
 
       <p className="text-xs text-muted-foreground">
         Premiação dos rankings especiais: 1º lugar recebe até 10% do prêmio do 1º lugar global; demais posições recebem proporcionalmente.

@@ -26,6 +26,12 @@
       "type": "string",
       "format": "date",
       "title": "Data de Fim"
+    },
+    "pote_global": {
+      "type": "integer",
+      "title": "Pote Global da Temporada",
+      "default": 5000,
+      "description": "Pote Comunit\u00e1rio acumulado (5% do valor envolvido em partidas, desafios e loja)"
     }
   },
   "required": [

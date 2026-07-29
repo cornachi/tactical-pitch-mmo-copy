@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { acrescentarPote } from "../../shared/pote.ts";
 
 // Teto base diário de energia de matchmaking (o Dept. Médico soma medico_nivel).
 export const BASE_CAP_ENERGIA = 20;
@@ -47,6 +48,8 @@ export default async function(req) {
       moedas: novasMoedas,
       energia_matchmaking: novaEnergia,
     });
+
+    try { await acrescentarPote(base44, Math.round(custo * 0.05)); } catch (e) {}
 
     return Response.json({
       success: true,

@@ -11,6 +11,7 @@ import {
 } from "./tactical.ts";
 import { getMeta, aplicarMetaEfeito } from "./metas.ts";
 import { registrarProgresso } from "./missoes.ts";
+import { acrescentarPote } from "./pote.ts";
 
 // Núcleo da simulação de partida, compartilhado entre simularPartida (matchmaking)
 // e responderDesafio (fluxo de desafio com reserva prévia de apostas).
@@ -133,6 +134,7 @@ export async function simularCore(base44, opts) {
     updateAway.xp = (desafiado.xp || 0) + xpAway;
     moedas_ganhas = coinsHome;
     xp_ganhos = xpHome;
+    try { await acrescentarPote(base44, Math.round((coinsHome + coinsAway) * 0.05)); } catch (e) {}
   } else {
     // DESAFIO
     if (potReservado) {
@@ -161,6 +163,7 @@ export async function simularCore(base44, opts) {
         moedas_ganhas = -aposta;
       }
     }
+    try { await acrescentarPote(base44, Math.round((aposta || 0) * 0.05)); } catch (e) {}
   }
 
   if (Object.keys(updateHome).length > 0) await base44.asServiceRole.entities.Clube.update(desafianteId, updateHome);

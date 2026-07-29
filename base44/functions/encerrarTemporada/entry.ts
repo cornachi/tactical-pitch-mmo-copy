@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { sortearMeta, premiacaoPorPosicao } from "../../shared/metas.ts";
+import { sortearMeta } from "../../shared/metas.ts";
 import { calcularRankingsMensais } from "../../shared/rankings.ts";
 
 // Encerra a temporada: distribui premiação global (ELO) + premiações dos rankings
@@ -22,12 +22,26 @@ export default async function(req) {
 
     // Rankings especiais do mês que está sendo encerrado.
     const rankings = await calcularRankingsMensais(base44, clubes, anoMesFechamento);
-    const premioGlobal1 = premiacaoPorPosicao(1);
-    const tetoEspecial = Math.floor(premioGlobal1 * 0.10);
+    // Pote Comunitário da Temporada — distribuição no encerramento.
+    const pote = temporadaAtual?.pote_global ?? 5000;
+    const premio1 = Math.round(pote * 0.5);
+    const premio2 = Math.round(pote * 0.3);
+    const premio3 = Math.round(pote * 0.2);
+    const complTotal = Math.round(pote * 0.10); // 4º ao 10º (teto de 10%)
+    const somaCompl = [4, 5, 6, 7, 8, 9, 10].reduce((s, p) => s + (11 - p), 0); // 28
+    const premioPorPos = (pos) => {
+      if (pos === 1) return premio1;
+      if (pos === 2) return premio2;
+      if (pos === 3) return premio3;
+      if (pos <= 10) return Math.round(complTotal * (11 - pos) / somaCompl);
+      return 0;
+    };
+
+    const tetoEspecial = Math.floor(premio1 * 0.10);
     const premioEspecial = (pos) => pos <= 10 ? Math.round(tetoEspecial * (11 - pos) / 10) : 0;
 
     const premioExtra = {};
-    ["vitorias", "ataque", "defesa", "desafios", "infra", "comissao"].forEach((k) => {
+    ["vitorias", "ataque", "desafios", "infra", "comissao"].forEach((k) => {
       (rankings[k] || []).forEach((r) => {
         premioExtra[r.id] = (premioExtra[r.id] || 0) + premioEspecial(r.pos);
       });
@@ -35,7 +49,7 @@ export default async function(req) {
 
     const updates = clubes.map((c, i) => {
       const pos = i + 1;
-      const premio = premiacaoPorPosicao(pos) + (premioExtra[c.id] || 0);
+      const premio = premioPorPos(pos) + (premioExtra[c.id] || 0);
       const novoElo = Math.round(1000 + (c.ranking_elo || 1000) * 0.2);
       return { id: c.id, moedas: (c.moedas || 0) + premio, ranking_elo: novoElo };
     });
@@ -58,6 +72,7 @@ export default async function(req) {
       ativa: true,
       data_inicio: dataInicio,
       data_fim: dataFim,
+      pote_global: 5000,
     });
 
     return Response.json({
@@ -67,6 +82,10 @@ export default async function(req) {
       clubes_premiados: updates.length,
       premiados_especiais: Object.keys(premioExtra).length,
       teto_especial: tetoEspecial,
+      pote_distribuido: pote,
+      premio_1: premio1,
+      premio_2: premio2,
+      premio_3: premio3,
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
