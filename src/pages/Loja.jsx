@@ -3,7 +3,6 @@ import { base44 } from "@/api/base44Client";
 import { Coins, Check, ShieldCheck, Zap, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import ModalPixMercadoPago from "@/components/loja/ModalPixMercadoPago";
 
 const PACOTES = [
   { id: "iniciante", nome: "Iniciante", moedas: 10000, valor: 4.9, selo: null },
@@ -26,7 +25,6 @@ export default function Loja() {
   const [sucesso, setSucesso] = useState(null);
   const [sucessoEnergia, setSucessoEnergia] = useState(null);
   const [erro, setErro] = useState("");
-  const [pagamento, setPagamento] = useState(null);
 
   const carregar = async () => {
     try {
@@ -42,27 +40,49 @@ export default function Loja() {
 
   useEffect(() => { carregar(); }, []);
 
+  // Verifica o retorno do Checkout Pro (redirect do MP com ?status=...&payment_id=...).
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get("status");
+    const payment_id = params.get("payment_id");
+    if (!status || !payment_id) return;
+    window.history.replaceState({}, "", window.location.pathname);
+    (async () => {
+      if (status === "approved") {
+        try {
+          const res = await base44.functions.invoke("statusPagamentoMercadoPago", { payment_id });
+          const data = res?.data ?? res;
+          setSucesso({ pacote: "Mercado Pago", moedas: Number(data?.moedas || 0) });
+          await carregar();
+        } catch (e) {
+          setErro("Pagamento aprovado — aguarde o crédito via webhook.");
+        }
+      } else if (status === "failure") {
+        setErro("Pagamento recusado ou cancelado.");
+      } else if (status === "pending") {
+        setErro("Pagamento pendente. Finalize o pagamento no Mercado Pago.");
+      }
+    })();
+  }, []);
+
   const comprar = async (pacote) => {
     setComprando(pacote.id);
     setErro("");
     setSucesso(null);
     try {
+      if (window.self !== window.top) {
+        setErro("⚠️ O checkout só funciona no app publicado. Publique o app para comprar moedas reais.");
+        return;
+      }
       const res = await base44.functions.invoke("criarPagamentoMercadoPago", { pacote_id: pacote.id });
       const data = res?.data ?? res;
       if (data?.error) { setErro(data.error); return; }
-      setPagamento({ pacote, ...data });
+      if (data.init_point) window.location.href = data.init_point;
     } catch (e) {
-      setErro(e.response?.data?.error || e.message || "Falha ao gerar pagamento");
+      setErro(e.response?.data?.error || e.message || "Falha ao iniciar pagamento");
     } finally {
       setComprando("");
     }
-  };
-
-  const onAprovado = (moedas) => {
-    const pacote = pagamento?.pacote;
-    setPagamento(null);
-    setSucesso({ pacote: pacote?.nome, moedas });
-    carregar();
   };
 
   const comprarEnergia = async (pacote) => {
@@ -95,8 +115,8 @@ export default function Loja() {
 
       {sucesso && (
         <Card className="p-4 bg-emerald-500/10 border-emerald-500/30">
-          <p className="flex items-center gap-2 text-emerald-700 font-semibold"><Check className="w-5 h-5" /> {sucesso.moedas.toLocaleString("pt-BR")} moedas creditadas!</p>
-          <p className="text-sm text-muted-foreground mt-1">Pacote {sucesso.pacote} • Novo saldo: {sucesso.saldo.toLocaleString("pt-BR")}</p>
+          <p className="flex items-center gap-2 text-emerald-700 font-semibold"><Check className="w-5 h-5" /> {sucesso.moedas?.toLocaleString("pt-BR")} moedas creditadas!</p>
+          {sucesso.pacote && <p className="text-sm text-muted-foreground mt-1">Pacote {sucesso.pacote}</p>}
         </Card>
       )}
       {erro && <p className="text-sm text-destructive">{erro}</p>}
@@ -117,7 +137,7 @@ export default function Loja() {
             <p className="text-sm text-muted-foreground">moedas</p>
             <p className="text-2xl font-bold mt-3">R$ {p.valor.toFixed(2).replace(".", ",")}</p>
             <Button className="w-full mt-4" disabled={comprando === p.id} onClick={() => comprar(p)}>
-              {comprando === p.id ? "Gerando Pix..." : "Comprar com Pix"}
+              {comprando === p.id ? "Redirecionando..." : "Comprar"}
             </Button>
           </Card>
         ))}
@@ -161,12 +181,8 @@ export default function Loja() {
       </div>
 
       <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-1.5">
-        <ShieldCheck className="w-3.5 h-3.5" /> Pagamentos processados via Mercado Pago (Pix e Cartão).
+        <ShieldCheck className="w-3.5 h-3.5" /> Pagamentos via Mercado Pago (Checkout Pro — Pix e Cartão).
       </p>
-
-      {pagamento && (
-        <ModalPixMercadoPago pagamento={pagamento} onClose={() => setPagamento(null)} onAprovado={onAprovado} />
-      )}
     </div>
   );
 }
