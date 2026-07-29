@@ -10,6 +10,7 @@ import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home';
 import Equipe from './pages/Equipe';
 import ResultadoPartida from './pages/ResultadoPartida';
+import Ranking from './pages/Ranking';
 import SimularPartida from './pages/SimularPartida';
 import Layout from './components/Layout';
 
@@ -45,6 +46,7 @@ const AuthenticatedApp = () => {
         <Route path="/equipe" element={<Equipe />} />
         <Route path="/simular-partida" element={<SimularPartida />} />
         <Route path="/resultado-partida" element={<ResultadoPartida />} />
+        <Route path="/ranking" element={<Ranking />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

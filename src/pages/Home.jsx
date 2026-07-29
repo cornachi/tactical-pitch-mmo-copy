@@ -9,6 +9,7 @@ import StatCard from "@/components/clube/StatCard";
 import CriarClubeForm from "@/components/clube/CriarClubeForm";
 import PartidaRapida from "@/components/partida/PartidaRapida";
 import ModalDesafio from "@/components/partida/ModalDesafio";
+import MetaBanner from "@/components/temporada/MetaBanner";
 
 export default function Home() {
   const [clube, setClube] = useState(null);
@@ -36,6 +37,7 @@ export default function Home() {
 
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6">
+      <MetaBanner />
       <ClubeHeader clube={clube} />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -73,6 +75,9 @@ export default function Home() {
       </Button>
       <ModalDesafio clube={clube} open={desafioOpen} onOpenChange={setDesafioOpen} />
 
+      <Button asChild variant="outline" className="w-full" size="lg">
+        <Link to="/ranking"><Trophy className="w-4 h-4 mr-2" />Ranking Global</Link>
+      </Button>
       <Button asChild className="w-full" size="lg">
         <Link to="/equipe"><Users className="w-4 h-4 mr-2" />Gerenciar Equipe (Árvore Tática)</Link>
       </Button>

@@ -6,6 +6,7 @@ import {
   amostraPoisson,
   atualizarElo,
 } from "../../shared/tactical.ts";
+import { getMeta, aplicarMetaEfeito } from "../../shared/metas.ts";
 
 export default async function(req) {
   try {
@@ -55,10 +56,20 @@ export default async function(req) {
     const attrsHome = await base44.asServiceRole.entities.AtributoTatico.filter({ clube_id: desafiante_id });
     const attrsAway = await base44.asServiceRole.entities.AtributoTatico.filter({ clube_id: desafiado_id });
 
-    const atkHome = poderAtaque(attrsHome);
-    const defHome = poderDefesa(attrsHome);
-    const atkAway = poderAtaque(attrsAway);
-    const defAway = poderDefesa(attrsAway);
+    const atkHomeBase = poderAtaque(attrsHome);
+    const defHomeBase = poderDefesa(attrsHome);
+    const atkAwayBase = poderAtaque(attrsAway);
+    const defAwayBase = poderDefesa(attrsAway);
+
+    // Evento Meta da temporada ativa afeta todas as partidas do mês.
+    const temporadaAtiva = (await base44.asServiceRole.entities.Temporada.filter({ ativa: true }))[0];
+    const meta = temporadaAtiva?.evento_meta_atual ? getMeta(temporadaAtiva.evento_meta_atual) : null;
+    const homeEf = aplicarMetaEfeito(meta, desafiante.especializacao, atkHomeBase, defHomeBase);
+    const awayEf = aplicarMetaEfeito(meta, desafiado.especializacao, atkAwayBase, defAwayBase);
+    const atkHome = homeEf.atk;
+    const defHome = homeEf.def;
+    const atkAway = awayEf.atk;
+    const defAway = awayEf.def;
 
     const dom = calcularDominancia(atkHome, defAway, atkAway, defHome);
 
@@ -195,6 +206,7 @@ Retorne JSON no formato {"insights": ["insight1", "insight2", "insight3"]}.`;
     return Response.json({
       success: true,
       partida_id: historico.id,
+      meta_evento: meta ? { nome: meta.nome, descricao: meta.descricao } : null,
       tipo_partida,
       desafiante: { id: desafiante.id, nome_clube: desafiante.nome_clube, especializacao: desafiante.especializacao },
       desafiado: { id: desafiado.id, nome_clube: desafiado.nome_clube, especializacao: desafiado.especializacao },
