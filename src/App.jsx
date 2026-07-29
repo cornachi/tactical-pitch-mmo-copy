@@ -17,6 +17,7 @@ import Loja from './pages/Loja';
 import Estadio from './pages/Estadio';
 import Missoes from './pages/Missoes';
 import Desafios from './pages/Desafios';
+import RelatorioTatico from './pages/RelatorioTatico';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
@@ -65,6 +66,7 @@ const AuthenticatedApp = () => {
           <Route path="/estadio" element={<Estadio />} />
           <Route path="/missoes" element={<Missoes />} />
           <Route path="/desafios" element={<Desafios />} />
+          <Route path="/relatorio-tatico" element={<RelatorioTatico />} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />

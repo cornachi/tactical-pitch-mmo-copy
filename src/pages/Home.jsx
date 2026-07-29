@@ -11,6 +11,7 @@ import PartidaRapida from "@/components/partida/PartidaRapida";
 import ModalDesafio from "@/components/partida/ModalDesafio";
 import MetaBanner from "@/components/temporada/MetaBanner";
 import RetrospectoCard from "@/components/clube/RetrospectoCard";
+import AlertaTatico from "@/components/relatorio/AlertaTatico";
 import ModalConquistas from "@/components/conquistas/ModalConquistas";
 
 export default function Home() {
@@ -72,6 +73,8 @@ export default function Home() {
       </div>
 
       <RetrospectoCard clubeId={clube.id} />
+
+      <AlertaTatico />
 
       <PartidaRapida clube={clube} />
 
