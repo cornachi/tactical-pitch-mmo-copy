@@ -21,12 +21,14 @@ export default function SimulacaoPartida({ result, onConcluir }) {
   const lances = result.lances_narracao || [];
   const momentum = result.momentum || [];
   const expulsoes = result.expulsoes || [];
+  const clima = result.clima;
 
   const [elapsed, setElapsed] = useState(0);
   const [velocidade, setVelocidade] = useState(1);
   const [finalizado, setFinalizado] = useState(false);
   const [intervalo, setIntervalo] = useState(false);
   const [postura, setPostura] = useState(null);
+  const [acaoEmergencia, setAcaoEmergencia] = useState(null);
   const lastTsRef = useRef(null);
   const beepedRef = useRef(new Set());
   const pausadoRef = useRef(false);
@@ -55,16 +57,12 @@ export default function SimulacaoPartida({ result, onConcluir }) {
 
   const minutoJogo = Math.min(90, Math.round((elapsed / DURACAO_BASE) * 90));
 
-  // Intervalo tático aos 45'
+  // Intervalo tático aos 45' — pausa manual obrigatória (sem auto-retomada).
   useEffect(() => {
     if (minutoJogo >= 45 && !intervaloMostradoRef.current) {
       intervaloMostradoRef.current = true;
       pausadoRef.current = true;
       setIntervalo(true);
-      intervaloTimerRef.current = setTimeout(() => {
-        pausadoRef.current = false;
-        setIntervalo(false);
-      }, 3000);
     }
     if (minutoJogo >= 90) setFinalizado(true);
   }, [minutoJogo]);
@@ -86,9 +84,10 @@ export default function SimulacaoPartida({ result, onConcluir }) {
 
   useEffect(() => () => { if (intervaloTimerRef.current) clearTimeout(intervaloTimerRef.current); }, []);
 
-  const escolherPostura = (p) => {
-    setPostura(p);
-    if (intervaloTimerRef.current) clearTimeout(intervaloTimerRef.current);
+  const escolherPostura = (p) => setPostura(p);
+
+  const continuarSegundoTempo = () => {
+    if (!postura) return;
     pausadoRef.current = false;
     setIntervalo(false);
   };
@@ -119,9 +118,14 @@ export default function SimulacaoPartida({ result, onConcluir }) {
   };
   const tH = taxaPerda(desafiante.comissao_prep_fisico, desafiante.fisico);
   const tA = taxaPerda(desafiado.comissao_prep_fisico, desafiado.fisico);
-  const drainMul = minutoJogo > 45
-    ? (postura === "ULTRA_OFENSIVO" ? 1.25 : postura === "CONTRA_ATAQUE" ? 0.85 : 1)
-    : 1;
+  let drainMul = 1;
+  if (minutoJogo > 45) {
+    if (postura === "ULTRA_OFENSIVO") drainMul = 1.25;
+    else if (postura === "CONTRA_ATAQUE") drainMul = 0.85;
+  }
+  if (minutoJogo > 45 && clima?.key === "CALOR") drainMul *= 1.25;
+  if (minutoJogo >= 75 && acaoEmergencia === "ATAQUE_TOTAL") drainMul *= 2;
+  if (minutoJogo >= 75 && acaoEmergencia === "RETRANCA_TOTAL") drainMul *= 0.6;
   const perdaHome = tH * Math.min(minutoJogo, 45) + (minutoJogo > 45 ? tH * (minutoJogo - 45) * drainMul : 0);
   const perdaAway = tA * Math.min(minutoJogo, 45) + (minutoJogo > 45 ? tA * (minutoJogo - 45) * drainMul : 0);
 
@@ -144,6 +148,8 @@ export default function SimulacaoPartida({ result, onConcluir }) {
   let baseHome = bloco ? bloco.dominancia_pct.home : 50;
   if (minutoJogo > 45 && postura === "ULTRA_OFENSIVO") baseHome += 12;
   if (minutoJogo > 45 && postura === "CONTRA_ATAQUE") baseHome -= 6;
+  if (minutoJogo >= 75 && acaoEmergencia === "ATAQUE_TOTAL") baseHome += 18;
+  if (minutoJogo >= 75 && acaoEmergencia === "RETRANCA_TOTAL") baseHome -= 15;
   baseHome = Math.max(5, Math.min(95, Math.round(baseHome + Math.sin(elapsed / 600) * 6)));
   const effHome = redCardHome ? 0.8 : 1;
   const effAway = redCardAway ? 0.8 : 1;
@@ -185,6 +191,14 @@ export default function SimulacaoPartida({ result, onConcluir }) {
               <Forward className="w-4 h-4" /> Pular
             </Button>
           </div>
+
+          {/* Clima no topo do placar */}
+          {clima && (
+            <div className="flex items-center justify-center gap-1.5 text-sm">
+              <span className="text-lg">{clima.emoji}</span>
+              <span className="text-muted-foreground font-medium">{clima.label}</span>
+            </div>
+          )}
 
           {/* Placar dinâmico */}
           <div className="flex items-center justify-center gap-4">
@@ -235,6 +249,18 @@ export default function SimulacaoPartida({ result, onConcluir }) {
               <div className="h-full bg-primary transition-all duration-100" style={{ width: `${(minutoJogo / 90) * 100}%` }} />
             </div>
           </div>
+
+          {/* Ações táticas de emergência (75' ao fim) */}
+          {minutoJogo >= 75 && !finalizado && (
+            <Card className="p-3 space-y-2 border-amber-500/40 bg-amber-500/5">
+              <p className="text-xs font-semibold text-amber-700 flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" /> Ações de Emergência (15' finais)</p>
+              <div className="grid grid-cols-3 gap-2">
+                <EmergenciaBtn label="Ataque Total" emoji="💣" active={acaoEmergencia === "ATAQUE_TOTAL"} onClick={() => setAcaoEmergencia("ATAQUE_TOTAL")} />
+                <EmergenciaBtn label="Retranca" emoji="🛡️" active={acaoEmergencia === "RETRANCA_TOTAL"} onClick={() => setAcaoEmergencia("RETRANCA_TOTAL")} />
+                <EmergenciaBtn label="Manter" emoji="⚖️" active={acaoEmergencia === "MANTER"} onClick={() => setAcaoEmergencia("MANTER")} />
+              </div>
+            </Card>
+          )}
         </div>
 
         {/* COLUNA DIREITA */}
@@ -300,7 +326,8 @@ export default function SimulacaoPartida({ result, onConcluir }) {
                   </button>
                 ))}
               </div>
-              <p className="text-xs text-center text-muted-foreground">Retomando automaticamente em 3s...</p>
+              <Button className="w-full" size="lg" disabled={!postura} onClick={continuarSegundoTempo}>▶️ Continuar para o 2º Tempo</Button>
+              {!postura && <p className="text-xs text-center text-muted-foreground">Escolha uma postura para continuar</p>}
             </motion.div>
           </motion.div>
         )}
@@ -340,5 +367,14 @@ function BarraResistencia({ cor, nome, stamina, align = "left" }) {
       </div>
       <span className="text-[10px] text-muted-foreground mt-0.5">{Math.round(stamina)}%</span>
     </div>
+  );
+}
+
+function EmergenciaBtn({ label, emoji, active, onClick }) {
+  return (
+    <button onClick={onClick} className={`flex flex-col items-center gap-1 p-2 rounded-lg border text-center transition ${active ? "border-primary bg-primary/10" : "border-border hover:bg-muted"}`}>
+      <span className="text-xl">{emoji}</span>
+      <span className="text-[10px] font-semibold leading-tight">{label}</span>
+    </button>
   );
 }

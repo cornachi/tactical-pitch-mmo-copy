@@ -44,10 +44,25 @@ export async function simularCore(base44, opts) {
   const meta = temporadaAtiva?.evento_meta_atual ? getMeta(temporadaAtiva.evento_meta_atual) : null;
   const homeEf = aplicarMetaEfeito(meta, desafiante.especializacao, atkHomeBase, defHomeBase);
   const awayEf = aplicarMetaEfeito(meta, desafiado.especializacao, atkAwayBase, defAwayBase);
-  const atkHome = homeEf.atk;
-  const defHome = homeEf.def;
-  const atkAway = awayEf.atk;
-  const defAway = awayEf.def;
+  let atkHome = homeEf.atk;
+  let defHome = homeEf.def;
+  let atkAway = awayEf.atk;
+  let defAway = awayEf.def;
+
+  // Condições climáticas sorteadas no início da partida.
+  const CLIMAS = [
+    { key: "ENSOLARADO", label: "Ensolarado", emoji: "☀️" },
+    { key: "CHUVA", label: "Chuva Forte", emoji: "🌧️" },
+    { key: "CALOR", label: "Calor Extremo", emoji: "🫠" },
+  ];
+  const clima = CLIMAS[Math.floor(Math.random() * CLIMAS.length)];
+  if (clima.key === "CHUVA") {
+    // Penaliza a posse curta; beneficia o passe longo / força física (defesa).
+    if (desafiante.especializacao === "POSSE") atkHome = Math.round(atkHome * 0.85);
+    if (desafiado.especializacao === "POSSE") atkAway = Math.round(atkAway * 0.85);
+    defHome += Math.round(fisHome * 0.1);
+    defAway += Math.round(fisAway * 0.1);
+  }
 
   const dom = calcularDominancia(atkHome, defAway, atkAway, defHome);
   const placar_home = amostraPoisson(dom.xg_home);
@@ -224,6 +239,7 @@ Retorne JSON no formato {"insights": ["insight1", "insight2", "insight3"]}.`;
     momentum,
     lances_narracao,
     expulsoes,
+    clima,
     insights,
   };
 }
