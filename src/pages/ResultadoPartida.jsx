@@ -24,10 +24,13 @@ export default function ResultadoPartida() {
     );
   }
 
-  const venceu = r.vencedor === "home";
+  const viewerSide = r.viewer_side || "home";
   const empate = r.vencedor === "empate";
+  const venceu = !empate && r.vencedor === viewerSide;
   const titulo = empate ? "Empate!" : venceu ? "Vitória!" : "Derrota";
   const corTitulo = empate ? "text-muted-foreground" : venceu ? "text-emerald-600" : "text-rose-600";
+  const moedasViewer = r.viewer_moedas ?? r.moedas_ganhas;
+  const eloViewer = r.viewer_elo ?? r.novo_elo_desafiante;
 
   return (
     <div className="max-w-3xl mx-auto p-4 space-y-6">
@@ -86,14 +89,14 @@ export default function ResultadoPartida() {
         <Card className="p-3 text-center">
           <Coins className="w-5 h-5 mx-auto mb-1 text-amber-500" />
           <p className="text-xs text-muted-foreground">Moedas</p>
-          <p className={`text-2xl font-bold ${r.moedas_ganhas >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
-            {r.moedas_ganhas >= 0 ? "+" : ""}{r.moedas_ganhas}
+          <p className={`text-2xl font-bold ${moedasViewer >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
+            {moedasViewer >= 0 ? "+" : ""}{moedasViewer}
           </p>
         </Card>
         <Card className="p-3 text-center">
           <Trophy className="w-5 h-5 mx-auto mb-1 text-blue-500" />
           <p className="text-xs text-muted-foreground">Elo</p>
-          <p className="text-2xl font-bold">{r.novo_elo_desafiante}</p>
+          <p className="text-2xl font-bold">{eloViewer}</p>
         </Card>
       </div>
 

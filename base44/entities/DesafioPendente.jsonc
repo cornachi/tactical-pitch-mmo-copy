@@ -1,0 +1,56 @@
+{
+  "name": "DesafioPendente",
+  "type": "object",
+  "properties": {
+    "desafiante_id": {
+      "type": "string",
+      "title": "Desafiante ID",
+      "description": "ID do clube que enviou o desafio"
+    },
+    "desafiado_id": {
+      "type": "string",
+      "title": "Desafiado ID",
+      "description": "ID do clube que recebeu o desafio"
+    },
+    "aposta_moedas": {
+      "type": "integer",
+      "title": "Aposta em Moedas",
+      "default": 0,
+      "description": "Valor reservado (m\u00ednimo entre os saldos, respeitando o teto)"
+    },
+    "status": {
+      "type": "string",
+      "title": "Status",
+      "enum": [
+        "PENDENTE",
+        "ACEITO",
+        "RECUSADO",
+        "CANCELADO",
+        "CONCLUIDO"
+      ],
+      "default": "PENDENTE"
+    },
+    "partida_id": {
+      "type": "string",
+      "title": "Partida ID",
+      "description": "ID do HistoricoPartida gerado ao concluir o desafio"
+    },
+    "vencedor_id": {
+      "type": "string",
+      "title": "Vencedor ID",
+      "description": "ID do clube vencedor (null em empate)"
+    },
+    "moedas_ganhas": {
+      "type": "integer",
+      "title": "Moedas Ganhas (l\u00edquido)",
+      "default": 0,
+      "description": "L\u00edquido creditado/debitado do desafiante ao concluir"
+    }
+  },
+  "required": [
+    "desafiante_id",
+    "desafiado_id",
+    "aposta_moedas",
+    "status"
+  ]
+}

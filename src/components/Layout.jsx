@@ -2,6 +2,7 @@ import React from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { Shield, Home, Users, Trophy, ShoppingBag, Building } from "lucide-react";
 import NotificationCenter from "@/components/notificacao/NotificationCenter";
+import DesafiosNavItem from "@/components/desafio/DesafiosNavItem";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -43,7 +44,10 @@ export default function Layout() {
               );
             })}
           </nav>
-          <NotificationCenter />
+          <div className="flex items-center gap-1">
+            <DesafiosNavItem />
+            <NotificationCenter />
+          </div>
         </div>
       </header>
       <main>
