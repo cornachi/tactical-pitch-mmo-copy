@@ -13,7 +13,7 @@ export default function ResultadoPartida() {
   const navigate = useNavigate();
   const r = location.state?.result;
 
-  if (!r) {
+  if (!r || !r.desafiante) {
     return (
       <div className="p-8 text-center space-y-4">
         <p className="text-muted-foreground">Nenhuma partida para exibir.</p>

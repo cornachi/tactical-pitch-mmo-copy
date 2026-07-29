@@ -12,6 +12,7 @@ import Equipe from './pages/Equipe';
 import ResultadoPartida from './pages/ResultadoPartida';
 import Ranking from './pages/Ranking';
 import SimularPartida from './pages/SimularPartida';
+import Loja from './pages/Loja';
 import Layout from './components/Layout';
 
 const AuthenticatedApp = () => {
@@ -47,6 +48,7 @@ const AuthenticatedApp = () => {
         <Route path="/simular-partida" element={<SimularPartida />} />
         <Route path="/resultado-partida" element={<ResultadoPartida />} />
         <Route path="/ranking" element={<Ranking />} />
+        <Route path="/loja" element={<Loja />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

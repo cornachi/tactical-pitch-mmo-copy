@@ -41,10 +41,11 @@ export default function ModalDesafio({ clube, open, onOpenChange }) {
     setErro("");
     try {
       const res = await base44.functions.invoke("espionarClube", { clube_id: rival.id });
-      if (res && res.error) {
-        setErro(res.error);
+      const data = res?.data ?? res;
+      if (data && data.error) {
+        setErro(data.error);
       } else {
-        setEspionagem(res);
+        setEspionagem(data);
       }
     } catch (e) {
       setErro(e.response?.data?.error || e.message || "Falha ao espionar");
@@ -70,8 +71,10 @@ export default function ModalDesafio({ clube, open, onOpenChange }) {
         tipo_partida: "DESAFIO",
         aposta_moedas: apostaNum,
       });
+      const data = res?.data ?? res;
+      if (data?.error) { setErro(data.error); return; }
       onOpenChange(false);
-      navigate("/simular-partida", { state: { result: res } });
+      navigate("/simular-partida", { state: { result: data } });
     } catch (e) {
       setErro(e.response?.data?.error || e.message || "Erro ao iniciar desafio");
     } finally {
