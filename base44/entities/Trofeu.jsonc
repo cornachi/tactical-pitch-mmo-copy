@@ -1,0 +1,46 @@
+{
+  "name": "Trofeu",
+  "type": "object",
+  "properties": {
+    "clube_id": {
+      "type": "string",
+      "title": "Clube ID",
+      "description": "ID do clube que conquistou o trof\u00e9u"
+    },
+    "tipo": {
+      "type": "string",
+      "title": "Tipo de Trof\u00e9u",
+      "enum": [
+        "COPA_CAMPEOES",
+        "RANKING_GLOBAL",
+        "TORNEIO_8"
+      ],
+      "description": "Copa dos Campe\u00f5es, Ranking Global (Temporada) ou Torneio de 8 Jogadores"
+    },
+    "colocacao": {
+      "type": "string",
+      "title": "Coloca\u00e7\u00e3o",
+      "enum": [
+        "CAMPEAO",
+        "VICE"
+      ],
+      "default": "CAMPEAO"
+    },
+    "edicao": {
+      "type": "string",
+      "title": "Edi\u00e7\u00e3o",
+      "description": "Identificador da edi\u00e7\u00e3o (semana/ano, m\u00eas/ano ou nome do torneio)"
+    },
+    "data_conquista": {
+      "type": "string",
+      "format": "date",
+      "title": "Data da Conquista"
+    }
+  },
+  "required": [
+    "clube_id",
+    "tipo",
+    "colocacao",
+    "data_conquista"
+  ]
+}

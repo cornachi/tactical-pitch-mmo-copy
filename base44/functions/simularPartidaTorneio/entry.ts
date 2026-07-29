@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { simularConfrontoCopa } from "../../shared/copa.ts";
 import { resolverByesAuto, finalDecidida } from "../../shared/torneio.ts";
+import { registrarTrofeu } from "../../shared/trofeus.ts";
 
 export default async function(req) {
   try {
@@ -68,6 +69,8 @@ export default async function(req) {
           mensagem: `Você venceu o torneio "${torneio.nome}" e levou ${premioCamp.toLocaleString('pt-BR')} moedas!`,
         });
       } catch (e) { /* best-effort */ }
+      await registrarTrofeu(base44, { clube_id: finalInfo.campeao_id, tipo: "TORNEIO_8", colocacao: "CAMPEAO", edicao: torneio.nome });
+      if (finalInfo.vice_id) await registrarTrofeu(base44, { clube_id: finalInfo.vice_id, tipo: "TORNEIO_8", colocacao: "VICE", edicao: torneio.nome });
       premio = { campeao_id: finalInfo.campeao_id, vice_id: finalInfo.vice_id, premio_campeao: premioCamp, premio_vice: premioVice };
     }
 

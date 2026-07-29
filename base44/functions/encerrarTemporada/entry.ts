@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { sortearMeta } from "../../shared/metas.ts";
 import { calcularRankingsMensais } from "../../shared/rankings.ts";
+import { registrarTrofeu } from "../../shared/trofeus.ts";
 
 // Encerra a temporada: distribui premiação global (ELO) + premiações dos rankings
 // especiais (teto de 10% do prêmio do 1º lugar global, proporcionais por posição),
@@ -54,6 +55,16 @@ export default async function(req) {
       return { id: c.id, moedas: (c.moedas || 0) + premio, ranking_elo: novoElo };
     });
     await base44.asServiceRole.entities.Clube.bulkUpdate(updates);
+
+    // Troféu de Campeão da Temporada Global (1º do ELO) para o Hall da Fama.
+    if (clubes[0]) {
+      await registrarTrofeu(base44, {
+        clube_id: clubes[0].id,
+        tipo: "RANKING_GLOBAL",
+        colocacao: "CAMPEAO",
+        edicao: anoMesFechamento,
+      });
+    }
 
     // Nova temporada (próximo mês) com novo Evento Meta sorteado.
     const novoMetaKey = sortearMeta();

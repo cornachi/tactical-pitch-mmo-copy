@@ -22,6 +22,8 @@ export default function Ranking() {
   const [meuClubeId, setMeuClubeId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [pote, setPote] = useState(5000);
+  const [hall, setHall] = useState(null);
+  const [hallLoading, setHallLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
@@ -38,6 +40,11 @@ export default function Ranking() {
       } finally {
         setLoading(false);
       }
+      try {
+        const res = await base44.functions.invoke("hallDaFama", {});
+        const data = res?.data ?? res;
+        if (data && !data.error) setHall(data.hall);
+      } catch (e) { /* ignore */ } finally { setHallLoading(false); }
     })();
   }, []);
 
@@ -100,6 +107,9 @@ export default function Ranking() {
               {r.label}
             </TabsTrigger>
           ))}
+          <TabsTrigger value="hall" className="text-xs flex-1 min-w-[45%]">
+            🏛️ Hall da Fama
+          </TabsTrigger>
         </TabsList>
         {RANKINGS.map((r) => (
           <TabsContent key={r.key} value={r.key} className="mt-4 space-y-2">
@@ -107,6 +117,41 @@ export default function Ranking() {
             {renderLista(dados[r.key])}
           </TabsContent>
         ))}
+        <TabsContent value="hall" className="mt-4 space-y-2">
+          <p className="text-xs text-muted-foreground">
+            Pontos de Glória Históricos: 🏆 Temporada Global = 100 • 🥇 Copa dos Campeões = 50 • ⚔️ Torneio de 8 = 15 • 🥈 Vice = 10
+          </p>
+          {hallLoading ? (
+            <p className="text-sm text-muted-foreground text-center py-6">Carregando Hall da Fama...</p>
+          ) : !hall || hall.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-6">Nenhum campeão coroado ainda.</p>
+          ) : (
+            <Card className="divide-y">
+              {hall.map((r, i) => {
+                const souEu = r.id === meuClubeId;
+                const clube = { id: r.id, nome_clube: r.nome, is_bot: r.is_bot, cor_principal: r.cor_principal, icone_escudo: r.icone_escudo };
+                return (
+                  <div key={r.id} className={`flex items-center gap-3 p-3 ${souEu ? "bg-primary/10" : ""}`}>
+                    <span className="w-8 text-center font-bold">{i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}</span>
+                    <EscudoClube clube={clube} size={36} />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate flex items-center gap-2">
+                        {r.nome}
+                        {r.is_bot && <span className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground">BOT</span>}
+                        {souEu && <span className="text-xs text-primary">(Você)</span>}
+                      </p>
+                      <p className="text-xs text-muted-foreground">🏆 {r.titulos.RANKING_GLOBAL} • 🥇 {r.titulos.COPA_CAMPEOES} • ⚔️ {r.titulos.TORNEIO_8}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold">{r.pontos}</p>
+                      <p className="text-xs text-muted-foreground">pts</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </Card>
+          )}
+        </TabsContent>
       </Tabs>
     </div>
   );

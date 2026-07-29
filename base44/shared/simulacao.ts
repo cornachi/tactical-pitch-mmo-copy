@@ -66,6 +66,16 @@ export async function simularCore(base44, opts) {
     defAway += Math.round(fisAway * 0.1);
   }
 
+  // --- Termômetro da Torcida (fator casa do desafiante) ---
+  // 0-25: revolta -> penalidade leve no fator casa. 81-100: êxtase -> +5% resiliência.
+  const termTorcida = desafiante.termometro_torcida ?? 50;
+  if (termTorcida <= 25) {
+    atkHome = Math.round(atkHome * 0.95);
+    defHome = Math.round(defHome * 0.95);
+  } else if (termTorcida >= 81) {
+    defHome = Math.round(defHome * 1.05);
+  }
+
   // --- Cartões e expulsões gerados cedo (penalizam o placar, não só o visual) ---
   const { eventos: cartoes, expulsoes } = gerarCartoes(defHome, defAway);
   const expHome = expulsoes.filter((e) => e.lado === "home").length;
@@ -207,6 +217,16 @@ export async function simularCore(base44, opts) {
     try { await acrescentarPote(base44, Math.round((aposta || 0) * 0.05)); } catch (e) {}
   }
 
+  // --- Atualização do Termômetro da Torcida após o resultado ---
+  const diffGols = Math.abs(placar_home - placar_away);
+  const deltaTorcida = (ganhou) =>
+    ganhou === null ? (diffGols >= 2 ? 4 : 0) : ganhou ? (diffGols >= 3 ? 18 : 12) : -(diffGols >= 3 ? 18 : 10);
+  const clampTorcida = (v) => Math.max(0, Math.min(100, v));
+  const ganhouHome = vencedor === "home" ? true : vencedor === "away" ? false : null;
+  const ganhouAway = vencedor === "away" ? true : vencedor === "home" ? false : null;
+  updateHome.termometro_torcida = clampTorcida((desafiante.termometro_torcida ?? 50) + deltaTorcida(ganhouHome));
+  updateAway.termometro_torcida = clampTorcida((desafiado.termometro_torcida ?? 50) + deltaTorcida(ganhouAway));
+
   if (Object.keys(updateHome).length > 0) await base44.asServiceRole.entities.Clube.update(desafianteId, updateHome);
   if (Object.keys(updateAway).length > 0) await base44.asServiceRole.entities.Clube.update(desafiadoId, updateAway);
 
@@ -287,6 +307,7 @@ Retorne JSON no formato {"insights": ["insight1", "insight2", "insight3"]}.`;
     modelo_jogo_home: modeloJogoHome || null,
     modelo_adversario: modeloAdversario,
     vantagem_tatica: vantagemTatica,
+    termometro_torcida: updateHome.termometro_torcida,
     insights,
   };
 }

@@ -13,6 +13,8 @@ import MetaBanner from "@/components/temporada/MetaBanner";
 import RetrospectoCard from "@/components/clube/RetrospectoCard";
 import AlertaTatico from "@/components/relatorio/AlertaTatico";
 import ModalConquistas from "@/components/conquistas/ModalConquistas";
+import TermometroTorcida from "@/components/clube/TermometroTorcida";
+import SalaTrofeus from "@/components/clube/SalaTrofeus";
 import { useI18n } from "@/i18n/I18nContext";
 
 export default function Home() {
@@ -73,6 +75,9 @@ export default function Home() {
           </div>
         </Card>
       </div>
+
+      <TermometroTorcida valor={clube.termometro_torcida} />
+      <SalaTrofeus clubeId={clube.id} />
 
       <RetrospectoCard clubeId={clube.id} />
 

@@ -117,6 +117,12 @@
       "type": "integer",
       "title": "Auxiliar T\u00e1tico",
       "default": 0
+    },
+    "termometro_torcida": {
+      "type": "integer",
+      "title": "Term\u00f4metro da Torcida",
+      "default": 50,
+      "description": "Moral da torcida (0-100). 0-25 revolta (penalidade no fator casa), 81-100 \u00eaxtase (+5% resili\u00eancia em casa). Atualizado ap\u00f3s cada partida."
     }
   },
   "required": [

@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { simularConfrontoCopa } from "../../shared/copa.ts";
+import { registrarTrofeu } from "../../shared/trofeus.ts";
 
 // Gera a Copa dos Campeões Semanal: classifica os 16 melhores por ELO, monta o
 // mata-mata com seed padrão e simula todas as rodadas até o campeão. Premia o
@@ -118,6 +119,10 @@ export default async function(req) {
       vice_id: viceId || null,
       premio_moedas: PREMIO_CAMPEAO,
     });
+
+    // Troféus (Hall da Fama)
+    if (campeao) await registrarTrofeu(base44, { clube_id: campeao.id, tipo: "COPA_CAMPEOES", colocacao: "CAMPEAO", edicao: semanaAno });
+    if (viceId) await registrarTrofeu(base44, { clube_id: viceId, tipo: "COPA_CAMPEOES", colocacao: "VICE", edicao: semanaAno });
 
     return Response.json({
       success: true,
