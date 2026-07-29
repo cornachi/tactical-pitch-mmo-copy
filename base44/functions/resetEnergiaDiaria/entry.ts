@@ -18,6 +18,7 @@ export default async function(req) {
         id: c.id,
         energia_matchmaking: 20 + med,
         energia_desafio: 3 + Math.floor(med / 2),
+        energias_compradas_hoje: 0,
       };
     });
 

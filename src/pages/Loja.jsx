@@ -40,18 +40,26 @@ export default function Loja() {
 
   useEffect(() => { carregar(); }, []);
 
+  useEffect(() => {
+    const cancel = new URLSearchParams(window.location.search).get("cancel");
+    if (cancel) setErro("Pagamento cancelado.");
+  }, []);
+
   const comprar = async (pacote) => {
     setComprando(pacote.id);
     setErro("");
     setSucesso(null);
     try {
-      const res = await base44.functions.invoke("comprarPacote", { pacote_id: pacote.id });
+      if (window.self !== window.top) {
+        setErro("⚠️ O checkout só funciona no app publicado. Publique o app para comprar moedas reais.");
+        return;
+      }
+      const res = await base44.functions.invoke("criarCheckoutStripe", { pacote_id: pacote.id, clube_id: clube.id });
       const data = res?.data ?? res;
       if (data?.error) { setErro(data.error); return; }
-      setSucesso({ pacote: pacote.nome, moedas: pacote.moedas, saldo: data.novo_saldo });
-      carregar();
+      if (data.url) window.location.href = data.url;
     } catch (e) {
-      setErro(e.response?.data?.error || e.message || "Falha na compra");
+      setErro(e.response?.data?.error || e.message || "Falha ao iniciar pagamento");
     } finally {
       setComprando("");
     }
@@ -109,7 +117,7 @@ export default function Loja() {
             <p className="text-sm text-muted-foreground">moedas</p>
             <p className="text-2xl font-bold mt-3">R$ {p.valor.toFixed(2).replace(".", ",")}</p>
             <Button className="w-full mt-4" disabled={comprando === p.id} onClick={() => comprar(p)}>
-              {comprando === p.id ? "Processando..." : "Comprar"}
+              {comprando === p.id ? "Redirecionando..." : "Comprar"}
             </Button>
           </Card>
         ))}
@@ -120,7 +128,10 @@ export default function Loja() {
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xl font-bold flex items-center gap-2"><Zap className="w-5 h-5 text-amber-500" /> Recarga de Energia</h2>
           {clube && (
-            <span className="text-sm text-muted-foreground">Energia: <strong className="text-foreground">{clube.energia_matchmaking ?? 0}</strong> / {20 + (clube.medico_nivel || 0)}</span>
+            <div className="text-right space-y-0.5">
+              <p className="text-sm text-muted-foreground">Energia: <strong className="text-foreground">{clube.energia_matchmaking ?? 0}</strong> / {20 + (clube.medico_nivel || 0)}</p>
+              <p className="text-xs text-muted-foreground">Compradas hoje: <strong className="text-foreground">{clube.energias_compradas_hoje ?? 0}</strong>/20</p>
+            </div>
           )}
         </div>
         {sucessoEnergia && (
@@ -141,8 +152,8 @@ export default function Loja() {
               </div>
               <p className="text-sm text-muted-foreground mb-2">Energias de Matchmaking</p>
               <p className="text-lg font-bold">{e.custo.toLocaleString("pt-BR")} <span className="text-sm font-normal text-muted-foreground">moedas</span></p>
-              <Button className="w-full mt-3" disabled={comprandoEnergia === e.id} onClick={() => comprarEnergia(e)}>
-                {comprandoEnergia === e.id ? <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Comprando...</> : "Comprar"}
+              <Button className="w-full mt-3" disabled={comprandoEnergia === e.id || (clube?.moedas ?? 0) < e.custo || (clube?.energias_compradas_hoje ?? 0) + e.qtd > 20} onClick={() => comprarEnergia(e)}>
+                {comprandoEnergia === e.id ? <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Comprando...</> : (clube?.energias_compradas_hoje ?? 0) + e.qtd > 20 ? "Limite diário" : "Comprar"}
               </Button>
             </Card>
           ))}
@@ -150,7 +161,7 @@ export default function Loja() {
       </div>
 
       <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-1.5">
-        <ShieldCheck className="w-3.5 h-3.5" /> Simulação de compra — as moedas são creditadas instantaneamente no seu clube.
+        <ShieldCheck className="w-3.5 h-3.5" /> Pagamentos processados via Stripe (ambiente de testes). Publique o app para comprar com cartão/Pix.
       </p>
     </div>
   );

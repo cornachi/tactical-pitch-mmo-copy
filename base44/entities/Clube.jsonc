@@ -42,6 +42,12 @@
       "title": "Energia Desafio",
       "default": 3
     },
+    "energias_compradas_hoje": {
+      "type": "integer",
+      "title": "Energias Compradas Hoje",
+      "default": 0,
+      "description": "Contador di\u00e1rio de energias compradas (teto 20, resetado \u00e0 meia-noite)"
+    },
     "win_streak": {
       "type": "integer",
       "title": "Win Streak",

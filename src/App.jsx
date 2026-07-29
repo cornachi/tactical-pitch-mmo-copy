@@ -19,6 +19,7 @@ import Missoes from './pages/Missoes';
 import Desafios from './pages/Desafios';
 import RelatorioDesafio from './pages/RelatorioDesafio';
 import CopaCampeoes from './pages/CopaCampeoes';
+import SucessoPagamento from './pages/SucessoPagamento';
 import RelatorioTatico from './pages/RelatorioTatico';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -57,6 +58,7 @@ const AuthenticatedApp = () => {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/loja/sucesso" element={<SucessoPagamento />} />
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />

@@ -32,6 +32,11 @@ export default async function(req) {
       return Response.json({ error: 'Moedas insuficientes', custo, moedas }, { status: 400 });
     }
 
+    const compradasHoje = clube.energias_compradas_hoje || 0;
+    if (compradasHoje + qtd > 20) {
+      return Response.json({ error: '⚠️ Você já atingiu o limite de 20 energias compradas hoje. Aguarde o reset diário!', compradas_hoje: compradasHoje }, { status: 400 });
+    }
+
     const maxEnergia = BASE_CAP_ENERGIA + (clube.medico_nivel || 0);
     // Energia comprada pode acumular até 1 pacote grande acima do teto diário.
     const hardCeiling = maxEnergia + 20;
@@ -47,6 +52,7 @@ export default async function(req) {
     await base44.asServiceRole.entities.Clube.update(clube.id, {
       moedas: novasMoedas,
       energia_matchmaking: novaEnergia,
+      energias_compradas_hoje: compradasHoje + qtd,
     });
 
     try { await acrescentarPote(base44, Math.round(custo * 0.05)); } catch (e) {}
