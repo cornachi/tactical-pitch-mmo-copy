@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Coins, Check, ShieldCheck, Zap, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useI18n } from "@/i18n/I18nContext";
 
 const PACOTES = [
   { id: "iniciante", nome: "Iniciante", moedas: 10000, valor: 4.9, selo: null },
@@ -25,6 +26,7 @@ export default function Loja() {
   const [sucesso, setSucesso] = useState(null);
   const [sucessoEnergia, setSucessoEnergia] = useState(null);
   const [erro, setErro] = useState("");
+  const { t } = useI18n();
 
   const carregar = async () => {
     try {
@@ -55,12 +57,12 @@ export default function Loja() {
           setSucesso({ pacote: "Mercado Pago", moedas: Number(data?.moedas || 0) });
           await carregar();
         } catch (e) {
-          setErro("Pagamento aprovado — aguarde o crédito via webhook.");
+          setErro(t("loja.pagamentoAguardando"));
         }
       } else if (status === "failure") {
-        setErro("Pagamento recusado ou cancelado.");
+        setErro(t("loja.pagamentoRecusado"));
       } else if (status === "pending") {
-        setErro("Pagamento pendente. Finalize o pagamento no Mercado Pago.");
+        setErro(t("loja.pagamentoPendente"));
       }
     })();
   }, []);
@@ -71,7 +73,7 @@ export default function Loja() {
     setSucesso(null);
     try {
       if (window.self !== window.top) {
-        setErro("⚠️ O checkout só funciona no app publicado. Publique o app para comprar moedas reais.");
+        setErro(t("loja.iframeBloqueio"));
         return;
       }
       const res = await base44.functions.invoke("criarPagamentoMercadoPago", { pacote_id: pacote.id });
@@ -102,21 +104,21 @@ export default function Loja() {
     }
   };
 
-  if (loading) return <div className="p-8 text-center text-muted-foreground">Carregando...</div>;
+  if (loading) return <div className="p-8 text-center text-muted-foreground">{t("common.carregando")}</div>;
 
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold flex items-center gap-2"><Coins className="w-6 h-6 text-amber-500" /> Loja do Clube</h1>
+        <h1 className="text-2xl font-bold flex items-center gap-2"><Coins className="w-6 h-6 text-amber-500" /> {t("loja.titulo")}</h1>
         {clube && (
-          <span className="text-sm text-muted-foreground">Saldo: <strong className="text-foreground">{(clube.moedas ?? 0).toLocaleString("pt-BR")}</strong> moedas</span>
+          <span className="text-sm text-muted-foreground">{t("loja.saldo")} <strong className="text-foreground">{(clube.moedas ?? 0).toLocaleString("pt-BR")}</strong> {t("common.moedas")}</span>
         )}
       </div>
 
       {sucesso && (
         <Card className="p-4 bg-emerald-500/10 border-emerald-500/30">
-          <p className="flex items-center gap-2 text-emerald-700 font-semibold"><Check className="w-5 h-5" /> {sucesso.moedas?.toLocaleString("pt-BR")} moedas creditadas!</p>
-          {sucesso.pacote && <p className="text-sm text-muted-foreground mt-1">Pacote {sucesso.pacote}</p>}
+          <p className="flex items-center gap-2 text-emerald-700 font-semibold"><Check className="w-5 h-5" /> {sucesso.moedas?.toLocaleString("pt-BR")} {t("loja.moedasCreditadas")}</p>
+          {sucesso.pacote && <p className="text-sm text-muted-foreground mt-1">{t("loja.pacote")} {sucesso.pacote}</p>}
         </Card>
       )}
       {erro && <p className="text-sm text-destructive">{erro}</p>}
@@ -137,7 +139,7 @@ export default function Loja() {
             <p className="text-sm text-muted-foreground">moedas</p>
             <p className="text-2xl font-bold mt-3">R$ {p.valor.toFixed(2).replace(".", ",")}</p>
             <Button className="w-full mt-4" disabled={comprando === p.id} onClick={() => comprar(p)}>
-              {comprando === p.id ? "Redirecionando..." : "Comprar"}
+              {comprando === p.id ? t("loja.redirecionando") : t("loja.comprar")}
             </Button>
           </Card>
         ))}
@@ -146,11 +148,11 @@ export default function Loja() {
       {/* Recarga de Energia */}
       <div className="pt-2">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xl font-bold flex items-center gap-2"><Zap className="w-5 h-5 text-amber-500" /> Recarga de Energia</h2>
+          <h2 className="text-xl font-bold flex items-center gap-2"><Zap className="w-5 h-5 text-amber-500" /> {t("loja.recargaEnergia")}</h2>
           {clube && (
             <div className="text-right space-y-0.5">
-              <p className="text-sm text-muted-foreground">Energia: <strong className="text-foreground">{clube.energia_matchmaking ?? 0}</strong> / {20 + (clube.medico_nivel || 0)}</p>
-              <p className="text-xs text-muted-foreground">Compradas hoje: <strong className="text-foreground">{clube.energias_compradas_hoje ?? 0}</strong>/20</p>
+              <p className="text-sm text-muted-foreground">{t("loja.energia")} <strong className="text-foreground">{clube.energia_matchmaking ?? 0}</strong> / {20 + (clube.medico_nivel || 0)}</p>
+              <p className="text-xs text-muted-foreground">{t("loja.compradasHoje")} <strong className="text-foreground">{clube.energias_compradas_hoje ?? 0}</strong>/20</p>
             </div>
           )}
         </div>
@@ -170,10 +172,10 @@ export default function Loja() {
                 <Zap className="w-6 h-6 text-amber-500" />
                 <span className="text-2xl font-bold text-amber-600">{e.nome}</span>
               </div>
-              <p className="text-sm text-muted-foreground mb-2">Energias de Matchmaking</p>
-              <p className="text-lg font-bold">{e.custo.toLocaleString("pt-BR")} <span className="text-sm font-normal text-muted-foreground">moedas</span></p>
+              <p className="text-sm text-muted-foreground mb-2">{t("loja.energiasMatchmaking")}</p>
+              <p className="text-lg font-bold">{e.custo.toLocaleString("pt-BR")} <span className="text-sm font-normal text-muted-foreground">{t("common.moedas")}</span></p>
               <Button className="w-full mt-3" disabled={comprandoEnergia === e.id || (clube?.moedas ?? 0) < e.custo || (clube?.energias_compradas_hoje ?? 0) + e.qtd > 20} onClick={() => comprarEnergia(e)}>
-                {comprandoEnergia === e.id ? <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Comprando...</> : (clube?.energias_compradas_hoje ?? 0) + e.qtd > 20 ? "Limite diário" : "Comprar"}
+                {comprandoEnergia === e.id ? <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> {t("loja.comprando")}</> : (clube?.energias_compradas_hoje ?? 0) + e.qtd > 20 ? t("loja.limiteDiario") : t("loja.comprar")}
               </Button>
             </Card>
           ))}
@@ -181,7 +183,7 @@ export default function Loja() {
       </div>
 
       <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-1.5">
-        <ShieldCheck className="w-3.5 h-3.5" /> Pagamentos via Mercado Pago (Checkout Pro — Pix e Cartão).
+        <ShieldCheck className="w-3.5 h-3.5" /> {t("loja.pagamentos")}
       </p>
     </div>
   );

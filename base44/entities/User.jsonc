@@ -7,6 +7,17 @@
         "admin",
         "user"
       ]
+    },
+    "idiomaSelecionado": {
+      "type": "string",
+      "title": "Idioma Selecionado",
+      "description": "Prefer\u00eancia de idioma do usu\u00e1rio (pt, en, es)",
+      "enum": [
+        "pt",
+        "en",
+        "es"
+      ],
+      "default": "pt"
     }
   },
   "required": [

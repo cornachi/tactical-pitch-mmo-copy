@@ -3,19 +3,22 @@ import { Outlet, Link, useLocation } from "react-router-dom";
 import { Shield, Home, Users, Trophy, ShoppingBag, Building } from "lucide-react";
 import NotificationCenter from "@/components/notificacao/NotificationCenter";
 import DesafiosNavItem from "@/components/desafio/DesafiosNavItem";
+import LanguageSelector from "@/components/i18n/LanguageSelector";
+import { useI18n } from "@/i18n/I18nContext";
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { to: "/", label: "Dashboard", icon: Home },
-  { to: "/equipe", label: "Equipe", icon: Users },
-  { to: "/estadio", label: "Estádio", icon: Building },
-  { to: "/ranking", label: "Ranking", icon: Trophy },
-  { to: "/copa", label: "Copa", icon: Trophy },
-  { to: "/loja", label: "Loja", icon: ShoppingBag },
+  { to: "/", labelKey: "nav.dashboard", icon: Home },
+  { to: "/equipe", labelKey: "nav.equipe", icon: Users },
+  { to: "/estadio", labelKey: "nav.estadio", icon: Building },
+  { to: "/ranking", labelKey: "nav.ranking", icon: Trophy },
+  { to: "/copa", labelKey: "nav.copa", icon: Trophy },
+  { to: "/loja", labelKey: "nav.loja", icon: ShoppingBag },
 ];
 
 export default function Layout() {
   const { pathname } = useLocation();
+  const { t } = useI18n();
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
@@ -40,12 +43,13 @@ export default function Layout() {
                   )}
                 >
                   <Icon className="w-4 h-4" />
-                  <span className="hidden sm:inline">{item.label}</span>
+                  <span className="hidden sm:inline">{t(item.labelKey)}</span>
                 </Link>
               );
             })}
           </nav>
           <div className="flex items-center gap-1">
+            <LanguageSelector />
             <DesafiosNavItem />
             <NotificationCenter />
           </div>

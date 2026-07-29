@@ -13,6 +13,7 @@ import MetaBanner from "@/components/temporada/MetaBanner";
 import RetrospectoCard from "@/components/clube/RetrospectoCard";
 import AlertaTatico from "@/components/relatorio/AlertaTatico";
 import ModalConquistas from "@/components/conquistas/ModalConquistas";
+import { useI18n } from "@/i18n/I18nContext";
 
 export default function Home() {
   const [clube, setClube] = useState(null);
@@ -20,6 +21,7 @@ export default function Home() {
   const [erro, setErro] = useState("");
   const [desafioOpen, setDesafioOpen] = useState(false);
   const [conquistasOpen, setConquistasOpen] = useState(false);
+  const { t } = useI18n();
 
   const carregar = async () => {
     try {
@@ -35,7 +37,7 @@ export default function Home() {
 
   useEffect(() => { carregar(); }, []);
 
-  if (loading) return <div className="p-8 text-center text-muted-foreground">Carregando...</div>;
+  if (loading) return <div className="p-8 text-center text-muted-foreground">{t("common.carregando")}</div>;
   if (erro) return <div className="p-8 text-center text-destructive">{erro}</div>;
   if (!clube) return <CriarClubeForm onCriado={carregar} />;
 
@@ -45,10 +47,10 @@ export default function Home() {
       <ClubeHeader clube={clube} />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard icon={Coins} label="Moedas" value={clube.moedas ?? 0} color={clube.cor_principal} accent="bg-amber-500/10 text-amber-600" />
-        <StatCard icon={Activity} label="XP" value={clube.xp ?? 0} color={clube.cor_principal} accent="bg-violet-500/10 text-violet-600" />
-        <StatCard icon={Trophy} label="Ranking Elo" value={clube.ranking_elo ?? 1000} color={clube.cor_principal} accent="bg-blue-500/10 text-blue-600" />
-        <StatCard icon={Flame} label="Win Streak" value={clube.win_streak ?? 0} color={clube.cor_principal} accent="bg-orange-500/10 text-orange-600" />
+        <StatCard icon={Coins} label={t("home.moedas")} value={clube.moedas ?? 0} color={clube.cor_principal} accent="bg-amber-500/10 text-amber-600" />
+        <StatCard icon={Activity} label={t("home.xp")} value={clube.xp ?? 0} color={clube.cor_principal} accent="bg-violet-500/10 text-violet-600" />
+        <StatCard icon={Trophy} label={t("home.rankingElo")} value={clube.ranking_elo ?? 1000} color={clube.cor_principal} accent="bg-blue-500/10 text-blue-600" />
+        <StatCard icon={Flame} label={t("home.winStreak")} value={clube.win_streak ?? 0} color={clube.cor_principal} accent="bg-orange-500/10 text-orange-600" />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -57,7 +59,7 @@ export default function Home() {
             <Zap className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">Energia Matchmaking</p>
+            <p className="text-xs text-muted-foreground">{t("home.energiaMatchmaking")}</p>
             <p className="text-xl font-bold">{clube.energia_matchmaking ?? 0}<span className="text-sm text-muted-foreground">/{20 + (clube.medico_nivel || 0)}</span></p>
           </div>
         </Card>
@@ -66,7 +68,7 @@ export default function Home() {
             <Swords className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">Energia Desafio</p>
+            <p className="text-xs text-muted-foreground">{t("home.energiaDesafio")}</p>
             <p className="text-xl font-bold">{clube.energia_desafio ?? 0}<span className="text-sm text-muted-foreground">/3</span></p>
           </div>
         </Card>
@@ -79,25 +81,25 @@ export default function Home() {
       <PartidaRapida clube={clube} />
 
       <Button variant="outline" className="w-full" size="lg" onClick={() => setDesafioOpen(true)}>
-        <Swords className="w-4 h-4 mr-2" />Desafiar Adversário
+        <Swords className="w-4 h-4 mr-2" />{t("home.desafiarAdversario")}
       </Button>
       <ModalDesafio clube={clube} open={desafioOpen} onOpenChange={setDesafioOpen} />
 
       <Button asChild variant="outline" className="w-full" size="lg">
-        <Link to="/missoes"><Target className="w-4 h-4 mr-2" />Missões Diárias</Link>
+        <Link to="/missoes"><Target className="w-4 h-4 mr-2" />{t("home.missoesDiarias")}</Link>
       </Button>
       <Button asChild variant="outline" className="w-full" size="lg">
-        <Link to="/ranking"><Trophy className="w-4 h-4 mr-2" />Ranking Global</Link>
+        <Link to="/ranking"><Trophy className="w-4 h-4 mr-2" />{t("home.rankingGlobal")}</Link>
       </Button>
       <Button variant="outline" className="w-full" size="lg" onClick={() => setConquistasOpen(true)}>
-        <Award className="w-4 h-4 mr-2" />Conquistas
+        <Award className="w-4 h-4 mr-2" />{t("home.conquistas")}
       </Button>
       <ModalConquistas clubeId={clube.id} open={conquistasOpen} onOpenChange={setConquistasOpen} onResgatado={carregar} />
       <Button asChild className="w-full" size="lg">
-        <Link to="/equipe"><Users className="w-4 h-4 mr-2" />Gerenciar Equipe (Árvore Tática)</Link>
+        <Link to="/equipe"><Users className="w-4 h-4 mr-2" />{t("home.gerenciarEquipe")}</Link>
       </Button>
       <Button asChild variant="outline" className="w-full" size="lg">
-        <Link to="/estadio"><Building className="w-4 h-4 mr-2" />Estádio & Comissão</Link>
+        <Link to="/estadio"><Building className="w-4 h-4 mr-2" />{t("home.estadioComissao")}</Link>
       </Button>
     </div>
   );

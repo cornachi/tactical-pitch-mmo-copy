@@ -9,6 +9,7 @@ import BarraDominancia from "@/components/partida/BarraDominancia";
 import InsightsTreinador from "@/components/partida/InsightsTreinador";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import MomentumTab from "@/components/partida/MomentumTab";
+import VozTorcida from "@/components/partida/VozTorcida";
 
 export default function ResultadoPartida() {
   const location = useLocation();
@@ -113,6 +114,15 @@ export default function ResultadoPartida() {
         </h2>
         <InsightsTreinador insights={r.insights} />
       </div>
+
+      <VozTorcida
+        placarHome={r.placar_home}
+        placarAway={r.placar_away}
+        domHome={r.dominancia_home}
+        domAway={r.dominancia_away}
+        momentum={r.momentum}
+        expulsoes={r.expulsoes}
+      />
         </TabsContent>
         <TabsContent value="momentum" className="space-y-6 mt-4">
           {r.momentum ? (

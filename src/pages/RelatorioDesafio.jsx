@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import RelatorioPartida from "@/components/partida/RelatorioPartida";
+import VozTorcida from "@/components/partida/VozTorcida";
 
 export default function RelatorioDesafio() {
   const { id } = useParams();
@@ -46,6 +47,14 @@ export default function RelatorioDesafio() {
         <Button asChild variant="outline" size="sm"><Link to="/desafios">Voltar</Link></Button>
       </div>
       <RelatorioPartida partida={data.partida} clubeHome={data.home} clubeAway={data.away} meuClubeId={data.meuClubeId} />
+      <VozTorcida
+        placarHome={data.partida.placar_home}
+        placarAway={data.partida.placar_away}
+        domHome={data.partida.dominancia_home}
+        domAway={(data.partida.insights?.dominancia_away) ?? (100 - (data.partida.dominancia_home || 50))}
+        momentum={data.partida.insights?.momentum}
+        expulsoes={(data.partida.insights?.lances_narracao || []).filter((l) => l.tipo === "CARTAO_VERMELHO")}
+      />
     </div>
   );
 }
