@@ -1,6 +1,6 @@
 import React from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { Shield, Home, Users, Trophy, ShoppingBag, Building } from "lucide-react";
+import { Shield, Home, Users, Trophy, ShoppingBag, Building, Medal } from "lucide-react";
 import NotificationCenter from "@/components/notificacao/NotificationCenter";
 import DesafiosNavItem from "@/components/desafio/DesafiosNavItem";
 import LanguageSelector from "@/components/i18n/LanguageSelector";
@@ -13,6 +13,7 @@ const NAV = [
   { to: "/estadio", labelKey: "nav.estadio", icon: Building },
   { to: "/ranking", labelKey: "nav.ranking", icon: Trophy },
   { to: "/copa", labelKey: "nav.copa", icon: Trophy },
+  { to: "/torneios", labelKey: "nav.torneios", icon: Medal },
   { to: "/loja", labelKey: "nav.loja", icon: ShoppingBag },
 ];
 
