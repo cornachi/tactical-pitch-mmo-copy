@@ -5,6 +5,7 @@ import {
   calcularDominancia,
   amostraPoisson,
   atualizarElo,
+  gerarMomentum,
 } from "../../shared/tactical.ts";
 import { getMeta, aplicarMetaEfeito } from "../../shared/metas.ts";
 
@@ -78,6 +79,8 @@ export default async function(req) {
 
     const vencedor = placar_home > placar_away ? 'home' : placar_home < placar_away ? 'away' : 'empate';
     const scoreHome = vencedor === 'home' ? 1 : vencedor === 'empate' ? 0.5 : 0;
+
+    const momentum = gerarMomentum(attrsHome, attrsAway, dom, placar_home, placar_away);
 
     // Atualizações de saldo / ELO / XP por tipo de partida.
     const updateHome = {};
@@ -185,7 +188,7 @@ Retorne JSON no formato {"insights": ["insight1", "insight2", "insight3"]}.`;
       xg_away: dom.xg_away,
       dominancia_home: dom.dominancia_home,
       aposta_moedas: tipo_partida === 'DESAFIO' ? aposta : 0,
-      insights: { insights, dominancia_home: dom.dominancia_home, dominancia_away: dom.dominancia_away, atkHome, atkAway, defHome, defAway },
+      insights: { insights, dominancia_home: dom.dominancia_home, dominancia_away: dom.dominancia_away, atkHome, atkAway, defHome, defAway, momentum },
     });
 
     if (tipo_partida === 'DESAFIO') {
@@ -221,6 +224,7 @@ Retorne JSON no formato {"insights": ["insight1", "insight2", "insight3"]}.`;
       moedas_ganhas,
       xp_ganhos,
       novo_elo_desafiante: novoEloHome,
+      momentum,
       insights,
     });
   } catch (error) {

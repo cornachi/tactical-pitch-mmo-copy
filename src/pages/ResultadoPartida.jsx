@@ -7,6 +7,8 @@ import { Card } from "@/components/ui/card";
 import PlacarAnimado from "@/components/partida/PlacarAnimado";
 import BarraDominancia from "@/components/partida/BarraDominancia";
 import InsightsTreinador from "@/components/partida/InsightsTreinador";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import MomentumTab from "@/components/partida/MomentumTab";
 
 export default function ResultadoPartida() {
   const location = useLocation();
@@ -38,7 +40,13 @@ export default function ResultadoPartida() {
         </Card>
       </motion.div>
 
-      <Card className="p-4">
+      <Tabs defaultValue="resumo" className="w-full">
+        <TabsList className="grid grid-cols-2 w-full">
+          <TabsTrigger value="resumo">Resumo Geral</TabsTrigger>
+          <TabsTrigger value="momentum">Momentum & Stats 15'</TabsTrigger>
+        </TabsList>
+        <TabsContent value="resumo" className="space-y-6 mt-4">
+          <Card className="p-4">
         <PlacarAnimado
           home={r.placar_home}
           away={r.placar_away}
@@ -100,6 +108,15 @@ export default function ResultadoPartida() {
         </h2>
         <InsightsTreinador insights={r.insights} />
       </div>
+        </TabsContent>
+        <TabsContent value="momentum" className="space-y-6 mt-4">
+          {r.momentum ? (
+            <MomentumTab momentum={r.momentum} nomeHome={r.desafiante.nome_clube} nomeAway={r.desafiado.nome_clube} />
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-8">Estatísticas detalhadas indisponíveis para esta partida.</p>
+          )}
+        </TabsContent>
+      </Tabs>
 
       <div className="flex gap-3">
         <Button asChild variant="outline" className="flex-1">
