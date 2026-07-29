@@ -1,0 +1,51 @@
+{
+  "name": "CopaCampeoes",
+  "type": "object",
+  "properties": {
+    "semana_ano": {
+      "type": "string",
+      "title": "Semana/Ano",
+      "description": "Identificador da semana ISO (ex: '2026-W31')"
+    },
+    "status": {
+      "type": "string",
+      "title": "Status",
+      "enum": [
+        "EM_ANDAMENTO",
+        "CONCLUIDO"
+      ],
+      "default": "CONCLUIDO"
+    },
+    "classificados": {
+      "type": "array",
+      "title": "Classificados",
+      "description": "IDs dos clubes classificados (ordem de seed do bracket)",
+      "items": {
+        "type": "string"
+      }
+    },
+    "rodadas": {
+      "type": "object",
+      "title": "Rodadas",
+      "description": "JSON do mata-mata: { 'Oitavas de Final': [...], 'Quartas de Final': [...], 'Semifinal': [...], 'Final': [...] }",
+      "additionalProperties": true
+    },
+    "campeao_id": {
+      "type": "string",
+      "title": "Campe\u00e3o ID"
+    },
+    "vice_id": {
+      "type": "string",
+      "title": "Vice-Campe\u00e3o ID"
+    },
+    "premio_moedas": {
+      "type": "integer",
+      "title": "Pr\u00eamio em Moedas",
+      "default": 2000
+    }
+  },
+  "required": [
+    "semana_ano",
+    "status"
+  ]
+}

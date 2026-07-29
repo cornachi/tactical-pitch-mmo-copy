@@ -81,8 +81,8 @@ export default function Desafios() {
 
   const recebidosPendentes = recebidos.filter((d) => d.status === "PENDENTE");
   const enviadosPendentes = enviados.filter((d) => d.status === "PENDENTE");
-  const historico = [...recebidos, ...enviados]
-    .filter((d) => d.status !== "PENDENTE")
+  const recentes = [...recebidos, ...enviados]
+    .filter((d) => d.status === "CONCLUIDO")
     .sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
 
   const CartaoDesafio = ({ d, tipo }) => {
@@ -154,12 +154,12 @@ export default function Desafios() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold flex items-center gap-2"><History className="w-5 h-5 text-muted-foreground" /> Histórico</h2>
-        {historico.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Sem histórico de desafios.</p>
+        <h2 className="text-lg font-semibold flex items-center gap-2"><History className="w-5 h-5 text-muted-foreground" /> Desafios Recentes</h2>
+        {recentes.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Nenhum desafio concluído ainda.</p>
         ) : (
           <div className="space-y-2">
-            {historico.map((d) => {
+            {recentes.map((d) => {
               const souDesafiante = d.desafiante_id === clube.id;
               const rivalId = souDesafiante ? d.desafiado_id : d.desafiante_id;
               const rival = clubesMap[rivalId];
@@ -176,6 +176,9 @@ export default function Desafios() {
                   <div className="flex items-center gap-2">
                     {meuResultado && <span className={`font-semibold ${corResultado}`}>{meuResultado}{d.moedas_ganhas ? ` (${d.moedas_ganhas > 0 ? "+" : ""}${d.moedas_ganhas})` : ""}</span>}
                     <span className="text-xs px-2 py-0.5 rounded-full bg-muted">{STATUS_LABEL[d.status]}</span>
+                    {d.partida_id && (
+                      <Button size="sm" variant="outline" onClick={() => navigate(`/desafios/relatorio/${d.partida_id}`)}>📊 Ver Relatório</Button>
+                    )}
                   </div>
                 </Card>
               );

@@ -10,6 +10,7 @@ const NAV = [
   { to: "/equipe", label: "Equipe", icon: Users },
   { to: "/estadio", label: "Estádio", icon: Building },
   { to: "/ranking", label: "Ranking", icon: Trophy },
+  { to: "/copa", label: "Copa", icon: Trophy },
   { to: "/loja", label: "Loja", icon: ShoppingBag },
 ];
 

@@ -121,8 +121,8 @@ export default async function(req) {
     await base44.asServiceRole.entities.Notificacao.create({
       clube_id: desafio.desafiante_id,
       partida_id: result.partida_id,
-      titulo: 'Seu desafio foi aceito!',
-      mensagem: `${desafiado.nome_clube} aceitou seu desafio. ${desafiante.nome_clube} ${result.placar_home} x ${result.placar_away} ${desafiado.nome_clube}. ${veredito}`,
+      titulo: '⚽ Desafio Concluído!',
+      mensagem: `O jogo contra ${desafiado.nome_clube} terminou em ${result.placar_home} x ${result.placar_away}. Clique para ver o relatório completo!`,
       lida: false,
     });
 

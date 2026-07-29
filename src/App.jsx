@@ -17,6 +17,8 @@ import Loja from './pages/Loja';
 import Estadio from './pages/Estadio';
 import Missoes from './pages/Missoes';
 import Desafios from './pages/Desafios';
+import RelatorioDesafio from './pages/RelatorioDesafio';
+import CopaCampeoes from './pages/CopaCampeoes';
 import RelatorioTatico from './pages/RelatorioTatico';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -66,6 +68,8 @@ const AuthenticatedApp = () => {
           <Route path="/estadio" element={<Estadio />} />
           <Route path="/missoes" element={<Missoes />} />
           <Route path="/desafios" element={<Desafios />} />
+          <Route path="/desafios/relatorio/:id" element={<RelatorioDesafio />} />
+          <Route path="/copa" element={<CopaCampeoes />} />
           <Route path="/relatorio-tatico" element={<RelatorioTatico />} />
         </Route>
       </Route>

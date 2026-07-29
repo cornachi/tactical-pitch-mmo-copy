@@ -1,0 +1,44 @@
+{
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 0 * * 1",
+      "one_time_date": null,
+      "timezone": "America/Sao_Paulo",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "copa_campeoes_semanal",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "gerar_copa": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "gerarCopaCampeoes"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Gerar Copa dos Campe\u00f5es",
+            "description": "Mata-mata semanal top 16"
+          }
+        }
+      }
+    ]
+  },
+  "name": "Copa dos Campe\u00f5es Semanal",
+  "description": "Gera o bracket mata-mata da Copa dos Campe\u00f5es toda segunda-feira \u00e0s 00:00 (America/Sao_Paulo), classificando os 16 melhores por ELO."
+}

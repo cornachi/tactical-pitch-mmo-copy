@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Bell, Check, Lightbulb } from "lucide-react";
+import { Bell, Check, BarChart3 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 
 export default function NotificationCenter() {
+  const navigate = useNavigate();
   const [notifs, setNotifs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [insightsModal, setInsightsModal] = useState(null);
 
   const carregar = async () => {
     try {
@@ -40,16 +39,10 @@ export default function NotificationCenter() {
     setNotifs((prev) => prev.map((n) => (n.id === id ? { ...n, lida: true } : n)));
   };
 
-  const verInsights = async (n) => {
+  const verRelatorio = (n) => {
     if (!n.partida_id) return;
-    try {
-      const h = await base44.entities.HistoricoPartida.get(n.partida_id);
-      const insights = h.insights?.insights || [];
-      setInsightsModal({ placar: `${h.placar_home} x ${h.placar_away}`, insights });
-      if (!n.lida) marcarLida(n.id);
-    } catch (e) {
-      /* ignore */
-    }
+    if (!n.lida) marcarLida(n.id);
+    navigate(`/desafios/relatorio/${n.partida_id}`);
   };
 
   return (
@@ -83,8 +76,8 @@ export default function NotificationCenter() {
                 <p className="text-xs text-muted-foreground mt-1">{n.mensagem}</p>
                 <div className="flex gap-2 mt-2">
                   {n.partida_id && (
-                    <Button size="sm" variant="outline" onClick={() => verInsights(n)}>
-                      <Lightbulb className="w-3 h-3 mr-1" />Ver Insights
+                    <Button size="sm" variant="outline" onClick={() => verRelatorio(n)}>
+                      <BarChart3 className="w-3 h-3 mr-1" />Ver Relatório
                     </Button>
                   )}
                   {!n.lida && (
@@ -98,31 +91,6 @@ export default function NotificationCenter() {
           </div>
         </PopoverContent>
       </Popover>
-
-      <Dialog open={!!insightsModal} onOpenChange={(o) => !o && setInsightsModal(null)}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><Lightbulb className="w-5 h-5 text-amber-500" />Insights da Partida</DialogTitle>
-          </DialogHeader>
-          {insightsModal && (
-            <div className="space-y-3">
-              <p className="text-center text-2xl font-bold">{insightsModal.placar}</p>
-              <div className="space-y-2">
-                {insightsModal.insights.length > 0 ? (
-                  insightsModal.insights.map((t, i) => (
-                    <Card key={i} className="p-2 flex gap-2 items-start">
-                      <Lightbulb className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                      <p className="text-sm">{t}</p>
-                    </Card>
-                  ))
-                ) : (
-                  <p className="text-sm text-muted-foreground text-center">Sem insights registrados.</p>
-                )}
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </>
   );
 }
