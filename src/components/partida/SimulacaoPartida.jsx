@@ -1,103 +1,191 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Activity } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import EscudoClube from "@/components/clube/EscudoClube";
 
-const EVENTOS = [
-  "Troca de passes no meio-campo",
-  "Lançamento profundo para o ataque",
-  "Falta perigosa à entrada da área",
-  "Escanteio para o mandante",
-  "Contra-ataque em velocidade",
-  "Defesa decisiva do goleiro",
-  "Chute de fora da área",
-  "Cruzamento na área",
-  "Interceptação na linha de meio",
-  "Pressão alta recupera a bola",
-  "Bola na trave!",
-  "Tabela rápida pelas pontas",
-];
+const DURACAO_MS = 60000; // 60s reais = 90 min de jogo
 
-export default function SimulacaoPartida({ nomeHome, nomeAway, onConcluir }) {
-  const [minuto, setMinuto] = useState(0);
-  const [evento, setEvento] = useState("A bola está rolando...");
-  const idx = useRef(0);
+export default function SimulacaoPartida({ result, onConcluir }) {
+  const desafiante = result.desafiante;
+  const desafiado = result.desafiado;
+  const lances = result.lances_narracao || [];
+  const momentum = result.momentum || [];
+
+  const [elapsed, setElapsed] = useState(0);
+  const [finalizado, setFinalizado] = useState(false);
+  const inicioRef = useRef(Date.now());
+  const beepedRef = useRef(new Set());
 
   useEffect(() => {
-    const DURACAO = 10000; // 10 segundos de simulação
-    const inicio = Date.now();
-    const ev = setInterval(() => {
-      idx.current = (idx.current + 1) % EVENTOS.length;
-      setEvento(EVENTOS[idx.current]);
-    }, 1100);
-    const clock = setInterval(() => {
-      const p = Math.min(1, (Date.now() - inicio) / DURACAO);
-      setMinuto(Math.round(p * 90));
-      if (p >= 1) {
-        clearInterval(clock);
-        clearInterval(ev);
-        setEvento("Apito final!");
-        setTimeout(onConcluir, 500);
+    inicioRef.current = Date.now();
+    const tick = setInterval(() => {
+      const e = Math.min(DURACAO_MS, Date.now() - inicioRef.current);
+      setElapsed(e);
+      const m = Math.round((e / DURACAO_MS) * 90);
+      lances.forEach((l) => {
+        if (l.tipo === "GOL" && l.minuto <= m && !beepedRef.current.has(l.minuto + l.clube_autor_id)) {
+          beepedRef.current.add(l.minuto + l.clube_autor_id);
+          tocarBeep();
+        }
+      });
+      if (e >= DURACAO_MS) {
+        clearInterval(tick);
+        setFinalizado(true);
       }
-    }, 80);
-    return () => { clearInterval(clock); clearInterval(ev); };
-  }, [onConcluir]);
+    }, 100);
+    return () => clearInterval(tick);
+  }, [lances]);
 
-  const progresso = Math.min(100, (minuto / 90) * 100);
+  const tocarBeep = () => {
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      const ctx = new Ctx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.3);
+      gain.gain.setValueAtTime(0.18, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.45);
+    } catch (e) { /* silencioso */ }
+  };
+
+  const minutoJogo = Math.min(90, Math.round((elapsed / DURACAO_MS) * 90));
+
+  const revealed = lances
+    .filter((l) => l.minuto <= minutoJogo)
+    .sort((a, b) => b.minuto - a.minuto);
+
+  const golHome = lances.filter(
+    (l) => l.tipo === "GOL" && l.clube_autor_id === desafiante.id && l.minuto <= minutoJogo
+  ).length;
+  const golAway = lances.filter(
+    (l) => l.tipo === "GOL" && l.clube_autor_id === desafiado.id && l.minuto <= minutoJogo
+  ).length;
+
+  // Momentum ao vivo: bloco atual + oscilação suave
+  const bloco = momentum.find((b) => minutoJogo >= b.inicio && minutoJogo <= b.fim) || momentum[momentum.length - 1];
+  let domHome = bloco ? bloco.dominancia_pct.home : 50;
+  domHome = Math.max(8, Math.min(92, Math.round(domHome + Math.sin(elapsed / 600) * 6)));
+
+  const corHome = desafiante.cor_principal || "#3b82f6";
+  const corAway = desafiado.cor_principal || "#f43f5e";
 
   return (
-    <div className="min-h-[70vh] flex flex-col items-center justify-center text-center space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: -8 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-sm text-muted-foreground uppercase tracking-widest"
-      >
-        Simulando partida
-      </motion.div>
-
-      {/* Campo */}
-      <div className="relative w-full max-w-md aspect-video rounded-xl overflow-hidden shadow-2xl border border-emerald-900/40">
-        <div className="absolute inset-0 bg-gradient-to-b from-emerald-500 to-emerald-700" />
-        <div className="absolute inset-0">
-          <div className="absolute top-0 bottom-0 left-1/2 w-px bg-white/40 -translate-x-1/2" />
-          <div className="absolute left-1/2 top-1/2 w-16 h-16 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/40" />
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-20 border-2 border-white/40 border-l-0 rounded-r" />
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-20 border-2 border-white/40 border-r-0 rounded-l" />
+    <div className="max-w-2xl mx-auto py-6 flex flex-col items-center space-y-5">
+      {/* Placar dinâmico */}
+      <div className="w-full flex items-center justify-center gap-4">
+        <div className="flex flex-col items-center gap-1 flex-1">
+          <EscudoClube clube={desafiante} size={56} />
+          <span className="text-xs font-medium truncate max-w-full text-center">{desafiante.nome_clube}</span>
         </div>
-        <motion.div
-          className="absolute w-3 h-3 rounded-full bg-white shadow-lg"
-          animate={{
-            x: ["8%", "82%", "18%", "68%", "14%", "78%", "38%"],
-            y: ["68%", "22%", "58%", "32%", "72%", "28%", "52%"],
-          }}
-          transition={{ duration: 10, times: [0, 0.16, 0.33, 0.5, 0.66, 0.83, 1], ease: "linear" }}
-          style={{ left: 0, top: 0 }}
-        />
-        <div className="absolute top-2 left-2 right-2 flex justify-between text-xs font-semibold text-white drop-shadow">
-          <span className="truncate max-w-[45%]">{nomeHome}</span>
-          <span className="truncate max-w-[45%] text-right">{nomeAway}</span>
+        <div className="flex items-center gap-3 text-5xl font-bold tabular-nums">
+          <motion.span
+            key={golHome}
+            initial={{ scale: 1.6 }}
+            animate={{ scale: 1 }}
+            style={{ color: corHome }}
+          >
+            {golHome}
+          </motion.span>
+          <span className="text-muted-foreground font-light text-3xl">:</span>
+          <motion.span
+            key={golAway}
+            initial={{ scale: 1.6 }}
+            animate={{ scale: 1 }}
+            style={{ color: corAway }}
+          >
+            {golAway}
+          </motion.span>
+        </div>
+        <div className="flex flex-col items-center gap-1 flex-1">
+          <EscudoClube clube={desafiado} size={56} />
+          <span className="text-xs font-medium truncate max-w-full text-center">{desafiado.nome_clube}</span>
         </div>
       </div>
 
-      {/* Relógio da partida */}
-      <div className="text-5xl font-bold tabular-nums">{minuto}'</div>
-
-      <div className="h-2 w-full max-w-md rounded-full overflow-hidden bg-muted">
-        <motion.div
-          className="h-full bg-primary"
-          animate={{ width: `${progresso}%` }}
-          transition={{ ease: "linear" }}
-        />
+      {/* Relógio + progresso */}
+      <div className="w-full text-center">
+        <div className="text-3xl font-bold tabular-nums">{minutoJogo}'</div>
+        <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden mt-1">
+          <div className="h-full bg-primary transition-all duration-100" style={{ width: `${(minutoJogo / 90) * 100}%` }} />
+        </div>
       </div>
 
-      <AnimatePresence mode="wait">
-        <motion.p
-          key={evento}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          className="text-sm text-muted-foreground italic h-5"
-        >
-          {evento}
-        </motion.p>
+      {/* Barra de momentum dinâmica */}
+      <div className="w-full">
+        <p className="text-xs text-muted-foreground mb-1 text-center">Momentum ao vivo</p>
+        <div className="h-3 w-full rounded-full overflow-hidden flex">
+          <div style={{ width: `${domHome}%`, background: corHome, transition: "width 0.1s linear" }} />
+          <div style={{ width: `${100 - domHome}%`, background: corAway, transition: "width 0.1s linear" }} />
+        </div>
+        <div className="flex justify-between text-xs mt-0.5">
+          <span style={{ color: corHome }}>{domHome}%</span>
+          <span style={{ color: corAway }}>{100 - domHome}%</span>
+        </div>
+      </div>
+
+      {/* Ticker de narração */}
+      <Card className="w-full p-0 overflow-hidden">
+        <div className="bg-muted px-3 py-2 text-xs font-semibold flex items-center gap-2">
+          <Activity className="w-4 h-4 text-rose-500" /> Narração ao Vivo
+        </div>
+        <div className="max-h-[260px] min-h-[220px] overflow-y-auto p-3 space-y-2">
+          {revealed.length === 0 && !finalizado && (
+            <p className="text-sm text-muted-foreground text-center py-8">A bola está rolando...</p>
+          )}
+          <AnimatePresence initial={false}>
+            {revealed.map((l, i) => {
+              const isGoal = l.tipo === "GOL";
+              const isLatest = i === 0;
+              return (
+                <motion.div
+                  key={`${l.minuto}-${l.tipo}-${l.clube_autor_id}`}
+                  initial={{ opacity: 0, x: -12, scale: 0.96 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  className={`flex gap-2 p-2 rounded-lg text-sm ${
+                    isGoal
+                      ? "bg-amber-500/15 border border-amber-500/40"
+                      : isLatest
+                      ? "bg-muted/60"
+                      : ""
+                  }`}
+                >
+                  <span className="font-bold tabular-nums shrink-0 text-muted-foreground">{l.minuto}'</span>
+                  <span className={isGoal ? "font-semibold" : ""}>
+                    {isGoal && "⚽ "}
+                    {l.texto_narrativo}
+                  </span>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+        </div>
+      </Card>
+
+      {/* Botão final */}
+      <AnimatePresence>
+        {finalizado && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full space-y-2"
+          >
+            <p className="text-center text-sm text-muted-foreground">
+              Apito final! {desafiante.nome_clube} {result.placar_home} x {result.placar_away} {desafiado.nome_clube}
+            </p>
+            <Button className="w-full" size="lg" onClick={onConcluir}>
+              Ver Relatório Completo & Insights
+            </Button>
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );

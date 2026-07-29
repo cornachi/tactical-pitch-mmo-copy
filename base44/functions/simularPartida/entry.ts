@@ -6,6 +6,7 @@ import {
   amostraPoisson,
   atualizarElo,
   gerarMomentum,
+  gerarLances,
 } from "../../shared/tactical.ts";
 import { getMeta, aplicarMetaEfeito } from "../../shared/metas.ts";
 
@@ -81,6 +82,7 @@ export default async function(req) {
     const scoreHome = vencedor === 'home' ? 1 : vencedor === 'empate' ? 0.5 : 0;
 
     const momentum = gerarMomentum(attrsHome, attrsAway, dom, placar_home, placar_away);
+    const lances_narracao = gerarLances(desafiante, desafiado, placar_home, placar_away, momentum);
 
     // Atualizações de saldo / ELO / XP por tipo de partida.
     const updateHome = {};
@@ -188,7 +190,7 @@ Retorne JSON no formato {"insights": ["insight1", "insight2", "insight3"]}.`;
       xg_away: dom.xg_away,
       dominancia_home: dom.dominancia_home,
       aposta_moedas: tipo_partida === 'DESAFIO' ? aposta : 0,
-      insights: { insights, dominancia_home: dom.dominancia_home, dominancia_away: dom.dominancia_away, atkHome, atkAway, defHome, defAway, momentum },
+      insights: { insights, dominancia_home: dom.dominancia_home, dominancia_away: dom.dominancia_away, atkHome, atkAway, defHome, defAway, momentum, lances_narracao },
     });
 
     if (tipo_partida === 'DESAFIO') {
@@ -211,8 +213,8 @@ Retorne JSON no formato {"insights": ["insight1", "insight2", "insight3"]}.`;
       partida_id: historico.id,
       meta_evento: meta ? { nome: meta.nome, descricao: meta.descricao } : null,
       tipo_partida,
-      desafiante: { id: desafiante.id, nome_clube: desafiante.nome_clube, especializacao: desafiante.especializacao },
-      desafiado: { id: desafiado.id, nome_clube: desafiado.nome_clube, especializacao: desafiado.especializacao },
+      desafiante: { id: desafiante.id, nome_clube: desafiante.nome_clube, especializacao: desafiante.especializacao, cor_principal: desafiante.cor_principal, cor_secundaria: desafiante.cor_secundaria, icone_escudo: desafiante.icone_escudo },
+      desafiado: { id: desafiado.id, nome_clube: desafiado.nome_clube, especializacao: desafiado.especializacao, cor_principal: desafiado.cor_principal, cor_secundaria: desafiado.cor_secundaria, icone_escudo: desafiado.icone_escudo },
       placar_home,
       placar_away,
       xg_home: dom.xg_home,
@@ -225,6 +227,7 @@ Retorne JSON no formato {"insights": ["insight1", "insight2", "insight3"]}.`;
       xp_ganhos,
       novo_elo_desafiante: novoEloHome,
       momentum,
+      lances_narracao,
       insights,
     });
   } catch (error) {

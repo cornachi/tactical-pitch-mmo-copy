@@ -52,6 +52,8 @@ export default function ResultadoPartida() {
           away={r.placar_away}
           nomeHome={r.desafiante.nome_clube}
           nomeAway={r.desafiado.nome_clube}
+          clubeHome={r.desafiante}
+          clubeAway={r.desafiado}
         />
         <div className="flex justify-center gap-6 text-sm text-muted-foreground border-t pt-3">
           <span>xG: <strong className="text-foreground">{r.xg_home}</strong> - <strong className="text-foreground">{r.xg_away}</strong></span>

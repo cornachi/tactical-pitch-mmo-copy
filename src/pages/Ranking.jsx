@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
-import { Trophy, Coins, Shield } from "lucide-react";
+import { Trophy, Coins } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import EscudoClube from "@/components/clube/EscudoClube";
 import { premiacaoPorPosicao } from "@/lib/metas";
 import { ESPECIALIZACAO_LABELS } from "@/lib/tactical";
 
@@ -55,6 +56,7 @@ export default function Ranking() {
               <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary text-primary-foreground font-bold">
                 {minhaPos}º
               </div>
+              <EscudoClube clube={meuClube} size={36} />
               <div>
                 <p className="font-bold">{meuClube.nome_clube}</p>
                 <p className="text-sm text-muted-foreground">Sua posição atual</p>
@@ -81,9 +83,7 @@ export default function Ranking() {
           return (
             <div key={c.id} className={`flex items-center gap-3 p-3 ${souEu ? "bg-primary/10" : ""}`}>
               <span className="w-8 text-center font-bold">{medalha(pos) || pos}</span>
-              <div className="flex items-center justify-center w-9 h-9 rounded-full bg-muted">
-                <Shield className="w-4 h-4" />
-              </div>
+              <EscudoClube clube={c} size={36} />
               <div className="flex-1 min-w-0">
                 <p className="font-medium truncate flex items-center gap-2">
                   {c.nome_clube}

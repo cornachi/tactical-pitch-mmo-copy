@@ -19,8 +19,7 @@ export default function SimularPartida() {
   return (
     <div className="max-w-3xl mx-auto p-4">
       <SimulacaoPartida
-        nomeHome={r.desafiante.nome_clube}
-        nomeAway={r.desafiado.nome_clube}
+        result={r}
         onConcluir={() =>
           navigate("/resultado-partida", { state: { result: r }, replace: true })
         }

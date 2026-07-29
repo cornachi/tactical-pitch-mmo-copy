@@ -63,6 +63,24 @@
       "title": "\u00c9 Bot",
       "default": false,
       "description": "Indica se o clube \u00e9 controlado por IA (seeding de bots)"
+    },
+    "cor_principal": {
+      "type": "string",
+      "title": "Cor Principal",
+      "default": "#3b82f6",
+      "description": "Cor prim\u00e1ria da identidade visual do clube (hex)"
+    },
+    "cor_secundaria": {
+      "type": "string",
+      "title": "Cor Secund\u00e1ria",
+      "default": "#ffffff",
+      "description": "Cor secund\u00e1ria da identidade visual do clube (hex)"
+    },
+    "icone_escudo": {
+      "type": "string",
+      "title": "\u00cdcone do Escudo",
+      "default": "escudo",
+      "description": "Chave do \u00edcone do escudo (escudo, estrela, coroa, etc.)"
     }
   },
   "required": [

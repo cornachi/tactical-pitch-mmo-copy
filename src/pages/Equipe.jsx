@@ -5,6 +5,7 @@ import { ArrowLeft, Coins, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import ClubeHeader from "@/components/clube/ClubeHeader";
+import IdentidadeClube from "@/components/clube/IdentidadeClube";
 import {
   ATRIBUTOS_INICIAIS,
   CATEGORIAS,
@@ -76,6 +77,7 @@ export default function Equipe() {
       </Link>
 
       <ClubeHeader clube={clube} />
+      <IdentidadeClube clube={clube} onSalvo={carregar} />
 
       {erro && <p className="text-sm text-destructive">{erro}</p>}
 

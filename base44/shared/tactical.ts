@@ -194,3 +194,51 @@ export function gerarMomentum(attrsHome, attrsAway, dom, placarHome, placarAway)
   dados.forEach((d) => d.eventos.sort((a, b) => a.minuto - b.minuto));
   return dados;
 }
+
+// Gera o feed de narração (lances_narracao) cobrindo os 90 minutos.
+// Inclui os gols reais (no minuto exato) mais 8-12 lances marcantes.
+export function gerarLances(desafiante, desafiado, placarHome, placarAway, momentum) {
+  const lances = [];
+  const ocupados = new Set();
+
+  momentum.forEach((b) => {
+    b.eventos.filter((e) => e.tipo === "gol").forEach((e) => {
+      const autor = e.lado === "home" ? desafiante : desafiado;
+      ocupados.add(e.minuto);
+      lances.push({
+        minuto: e.minuto,
+        tipo: "GOL",
+        clube_autor_id: autor.id,
+        texto_narrativo: `Aos ${e.minuto}' - ${autor.nome_clube} arma a jogada, o atacante finaliza e É GOOOOOL! A torcida explode!`,
+      });
+    });
+  });
+
+  const TIPOS = [
+    { tipo: "CHUTE_PERIGOSO", tpl: (a, m) => `Aos ${m}' - ${a.nome_clube} arrisca de longe, a bola passa raspando a trave!` },
+    { tipo: "DEFESA", tpl: (a, m) => `Aos ${m}' - Contra-ataque de ${a.nome_clube}, mas o goleiro voa e faz defesa espetacular!` },
+    { tipo: "CARTAO", tpl: (a, m) => `Aos ${m}' - Falta dura e o árbitro mostra cartão amarelo para ${a.nome_clube}.` },
+    { tipo: "CONTRA_ATAQUE", tpl: (a, m) => `Aos ${m}' - Recupera a bola e ${a.nome_clube} dispara em contra-ataque em velocidade!` },
+    { tipo: "FALTA", tpl: (a, m) => `Aos ${m}' - Falta perigosa na entrada da área cobrada por ${a.nome_clube}... a bola passa perto!` },
+  ];
+
+  const alvo = 8 + Math.floor(Math.random() * 5); // 8 a 12
+  let tentativas = 0;
+  while (lances.length < alvo && tentativas < 60) {
+    tentativas++;
+    const m = 1 + Math.floor(Math.random() * 90);
+    if (ocupados.has(m)) continue;
+    ocupados.add(m);
+    const t = TIPOS[Math.floor(Math.random() * TIPOS.length)];
+    const autor = Math.random() < 0.5 ? desafiante : desafiado;
+    lances.push({
+      minuto: m,
+      tipo: t.tipo,
+      clube_autor_id: autor.id,
+      texto_narrativo: t.tpl(autor, m),
+    });
+  }
+
+  lances.sort((a, b) => a.minuto - b.minuto);
+  return lances;
+}

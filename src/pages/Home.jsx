@@ -44,10 +44,10 @@ export default function Home() {
       <ClubeHeader clube={clube} />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard icon={Coins} label="Moedas" value={clube.moedas ?? 0} accent="bg-amber-500/10 text-amber-600" />
-        <StatCard icon={Activity} label="XP" value={clube.xp ?? 0} accent="bg-violet-500/10 text-violet-600" />
-        <StatCard icon={Trophy} label="Ranking Elo" value={clube.ranking_elo ?? 1000} accent="bg-blue-500/10 text-blue-600" />
-        <StatCard icon={Flame} label="Win Streak" value={clube.win_streak ?? 0} accent="bg-orange-500/10 text-orange-600" />
+        <StatCard icon={Coins} label="Moedas" value={clube.moedas ?? 0} color={clube.cor_principal} accent="bg-amber-500/10 text-amber-600" />
+        <StatCard icon={Activity} label="XP" value={clube.xp ?? 0} color={clube.cor_principal} accent="bg-violet-500/10 text-violet-600" />
+        <StatCard icon={Trophy} label="Ranking Elo" value={clube.ranking_elo ?? 1000} color={clube.cor_principal} accent="bg-blue-500/10 text-blue-600" />
+        <StatCard icon={Flame} label="Win Streak" value={clube.win_streak ?? 0} color={clube.cor_principal} accent="bg-orange-500/10 text-orange-600" />
       </div>
 
       <div className="grid grid-cols-2 gap-4">

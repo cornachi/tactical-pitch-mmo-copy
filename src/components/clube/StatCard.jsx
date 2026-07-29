@@ -1,10 +1,13 @@
 import React from "react";
 import { Card } from "@/components/ui/card";
 
-export default function StatCard({ icon: Icon, label, value, accent }) {
+export default function StatCard({ icon: Icon, label, value, accent, color }) {
   return (
     <Card className="p-4 flex items-center gap-3">
-      <div className={`flex items-center justify-center w-10 h-10 rounded-lg ${accent || "bg-primary/10 text-primary"}`}>
+      <div
+        className={`flex items-center justify-center w-10 h-10 rounded-lg ${color ? "" : accent || "bg-primary/10 text-primary"}`}
+        style={color ? { backgroundColor: color, color: "#fff" } : undefined}
+      >
         <Icon className="w-5 h-5" />
       </div>
       <div>
