@@ -18,6 +18,7 @@ export default function ModalDesafio({ clube, open, onOpenChange }) {
   const [aposta, setAposta] = useState(100);
   const [erro, setErro] = useState("");
   const [iniciando, setIniciando] = useState(false);
+  const [h2h, setH2h] = useState(null);
 
   useEffect(() => {
     if (!open) return;
@@ -38,15 +39,21 @@ export default function ModalDesafio({ clube, open, onOpenChange }) {
   const selecionar = async (rival) => {
     setSelecionado(rival);
     setEspionagem(null);
+    setH2h(null);
     setErro("");
     try {
-      const res = await base44.functions.invoke("espionarClube", { clube_id: rival.id });
-      const data = res?.data ?? res;
-      if (data && data.error) {
-        setErro(data.error);
+      const [resEsp, resH2h] = await Promise.all([
+        base44.functions.invoke("espionarClube", { clube_id: rival.id }),
+        base44.functions.invoke("historicoConfrontos", { clube_a_id: clube.id, clube_b_id: rival.id }),
+      ]);
+      const esp = resEsp?.data ?? resEsp;
+      if (esp && esp.error) {
+        setErro(esp.error);
       } else {
-        setEspionagem(data);
+        setEspionagem(esp);
       }
+      const hd = resH2h?.data ?? resH2h;
+      if (hd && !hd.error) setH2h(hd);
     } catch (e) {
       setErro(e.response?.data?.error || e.message || "Falha ao espionar");
     }
@@ -140,6 +147,15 @@ export default function ModalDesafio({ clube, open, onOpenChange }) {
                       <span className="font-semibold">Nv {a.nivel}</span>
                     </div>
                   ))}
+                </div>
+              )}
+              {h2h && (
+                <div className="text-sm pt-2 border-t">
+                  <span className="text-muted-foreground">Retrospecto Direto: </span>
+                  <span className="font-semibold">
+                    {h2h.vitorias}V - {h2h.empates}E - {h2h.derrotas}D
+                  </span>
+                  <span className="text-muted-foreground"> ({h2h.jogos} jogos)</span>
                 </div>
               )}
             </Card>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
-import { Coins, Trophy, Flame, Zap, Swords, Activity, Users } from "lucide-react";
+import { Coins, Trophy, Flame, Zap, Swords, Activity, Users, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import ClubeHeader from "@/components/clube/ClubeHeader";
@@ -10,12 +10,15 @@ import CriarClubeForm from "@/components/clube/CriarClubeForm";
 import PartidaRapida from "@/components/partida/PartidaRapida";
 import ModalDesafio from "@/components/partida/ModalDesafio";
 import MetaBanner from "@/components/temporada/MetaBanner";
+import RetrospectoCard from "@/components/clube/RetrospectoCard";
+import ModalConquistas from "@/components/conquistas/ModalConquistas";
 
 export default function Home() {
   const [clube, setClube] = useState(null);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState("");
   const [desafioOpen, setDesafioOpen] = useState(false);
+  const [conquistasOpen, setConquistasOpen] = useState(false);
 
   const carregar = async () => {
     try {
@@ -68,6 +71,8 @@ export default function Home() {
         </Card>
       </div>
 
+      <RetrospectoCard clubeId={clube.id} />
+
       <PartidaRapida clube={clube} />
 
       <Button variant="outline" className="w-full" size="lg" onClick={() => setDesafioOpen(true)}>
@@ -78,6 +83,10 @@ export default function Home() {
       <Button asChild variant="outline" className="w-full" size="lg">
         <Link to="/ranking"><Trophy className="w-4 h-4 mr-2" />Ranking Global</Link>
       </Button>
+      <Button variant="outline" className="w-full" size="lg" onClick={() => setConquistasOpen(true)}>
+        <Award className="w-4 h-4 mr-2" />Conquistas
+      </Button>
+      <ModalConquistas clubeId={clube.id} open={conquistasOpen} onOpenChange={setConquistasOpen} onResgatado={carregar} />
       <Button asChild className="w-full" size="lg">
         <Link to="/equipe"><Users className="w-4 h-4 mr-2" />Gerenciar Equipe (Árvore Tática)</Link>
       </Button>
