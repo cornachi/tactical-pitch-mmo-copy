@@ -256,3 +256,24 @@ export function gerarLances(desafiante, desafiado, placarHome, placarAway, momen
   lances.sort((a, b) => a.minuto - b.minuto);
   return lances;
 }
+
+// Gera cartões amarelos e expulsões (vermelhos) ponderados pela agressividade
+// (poder defensivo / pressão) de cada lado. Retorna eventos narráveis e a lista
+// de expulsões para aplicação da penalidade de -20% no momentum/stamina.
+export function gerarCartoes(defHome, defAway) {
+  const eventos = [];
+  const expulsoes = [];
+  const minuto = () => 1 + Math.floor(Math.random() * 89);
+  for (const [lado, def] of [["home", defHome], ["away", defAway]]) {
+    const agressividade = def || 6;
+    const nAmarelos = Math.min(4, Math.floor(agressividade / 22) + Math.floor(Math.random() * 2));
+    for (let i = 0; i < nAmarelos; i++) eventos.push({ minuto: minuto(), lado, tipo: "amarelo" });
+    const chanceVerm = 0.06 + agressividade / 260;
+    if (Math.random() < chanceVerm) {
+      const m = minuto();
+      eventos.push({ minuto: m, lado, tipo: "vermelho" });
+      expulsoes.push({ lado, minuto: m });
+    }
+  }
+  return { eventos, expulsoes };
+}

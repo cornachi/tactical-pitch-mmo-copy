@@ -1,25 +1,38 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Activity, Gauge, Forward, HeartPulse, AlertTriangle } from "lucide-react";
+import { Activity, Gauge, Forward, HeartPulse, AlertTriangle, Pause } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import EscudoClube from "@/components/clube/EscudoClube";
 import CampoFutebol from "@/components/partida/CampoFutebol";
+import MomentumLive from "@/components/partida/MomentumLive";
 
 const DURACAO_BASE = 60000; // 60s reais em 1x = 90 min de jogo
 const VELOCIDADES = [1, 2, 4];
+const POSTURAS = [
+  { key: "ULTRA_OFENSIVO", label: "Ultra Ofensivo", desc: "+Pressão ofensiva, mais desgaste", emoji: "🔥" },
+  { key: "EQUILIBRADO", label: "Equilibrado", desc: "Postura padrão", emoji: "⚖️" },
+  { key: "CONTRA_ATAQUE", label: "Contra-Ataque", desc: "Recuar e castigar em transição", emoji: "🏹" },
+];
 
 export default function SimulacaoPartida({ result, onConcluir }) {
   const desafiante = result.desafiante;
   const desafiado = result.desafiado;
   const lances = result.lances_narracao || [];
   const momentum = result.momentum || [];
+  const expulsoes = result.expulsoes || [];
 
   const [elapsed, setElapsed] = useState(0);
   const [velocidade, setVelocidade] = useState(1);
   const [finalizado, setFinalizado] = useState(false);
+  const [intervalo, setIntervalo] = useState(false);
+  const [postura, setPostura] = useState(null);
   const lastTsRef = useRef(null);
   const beepedRef = useRef(new Set());
+  const pausadoRef = useRef(false);
+  const intervaloMostradoRef = useRef(false);
+  const intervaloTimerRef = useRef(null);
+  const narraRef = useRef(null);
 
   useEffect(() => {
     lastTsRef.current = null;
@@ -28,10 +41,12 @@ export default function SimulacaoPartida({ result, onConcluir }) {
       if (lastTsRef.current == null) lastTsRef.current = ts;
       const dt = ts - lastTsRef.current;
       lastTsRef.current = ts;
-      setElapsed((prev) => {
-        const next = prev + dt * velocidade;
-        return next >= DURACAO_BASE ? DURACAO_BASE : next;
-      });
+      if (!pausadoRef.current) {
+        setElapsed((prev) => {
+          const next = prev + dt * velocidade;
+          return next >= DURACAO_BASE ? DURACAO_BASE : next;
+        });
+      }
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
@@ -39,6 +54,20 @@ export default function SimulacaoPartida({ result, onConcluir }) {
   }, [velocidade]);
 
   const minutoJogo = Math.min(90, Math.round((elapsed / DURACAO_BASE) * 90));
+
+  // Intervalo tático aos 45'
+  useEffect(() => {
+    if (minutoJogo >= 45 && !intervaloMostradoRef.current) {
+      intervaloMostradoRef.current = true;
+      pausadoRef.current = true;
+      setIntervalo(true);
+      intervaloTimerRef.current = setTimeout(() => {
+        pausadoRef.current = false;
+        setIntervalo(false);
+      }, 3000);
+    }
+    if (minutoJogo >= 90) setFinalizado(true);
+  }, [minutoJogo]);
 
   useEffect(() => {
     const m = minutoJogo;
@@ -48,8 +77,21 @@ export default function SimulacaoPartida({ result, onConcluir }) {
         tocarBeep();
       }
     });
-    if (m >= 90) setFinalizado(true);
   }, [minutoJogo, lances]);
+
+  // Auto-scroll da narração para o último lance (topo)
+  useEffect(() => {
+    if (narraRef.current) narraRef.current.scrollTop = 0;
+  }, [minutoJogo]);
+
+  useEffect(() => () => { if (intervaloTimerRef.current) clearTimeout(intervaloTimerRef.current); }, []);
+
+  const escolherPostura = (p) => {
+    setPostura(p);
+    if (intervaloTimerRef.current) clearTimeout(intervaloTimerRef.current);
+    pausadoRef.current = false;
+    setIntervalo(false);
+  };
 
   const tocarBeep = () => {
     try {
@@ -73,10 +115,23 @@ export default function SimulacaoPartida({ result, onConcluir }) {
   // --- Resistência física (stamina) ---
   const taxaPerda = (prep, fisico) => {
     const reducao = Math.min(0.55, (prep || 0) * 0.035 + Math.min(24, fisico || 0) * 0.01);
-    return 0.75 * (1 - reducao); // % por minuto de jogo
+    return 0.75 * (1 - reducao);
   };
-  const staminaHome = Math.max(0, 100 - taxaPerda(desafiante.comissao_prep_fisico, desafiante.fisico) * minutoJogo);
-  const staminaAway = Math.max(0, 100 - taxaPerda(desafiado.comissao_prep_fisico, desafiado.fisico) * minutoJogo);
+  const tH = taxaPerda(desafiante.comissao_prep_fisico, desafiante.fisico);
+  const tA = taxaPerda(desafiado.comissao_prep_fisico, desafiado.fisico);
+  const drainMul = minutoJogo > 45
+    ? (postura === "ULTRA_OFENSIVO" ? 1.25 : postura === "CONTRA_ATAQUE" ? 0.85 : 1)
+    : 1;
+  const perdaHome = tH * Math.min(minutoJogo, 45) + (minutoJogo > 45 ? tH * (minutoJogo - 45) * drainMul : 0);
+  const perdaAway = tA * Math.min(minutoJogo, 45) + (minutoJogo > 45 ? tA * (minutoJogo - 45) * drainMul : 0);
+
+  const redCardHome = expulsoes.some((e) => e.lado === "home" && e.minuto <= minutoJogo);
+  const redCardAway = expulsoes.some((e) => e.lado === "away" && e.minuto <= minutoJogo);
+
+  let staminaHome = Math.max(0, 100 - perdaHome);
+  let staminaAway = Math.max(0, 100 - perdaAway);
+  if (redCardHome) staminaHome *= 0.8;
+  if (redCardAway) staminaAway *= 0.8;
 
   const corHome = desafiante.cor_principal || "#3b82f6";
   const corAway = desafiado.cor_principal || "#f43f5e";
@@ -84,133 +139,179 @@ export default function SimulacaoPartida({ result, onConcluir }) {
   const golHome = lances.filter((l) => l.tipo === "GOL" && l.clube_autor_id === desafiante.id && l.minuto <= minutoJogo).length;
   const golAway = lances.filter((l) => l.tipo === "GOL" && l.clube_autor_id === desafiado.id && l.minuto <= minutoJogo).length;
 
-  // Momentum ao vivo com penalidade de cansaço.
+  // Momentum ao vivo com postura (2º tempo) e penalidade de expulsão (-20%).
   const bloco = momentum.find((b) => minutoJogo >= b.inicio && minutoJogo <= b.fim) || momentum[momentum.length - 1];
-  let domHome = bloco ? bloco.dominancia_pct.home : 50;
-  domHome = Math.max(8, Math.min(92, Math.round(domHome + Math.sin(elapsed / 600) * 6)));
+  let baseHome = bloco ? bloco.dominancia_pct.home : 50;
+  if (minutoJogo > 45 && postura === "ULTRA_OFENSIVO") baseHome += 12;
+  if (minutoJogo > 45 && postura === "CONTRA_ATAQUE") baseHome -= 6;
+  baseHome = Math.max(5, Math.min(95, Math.round(baseHome + Math.sin(elapsed / 600) * 6)));
+  const effHome = redCardHome ? 0.8 : 1;
+  const effAway = redCardAway ? 0.8 : 1;
+  let domHome = (baseHome * effHome) / (baseHome * effHome + (100 - baseHome) * effAway) * 100;
+  domHome = Math.max(5, Math.min(95, Math.round(domHome)));
   if (staminaHome < 30) domHome = Math.max(5, domHome - 8);
   if (staminaAway < 30) domHome = Math.min(92, domHome + 8);
 
   const revealed = lances.filter((l) => l.minuto <= minutoJogo).sort((a, b) => b.minuto - a.minuto);
-
   const pular = () => onConcluir();
 
+  const iconForLance = (l) => {
+    if (l.tipo === "GOL") return "⚽ ";
+    if (l.tipo === "CARTAO_VERMELHO") return "🟥 ";
+    if (l.tipo === "CARTAO_AMARELO") return "🟨 ";
+    return "";
+  };
+
+  const posturaLabel = postura ? POSTURAS.find((p) => p.key === postura)?.label : null;
+
   return (
-    <div className="max-w-2xl mx-auto py-6 flex flex-col items-center space-y-4">
-      {/* Controle de velocidade + pular */}
-      <div className="w-full flex items-center justify-center gap-2">
-        <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
-          {VELOCIDADES.map((v) => (
-            <button
-              key={v}
-              onClick={() => setVelocidade(v)}
-              className={`px-3 py-1 rounded-md text-sm font-semibold transition ${
-                velocidade === v ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {v}x
-            </button>
-          ))}
-        </div>
-        <Button variant="outline" size="sm" onClick={pular} className="gap-1">
-          <Forward className="w-4 h-4" /> Pular
-        </Button>
-      </div>
-
-      {/* Placar dinâmico */}
-      <div className="w-full flex items-center justify-center gap-4">
-        <div className="flex flex-col items-center gap-1 flex-1">
-          <EscudoClube clube={desafiante} size={48} />
-          <span className="text-xs font-medium truncate max-w-full text-center">{desafiante.nome_clube}</span>
-        </div>
-        <div className="flex items-center gap-3 text-4xl font-bold tabular-nums">
-          <motion.span key={golHome} initial={{ scale: 1.6 }} animate={{ scale: 1 }} style={{ color: corHome }}>{golHome}</motion.span>
-          <span className="text-muted-foreground font-light text-2xl">:</span>
-          <motion.span key={golAway} initial={{ scale: 1.6 }} animate={{ scale: 1 }} style={{ color: corAway }}>{golAway}</motion.span>
-        </div>
-        <div className="flex flex-col items-center gap-1 flex-1">
-          <EscudoClube clube={desafiado} size={48} />
-          <span className="text-xs font-medium truncate max-w-full text-center">{desafiado.nome_clube}</span>
-        </div>
-      </div>
-
-      {/* Barras de resistência */}
-      <div className="w-full grid grid-cols-2 gap-3">
-        <BarraResistencia cor={corHome} nome={desafiante.nome_clube} stamina={staminaHome} />
-        <BarraResistencia cor={corAway} nome={desafiado.nome_clube} stamina={staminaAway} align="right" />
-      </div>
-
-      {/* Campo 2D */}
-      <CampoFutebol
-        minutoJogo={minutoJogo}
-        domHome={domHome}
-        lances={lances}
-        desafiante={desafiante}
-        desafiado={desafiado}
-        corHome={corHome}
-        corAway={corAway}
-      />
-
-      {/* Relógio + progresso */}
-      <div className="w-full text-center">
-        <div className="text-2xl font-bold tabular-nums flex items-center justify-center gap-2">
-          <Gauge className="w-4 h-4 text-muted-foreground" /> {minutoJogo}'
-        </div>
-        <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden mt-1">
-          <div className="h-full bg-primary transition-all duration-100" style={{ width: `${(minutoJogo / 90) * 100}%` }} />
-        </div>
-      </div>
-
-      {/* Barra de momentum */}
-      <div className="w-full">
-        <p className="text-xs text-muted-foreground mb-1 text-center">Momentum ao vivo</p>
-        <div className="h-3 w-full rounded-full overflow-hidden flex">
-          <div style={{ width: `${domHome}%`, background: corHome, transition: "width 0.1s linear" }} />
-          <div style={{ width: `${100 - domHome}%`, background: corAway, transition: "width 0.1s linear" }} />
-        </div>
-        <div className="flex justify-between text-xs mt-0.5">
-          <span style={{ color: corHome }}>{domHome}%</span>
-          <span style={{ color: corAway }}>{100 - domHome}%</span>
-        </div>
-      </div>
-
-      {/* Ticker de narração */}
-      <Card className="w-full p-0 overflow-hidden">
-        <div className="bg-muted px-3 py-2 text-xs font-semibold flex items-center gap-2">
-          <Activity className="w-4 h-4 text-rose-500" /> Narração ao Vivo
-        </div>
-        <div className="max-h-[240px] min-h-[200px] overflow-y-auto p-3 space-y-2">
-          {revealed.length === 0 && !finalizado && (
-            <p className="text-sm text-muted-foreground text-center py-8">A bola está rolando...</p>
-          )}
-          <AnimatePresence initial={false}>
-            {revealed.map((l, i) => {
-              const isGoal = l.tipo === "GOL";
-              const isLatest = i === 0;
-              return (
-                <motion.div
-                  key={`${l.minuto}-${l.tipo}-${l.clube_autor_id}`}
-                  initial={{ opacity: 0, x: -12, scale: 0.96 }}
-                  animate={{ opacity: 1, x: 0, scale: 1 }}
-                  className={`flex gap-2 p-2 rounded-lg text-sm ${
-                    isGoal ? "bg-amber-500/15 border border-amber-500/40" : isLatest ? "bg-muted/60" : ""
-                  }`}
+    <div className="max-w-6xl mx-auto p-2 sm:p-4 relative">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* COLUNA ESQUERDA */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-center gap-2">
+            <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+              {VELOCIDADES.map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setVelocidade(v)}
+                  className={`px-3 py-1 rounded-md text-sm font-semibold transition ${velocidade === v ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
                 >
-                  <span className="font-bold tabular-nums shrink-0 text-muted-foreground">{l.minuto}'</span>
-                  <span className={isGoal ? "font-semibold" : ""}>{isGoal && "⚽ "}{l.texto_narrativo}</span>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
+                  {v}x
+                </button>
+              ))}
+            </div>
+            <Button variant="outline" size="sm" onClick={pular} className="gap-1">
+              <Forward className="w-4 h-4" /> Pular
+            </Button>
+          </div>
+
+          {/* Placar dinâmico */}
+          <div className="flex items-center justify-center gap-4">
+            <div className="flex flex-col items-center gap-1 flex-1">
+              <EscudoClube clube={desafiante} size={44} />
+              <span className="text-xs font-medium truncate max-w-full text-center">{desafiante.nome_clube}</span>
+            </div>
+            <div className="flex items-center gap-3 text-4xl font-bold tabular-nums">
+              <motion.span key={golHome} initial={{ scale: 1.6 }} animate={{ scale: 1 }} style={{ color: corHome }}>{Number(golHome)}</motion.span>
+              <span className="text-muted-foreground font-light text-2xl">:</span>
+              <motion.span key={golAway} initial={{ scale: 1.6 }} animate={{ scale: 1 }} style={{ color: corAway }}>{Number(golAway)}</motion.span>
+            </div>
+            <div className="flex flex-col items-center gap-1 flex-1">
+              <EscudoClube clube={desafiado} size={44} />
+              <span className="text-xs font-medium truncate max-w-full text-center">{desafiado.nome_clube}</span>
+            </div>
+          </div>
+
+          {/* Barras de resistência */}
+          <div className="grid grid-cols-2 gap-3">
+            <BarraResistencia cor={corHome} nome={desafiante.nome_clube} stamina={staminaHome} />
+            <BarraResistencia cor={corAway} nome={desafiado.nome_clube} stamina={staminaAway} align="right" />
+          </div>
+
+          {/* Campo 2D */}
+          <CampoFutebol
+            minutoJogo={minutoJogo}
+            domHome={domHome}
+            lances={lances}
+            desafiante={desafiante}
+            desafiado={desafiado}
+            corHome={corHome}
+            corAway={corAway}
+          />
+
+          {/* Relógio + progresso */}
+          <div className="text-center">
+            <div className="text-2xl font-bold tabular-nums flex items-center justify-center gap-2 flex-wrap">
+              <span className="flex items-center gap-1"><Gauge className="w-4 h-4 text-muted-foreground" /> {minutoJogo}'</span>
+              {postura && minutoJogo > 45 && (
+                <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">{posturaLabel}</span>
+              )}
+              {(redCardHome || redCardAway) && (
+                <span className="text-xs font-semibold text-rose-600 flex items-center gap-0.5"><AlertTriangle className="w-3 h-3" /> Expulsão</span>
+              )}
+            </div>
+            <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden mt-1">
+              <div className="h-full bg-primary transition-all duration-100" style={{ width: `${(minutoJogo / 90) * 100}%` }} />
+            </div>
+          </div>
         </div>
-      </Card>
+
+        {/* COLUNA DIREITA */}
+        <div className="space-y-3">
+          <MomentumLive momentum={momentum} minutoJogo={minutoJogo} corHome={corHome} corAway={corAway} domHome={domHome} />
+
+          {/* Ticker de narração */}
+          <Card className="p-0 overflow-hidden flex flex-col max-h-[300px] lg:max-h-[55vh]">
+            <div className="bg-muted px-3 py-2 text-xs font-semibold flex items-center gap-2 shrink-0">
+              <Activity className="w-4 h-4 text-rose-500" /> Narração ao Vivo
+            </div>
+            <div ref={narraRef} className="flex-1 overflow-y-auto p-3 space-y-2 min-h-[200px]">
+              {revealed.length === 0 && !finalizado && (
+                <p className="text-sm text-muted-foreground text-center py-8">A bola está rolando...</p>
+              )}
+              <AnimatePresence initial={false}>
+                {revealed.map((l, i) => {
+                  const isGoal = l.tipo === "GOL";
+                  const isCard = l.tipo === "CARTAO_VERMELHO" || l.tipo === "CARTAO_AMARELO";
+                  const isLatest = i === 0;
+                  return (
+                    <motion.div
+                      key={`${l.minuto}-${l.tipo}-${l.clube_autor_id}-${i}`}
+                      initial={{ opacity: 0, x: -12, scale: 0.96 }}
+                      animate={{ opacity: 1, x: 0, scale: 1 }}
+                      className={`flex gap-2 p-2 rounded-lg text-sm ${
+                        isGoal ? "bg-amber-500/15 border border-amber-500/40" : isCard ? "bg-rose-500/10 border border-rose-500/30" : isLatest ? "bg-muted/60" : ""
+                      }`}
+                    >
+                      <span className="font-bold tabular-nums shrink-0 text-muted-foreground">{l.minuto}'</span>
+                      <span className={isGoal ? "font-semibold" : isCard ? "font-medium" : ""}>{iconForLance(l)}{l.texto_narrativo}</span>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </div>
+          </Card>
+        </div>
+      </div>
+
+      {/* Overlay de Intervalo Tático */}
+      <AnimatePresence>
+        {intervalo && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <motion.div initial={{ scale: 0.9, y: 10 }} animate={{ scale: 1, y: 0 }} className="bg-card rounded-2xl p-6 max-w-md w-full space-y-4 shadow-2xl">
+              <div className="text-center space-y-1">
+                <Pause className="w-10 h-10 mx-auto text-primary" />
+                <h2 className="text-xl font-bold">⏸️ Intervalo de Jogo</h2>
+                <p className="text-sm text-muted-foreground">Ajuste a postura tática para o 2º tempo:</p>
+              </div>
+              <div className="space-y-2">
+                {POSTURAS.map((p) => (
+                  <button
+                    key={p.key}
+                    onClick={() => escolherPostura(p.key)}
+                    className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left transition ${postura === p.key ? "border-primary bg-primary/10" : "border-border hover:bg-muted"}`}
+                  >
+                    <span className="text-2xl">{p.emoji}</span>
+                    <div>
+                      <p className="font-semibold">{p.label}</p>
+                      <p className="text-xs text-muted-foreground">{p.desc}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-center text-muted-foreground">Retomando automaticamente em 3s...</p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Botão final */}
       <AnimatePresence>
         {finalizado && (
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="w-full space-y-2">
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md mx-auto mt-4 space-y-2">
             <p className="text-center text-sm text-muted-foreground">
-              Apito final! {desafiante.nome_clube} {result.placar_home} x {result.placar_away} {desafiado.nome_clube}
+              Apito final! {desafiante.nome_clube} {Number(result.placar_home)} x {Number(result.placar_away)} {desafiado.nome_clube}
             </p>
             <Button className="w-full" size="lg" onClick={onConcluir}>Ver Relatório Completo & Insights</Button>
           </motion.div>

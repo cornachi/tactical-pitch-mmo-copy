@@ -7,6 +7,7 @@ import {
   atualizarElo,
   gerarMomentum,
   gerarLances,
+  gerarCartoes,
 } from "./tactical.ts";
 import { getMeta, aplicarMetaEfeito } from "./metas.ts";
 import { registrarProgresso } from "./missoes.ts";
@@ -55,7 +56,30 @@ export async function simularCore(base44, opts) {
   const scoreHome = vencedor === "home" ? 1 : vencedor === "empate" ? 0.5 : 0;
 
   const momentum = gerarMomentum(attrsHome, attrsAway, dom, placar_home, placar_away, desafiante.comissao_prep_fisico, desafiado.comissao_prep_fisico);
-  const lances_narracao = gerarLances(desafiante, desafiado, placar_home, placar_away, momentum);
+
+  // Cartões e expulsões baseados na agressividade/defesa de cada lado.
+  const { eventos: cartoes, expulsoes } = gerarCartoes(defHome, defAway);
+  // Penalidade permanente de -20% na força de momentum do time com jogador expulso.
+  expulsoes.forEach((exp) => {
+    const pen = exp.lado;
+    const out = pen === "home" ? "away" : "home";
+    momentum.forEach((b) => {
+      if (b.fim >= exp.minuto) {
+        b.dominancia_pct[pen] = Math.round(b.dominancia_pct[pen] * 0.8);
+        b.dominancia_pct[out] = 100 - b.dominancia_pct[pen];
+      }
+    });
+  });
+
+  const lancesBase = gerarLances(desafiante, desafiado, placar_home, placar_away, momentum);
+  const cartoesNarr = cartoes.map((c) => {
+    const clube = c.lado === "home" ? desafiante : desafiado;
+    const texto = c.tipo === "vermelho"
+      ? `Aos ${c.minuto}' - Falta dura e o árbitro mostra cartão VERMELHO! ${clube.nome_clube} fica com um a menos 🟥.`
+      : `Aos ${c.minuto}' - Falta dura e o árbitro mostra cartão amarelo para ${clube.nome_clube} 🟨.`;
+    return { minuto: c.minuto, tipo: c.tipo === "vermelho" ? "CARTAO_VERMELHO" : "CARTAO_AMARELO", clube_autor_id: clube.id, texto_narrativo: texto, lado: c.lado };
+  });
+  const lances_narracao = [...lancesBase, ...cartoesNarr].sort((a, b) => a.minuto - b.minuto);
 
   const updateHome = {};
   const updateAway = {};
@@ -199,6 +223,7 @@ Retorne JSON no formato {"insights": ["insight1", "insight2", "insight3"]}.`;
     novo_elo_desafiante: novoEloHome,
     momentum,
     lances_narracao,
+    expulsoes,
     insights,
   };
 }

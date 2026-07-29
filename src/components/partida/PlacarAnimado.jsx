@@ -20,7 +20,7 @@ export default function PlacarAnimado({ home, away, nomeHome, nomeAway, clubeHom
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
-          {home}
+          {Number(home)}
         </motion.p>
       </div>
       <span className="text-2xl text-muted-foreground font-light">×</span>
@@ -34,7 +34,7 @@ export default function PlacarAnimado({ home, away, nomeHome, nomeAway, clubeHom
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          {away}
+          {Number(away)}
         </motion.p>
       </div>
     </motion.div>
