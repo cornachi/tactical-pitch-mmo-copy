@@ -16,7 +16,7 @@ export default async function(req) {
       const med = c.medico_nivel || 0;
       return {
         id: c.id,
-        energia_matchmaking: 6 + med,
+        energia_matchmaking: 20 + med,
         energia_desafio: 3 + Math.floor(med / 2),
       };
     });

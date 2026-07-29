@@ -57,7 +57,7 @@ export default function Home() {
           </div>
           <div>
             <p className="text-xs text-muted-foreground">Energia Matchmaking</p>
-            <p className="text-xl font-bold">{clube.energia_matchmaking ?? 0}<span className="text-sm text-muted-foreground">/6</span></p>
+            <p className="text-xl font-bold">{clube.energia_matchmaking ?? 0}<span className="text-sm text-muted-foreground">/{20 + (clube.medico_nivel || 0)}</span></p>
           </div>
         </Card>
         <Card className="p-4 flex items-center gap-3">

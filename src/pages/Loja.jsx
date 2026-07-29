@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Coins, Check, ShieldCheck } from "lucide-react";
+import { Coins, Check, ShieldCheck, Zap, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -11,11 +11,19 @@ const PACOTES = [
   { id: "dono", nome: "Dono de Clube", moedas: 1000000, valor: 149.9, selo: "Melhor Custo-Benefício" },
 ];
 
+const ENERGIA_PACOTES = [
+  { id: "e5", qtd: 5, custo: 300, nome: "+5 Energias" },
+  { id: "e10", qtd: 10, custo: 500, nome: "+10 Energias" },
+  { id: "e20", qtd: 20, custo: 800, nome: "+20 Energias", selo: "Mais Econômico" },
+];
+
 export default function Loja() {
   const [clube, setClube] = useState(null);
   const [loading, setLoading] = useState(true);
   const [comprando, setComprando] = useState("");
+  const [comprandoEnergia, setComprandoEnergia] = useState("");
   const [sucesso, setSucesso] = useState(null);
+  const [sucessoEnergia, setSucessoEnergia] = useState(null);
   const [erro, setErro] = useState("");
 
   const carregar = async () => {
@@ -46,6 +54,23 @@ export default function Loja() {
       setErro(e.response?.data?.error || e.message || "Falha na compra");
     } finally {
       setComprando("");
+    }
+  };
+
+  const comprarEnergia = async (pacote) => {
+    setComprandoEnergia(pacote.id);
+    setErro("");
+    setSucessoEnergia(null);
+    try {
+      const res = await base44.functions.invoke("comprarEnergia", { qtd: pacote.qtd });
+      const data = res?.data ?? res;
+      if (data?.error) { setErro(data.error); return; }
+      setSucessoEnergia({ nome: pacote.nome, credito: data.energias_creditadas, energia: data.energia_matchmaking, max: data.max_energia });
+      carregar();
+    } catch (e) {
+      setErro(e.response?.data?.error || e.message || "Falha na compra de energia");
+    } finally {
+      setComprandoEnergia("");
     }
   };
 
@@ -88,6 +113,40 @@ export default function Loja() {
             </Button>
           </Card>
         ))}
+      </div>
+
+      {/* Recarga de Energia */}
+      <div className="pt-2">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-xl font-bold flex items-center gap-2"><Zap className="w-5 h-5 text-amber-500" /> Recarga de Energia</h2>
+          {clube && (
+            <span className="text-sm text-muted-foreground">Energia: <strong className="text-foreground">{clube.energia_matchmaking ?? 0}</strong> / {20 + (clube.medico_nivel || 0)}</span>
+          )}
+        </div>
+        {sucessoEnergia && (
+          <Card className="p-3 mb-3 bg-amber-500/10 border-amber-500/30">
+            <p className="flex items-center gap-2 text-amber-700 font-semibold"><Zap className="w-4 h-4" /> +{sucessoEnergia.credito} energias creditadas!</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Saldo de energia: {sucessoEnergia.energia} / {sucessoEnergia.max}</p>
+          </Card>
+        )}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {ENERGIA_PACOTES.map((e) => (
+            <Card key={e.id} className="p-4 flex flex-col relative">
+              {e.selo && (
+                <span className="absolute top-2 right-2 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-500 text-white">{e.selo}</span>
+              )}
+              <div className="flex items-center gap-2 mb-1">
+                <Zap className="w-6 h-6 text-amber-500" />
+                <span className="text-2xl font-bold text-amber-600">{e.nome}</span>
+              </div>
+              <p className="text-sm text-muted-foreground mb-2">Energias de Matchmaking</p>
+              <p className="text-lg font-bold">{e.custo.toLocaleString("pt-BR")} <span className="text-sm font-normal text-muted-foreground">moedas</span></p>
+              <Button className="w-full mt-3" disabled={comprandoEnergia === e.id} onClick={() => comprarEnergia(e)}>
+                {comprandoEnergia === e.id ? <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Comprando...</> : "Comprar"}
+              </Button>
+            </Card>
+          ))}
+        </div>
       </div>
 
       <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-1.5">
