@@ -1,10 +1,11 @@
-import React from "react";
-import { Outlet, Link, useLocation } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
-import { Shield, Home, Users, Trophy, ShoppingBag, Building, Medal } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Shield, Home, Users, Trophy, ShoppingBag, Building, Medal, ChevronLeft } from "lucide-react";
+import { base44 } from "@/api/base44Client";
 import NotificationCenter from "@/components/notificacao/NotificationCenter";
 import DesafiosNavItem from "@/components/desafio/DesafiosNavItem";
 import LanguageSelector from "@/components/i18n/LanguageSelector";
+import KeepAliveOutlet from "@/components/KeepAliveOutlet";
 import { useI18n } from "@/i18n/I18nContext";
 import { cn } from "@/lib/utils";
 
@@ -26,9 +27,54 @@ const MOBILE_TABS = [
   { to: "/loja", labelKey: "nav.loja", icon: ShoppingBag },
 ];
 
+const MAIN_TABS = ["/", "/equipe", "/estadio", "/copa", "/loja"];
+
+function resolveHeader(pathname) {
+  if (MAIN_TABS.includes(pathname)) return { sub: false };
+  const staticMap = {
+    "/ranking": "Ranking",
+    "/missoes": "Missões",
+    "/desafios": "Desafios",
+    "/torneios": "Torneios",
+    "/simular-partida": "Simulação",
+    "/pre-partida": "Pré-Partida",
+    "/resultado-partida": "Resultado",
+    "/torneios/criar": "Criar Torneio",
+    "/relatorio-tatico": "Relatório Tático",
+  };
+  if (staticMap[pathname]) return { sub: true, label: staticMap[pathname] };
+  if (pathname.startsWith("/desafios/relatorio/")) return { sub: true, label: "Relatório do Desafio" };
+  if (pathname.startsWith("/torneios/")) {
+    return { sub: true, label: null, torneioId: pathname.split("/")[2] };
+  }
+  return { sub: true, label: "Tactical Pitch" };
+}
+
 export default function Layout() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const { t } = useI18n();
+  const [torneioNome, setTorneioNome] = useState(null);
+
+  const headerInfo = resolveHeader(pathname);
+
+  useEffect(() => {
+    if (headerInfo.torneioId) {
+      setTorneioNome(null);
+      base44.entities.Torneio.get(headerInfo.torneioId)
+        .then((tr) => setTorneioNome(tr?.nome || "Torneio"))
+        .catch(() => setTorneioNome("Torneio"));
+    } else {
+      setTorneioNome(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  const mobileTitle = headerInfo.sub
+    ? headerInfo.torneioId
+      ? (torneioNome || "Torneio")
+      : headerInfo.label
+    : "Tactical Pitch";
 
   return (
     <div className="min-h-screen bg-background">
@@ -71,16 +117,30 @@ export default function Layout() {
         </div>
       </header>
 
-      {/* Mobile top header */}
+      {/* Mobile top header (back arrow + section name on sub-routes) */}
       <header
         className="flex md:hidden sticky top-0 z-40 border-b bg-background/95 backdrop-blur"
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
-        <div className="w-full flex items-center justify-between px-4 h-12">
-          <Link to="/" className="flex items-center gap-2 font-bold">
-            <Shield className="w-5 h-5 text-primary" />
-            <span className="text-base">Tactical Pitch</span>
-          </Link>
+        <div className="w-full flex items-center gap-1 px-2 h-12">
+          {headerInfo.sub ? (
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-0.5 text-sm font-medium text-muted-foreground hover:text-foreground px-1.5 py-1 -ml-1"
+              aria-label="Voltar"
+            >
+              <ChevronLeft className="w-5 h-5" />
+              <span>Voltar</span>
+            </button>
+          ) : (
+            <Link to="/" className="flex items-center gap-2 font-bold px-1.5">
+              <Shield className="w-5 h-5 text-primary" />
+            </Link>
+          )}
+          <span className="font-semibold truncate flex-1 text-center">
+            {mobileTitle}
+          </span>
           <div className="flex items-center gap-1">
             <LanguageSelector />
             <NotificationCenter />
@@ -88,19 +148,9 @@ export default function Layout() {
         </div>
       </header>
 
-      {/* Page content with framer-motion transitions */}
+      {/* Page content: keep-alive para abas + transição para sub-rotas */}
       <main className="pb-20 md:pb-0">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={pathname}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.18 }}
-          >
-            <Outlet />
-          </motion.div>
-        </AnimatePresence>
+        <KeepAliveOutlet />
       </main>
 
       {/* Mobile bottom tab bar */}

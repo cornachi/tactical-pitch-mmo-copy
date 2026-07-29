@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import EscudoClube from "@/components/clube/EscudoClube";
+import PullToRefresh from "@/components/PullToRefresh";
 import { useI18n } from "@/i18n/I18nContext";
 
 const STATUS_LABEL = {
@@ -61,6 +62,7 @@ export default function Torneios() {
   if (loading) return <div className="p-8 text-center text-muted-foreground">{t("common.carregando")}</div>;
 
   return (
+    <PullToRefresh onRefresh={carregar}>
     <div className="max-w-3xl mx-auto p-4 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold flex items-center gap-2"><Trophy className="w-6 h-6 text-amber-500" /> {t("torneios.criar")}</h1>
@@ -93,5 +95,6 @@ export default function Torneios() {
         ))}
       </div>
     </div>
+    </PullToRefresh>
   );
 }

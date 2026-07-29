@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Coins, Trophy, Flame, Zap, Swords, Activity, Users, Award, Building, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -16,6 +16,7 @@ import ModalConquistas from "@/components/conquistas/ModalConquistas";
 import TermometroTorcida from "@/components/clube/TermometroTorcida";
 import SalaTrofeus from "@/components/clube/SalaTrofeus";
 import DeletarConta from "@/components/clube/DeletarConta";
+import PullToRefresh from "@/components/PullToRefresh";
 import { useI18n } from "@/i18n/I18nContext";
 
 export default function Home() {
@@ -25,6 +26,7 @@ export default function Home() {
   const [desafioOpen, setDesafioOpen] = useState(false);
   const [conquistasOpen, setConquistasOpen] = useState(false);
   const { t } = useI18n();
+  const { pathname } = useLocation();
 
   const carregar = async () => {
     try {
@@ -45,6 +47,7 @@ export default function Home() {
   if (!clube) return <CriarClubeForm onCriado={carregar} />;
 
   return (
+    <PullToRefresh onRefresh={carregar} enabled={pathname === "/"}>
     <div className="max-w-4xl mx-auto p-4 space-y-6">
       <MetaBanner />
       <ClubeHeader clube={clube} />
@@ -110,5 +113,6 @@ export default function Home() {
 
       <DeletarConta />
     </div>
+    </PullToRefresh>
   );
 }

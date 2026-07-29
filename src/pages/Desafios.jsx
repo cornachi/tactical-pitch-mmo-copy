@@ -5,6 +5,7 @@ import { Swords, Coins, Check, X, Loader2, ArrowLeft, History, Inbox, Send } fro
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import EscudoClube from "@/components/clube/EscudoClube";
+import PullToRefresh from "@/components/PullToRefresh";
 
 const STATUS_LABEL = {
   PENDENTE: "Pendente",
@@ -123,6 +124,7 @@ export default function Desafios() {
   };
 
   return (
+    <PullToRefresh onRefresh={carregar}>
     <div className="max-w-4xl mx-auto p-4 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold flex items-center gap-2"><Swords className="w-6 h-6 text-rose-500" /> Central de Desafios</h1>
@@ -187,5 +189,6 @@ export default function Desafios() {
         )}
       </section>
     </div>
+    </PullToRefresh>
   );
 }
