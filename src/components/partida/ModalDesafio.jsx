@@ -54,7 +54,7 @@ export default function ModalDesafio({ clube, open, onOpenChange }) {
 
   const iniciar = async () => {
     setErro("");
-    const apostaNum = Math.max(0, Number(aposta) || 0);
+    const apostaNum = Math.min(Math.max(0, Number(aposta) || 0), 1000);
     if (apostaNum > (clube.moedas || 0)) {
       setErro("Aposta maior que suas moedas disponíveis");
       return;
@@ -146,10 +146,11 @@ export default function ModalDesafio({ clube, open, onOpenChange }) {
 
             <div className="space-y-1">
               <label className="text-sm font-medium flex items-center gap-1"><Coins className="w-4 h-4 text-amber-500" />Aposta em Moedas</label>
-              <Input type="number" min={0} max={clube.moedas || 0} value={aposta} onChange={(e) => setAposta(e.target.value)} />
+              <Input type="number" min={0} max={Math.min(1000, clube.moedas || 0)} value={aposta} onChange={(e) => setAposta(e.target.value)} />
               <p className="text-xs text-muted-foreground">
                 Você tem {clube.moedas ?? 0} moedas • Energia de desafio: {clube.energia_desafio ?? 0}/3
               </p>
+              <p className="text-xs text-muted-foreground">Teto máximo de aposta por desafio: 1.000 moedas</p>
             </div>
 
             {erro && <p className="text-sm text-destructive">{erro}</p>}

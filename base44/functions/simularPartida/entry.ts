@@ -26,7 +26,7 @@ export default async function(req) {
       return Response.json({ error: 'tipo_partida inválido (use MATCHMAKING ou DESAFIO)' }, { status: 400 });
     }
 
-    const aposta = Math.max(0, aposta_moedas || 0);
+    const aposta = Math.min(Math.max(0, aposta_moedas || 0), 1000);
 
     // Carrega os clubes.
     const desafiante = await base44.asServiceRole.entities.Clube.get(desafiante_id);
