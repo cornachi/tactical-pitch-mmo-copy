@@ -1,0 +1,25 @@
+{
+  "name": "AtributoTatico",
+  "type": "object",
+  "properties": {
+    "clube_id": {
+      "type": "string",
+      "title": "Clube ID",
+      "description": "ID do clube ao qual o atributo pertence"
+    },
+    "nome_atributo": {
+      "type": "string",
+      "title": "Nome do Atributo",
+      "description": "Nome do atributo t\u00e1tico (ex: passe, finaliza\u00e7\u00e3o, defesa)"
+    },
+    "nivel": {
+      "type": "integer",
+      "title": "N\u00edvel",
+      "default": 1
+    }
+  },
+  "required": [
+    "clube_id",
+    "nome_atributo"
+  ]
+}

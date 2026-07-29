@@ -1,0 +1,26 @@
+{
+  "name": "Conquista",
+  "type": "object",
+  "properties": {
+    "clube_id": {
+      "type": "string",
+      "title": "Clube ID",
+      "description": "ID do clube que desbloqueou a conquista"
+    },
+    "titulo_obtido": {
+      "type": "string",
+      "title": "T\u00edtulo Obtido",
+      "description": "T\u00edtulo da conquista desbloqueada (ex: 'Mestre da Posse')"
+    },
+    "data_desbloqueio": {
+      "type": "string",
+      "format": "date",
+      "title": "Data de Desbloqueio"
+    }
+  },
+  "required": [
+    "clube_id",
+    "titulo_obtido",
+    "data_desbloqueio"
+  ]
+}

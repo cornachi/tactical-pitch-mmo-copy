@@ -1,0 +1,67 @@
+{
+  "name": "Clube",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "title": "User ID",
+      "description": "ID do usu\u00e1rio dono do clube"
+    },
+    "nome_clube": {
+      "type": "string",
+      "title": "Nome do Clube"
+    },
+    "pais": {
+      "type": "string",
+      "title": "Pa\u00eds"
+    },
+    "moedas": {
+      "type": "integer",
+      "title": "Moedas",
+      "default": 1000,
+      "description": "Moedas do clube (bigint, padr\u00e3o 1000)"
+    },
+    "xp": {
+      "type": "integer",
+      "title": "XP",
+      "default": 0,
+      "description": "Experi\u00eancia do clube (bigint, padr\u00e3o 0)"
+    },
+    "ranking_elo": {
+      "type": "integer",
+      "title": "Ranking Elo",
+      "default": 1000
+    },
+    "energia_matchmaking": {
+      "type": "integer",
+      "title": "Energia Matchmaking",
+      "default": 6
+    },
+    "energia_desafio": {
+      "type": "integer",
+      "title": "Energia Desafio",
+      "default": 3
+    },
+    "win_streak": {
+      "type": "integer",
+      "title": "Win Streak",
+      "default": 0
+    },
+    "especializacao": {
+      "type": "string",
+      "title": "Especializa\u00e7\u00e3o",
+      "enum": [
+        "POSSE",
+        "CONTRA_ATAQUE",
+        "PRESSAO",
+        "EQUILIBRADO"
+      ],
+      "default": "EQUILIBRADO"
+    }
+  },
+  "required": [
+    "user_id",
+    "nome_clube",
+    "pais"
+  ]
+}
