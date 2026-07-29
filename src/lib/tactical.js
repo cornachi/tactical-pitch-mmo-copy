@@ -44,12 +44,13 @@ export const ESPECIALIZACAO_LABELS = {
   EQUILIBRADO: "Equilibrado",
 };
 
-export function calcularCustoEvolucao(nivelAtual, nomeAtributo, especializacao) {
+export function calcularCustoEvolucao(nivelAtual, nomeAtributo, especializacao, ctNivel = 0) {
   const custoBase = 100 * Math.pow(1.15, nivelAtual - 1);
   const categoriaAtributo = CATEGORIA_POR_ATRIBUTO[nomeAtributo];
   const categoriaFavorita = CATEGORIA_DA_ESPECIALIZACAO[especializacao];
-  if (categoriaFavorita && categoriaAtributo === categoriaFavorita) {
-    return Math.floor(custoBase * 0.9);
-  }
-  return Math.floor(custoBase);
+  let desconto = 0;
+  if (categoriaFavorita && categoriaAtributo === categoriaFavorita) desconto += 0.10;
+  desconto += 0.01 * (ctNivel || 0);
+  desconto = Math.min(0.85, desconto);
+  return Math.floor(custoBase * (1 - desconto));
 }

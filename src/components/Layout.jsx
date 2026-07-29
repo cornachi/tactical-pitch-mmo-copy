@@ -1,12 +1,13 @@
 import React from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { Shield, Home, Users, Trophy, ShoppingBag } from "lucide-react";
+import { Shield, Home, Users, Trophy, ShoppingBag, Building } from "lucide-react";
 import NotificationCenter from "@/components/notificacao/NotificationCenter";
 import { cn } from "@/lib/utils";
 
 const NAV = [
   { to: "/", label: "Dashboard", icon: Home },
   { to: "/equipe", label: "Equipe", icon: Users },
+  { to: "/estadio", label: "Estádio", icon: Building },
   { to: "/ranking", label: "Ranking", icon: Trophy },
   { to: "/loja", label: "Loja", icon: ShoppingBag },
 ];

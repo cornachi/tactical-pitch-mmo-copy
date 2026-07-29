@@ -58,10 +58,17 @@ export default async function(req) {
     const attrsHome = await base44.asServiceRole.entities.AtributoTatico.filter({ clube_id: desafiante_id });
     const attrsAway = await base44.asServiceRole.entities.AtributoTatico.filter({ clube_id: desafiado_id });
 
-    const atkHomeBase = poderAtaque(attrsHome);
-    const defHomeBase = poderDefesa(attrsHome);
-    const atkAwayBase = poderAtaque(attrsAway);
-    const defAwayBase = poderDefesa(attrsAway);
+    let atkHomeBase = poderAtaque(attrsHome);
+    let defHomeBase = poderDefesa(attrsHome);
+    let atkAwayBase = poderAtaque(attrsAway);
+    let defAwayBase = poderDefesa(attrsAway);
+
+    // Auxiliar Tático: bônus de pontos táticos temporários no atributo mais forte.
+    const boostAux = (nivel) => (nivel || 0) * 1.5;
+    if (atkHomeBase >= defHomeBase) atkHomeBase += boostAux(desafiante.comissao_auxiliar_tatico);
+    else defHomeBase += boostAux(desafiante.comissao_auxiliar_tatico);
+    if (atkAwayBase >= defAwayBase) atkAwayBase += boostAux(desafiado.comissao_auxiliar_tatico);
+    else defAwayBase += boostAux(desafiado.comissao_auxiliar_tatico);
 
     // Evento Meta da temporada ativa afeta todas as partidas do mês.
     const temporadaAtiva = (await base44.asServiceRole.entities.Temporada.filter({ ativa: true }))[0];
@@ -81,7 +88,7 @@ export default async function(req) {
     const vencedor = placar_home > placar_away ? 'home' : placar_home < placar_away ? 'away' : 'empate';
     const scoreHome = vencedor === 'home' ? 1 : vencedor === 'empate' ? 0.5 : 0;
 
-    const momentum = gerarMomentum(attrsHome, attrsAway, dom, placar_home, placar_away);
+    const momentum = gerarMomentum(attrsHome, attrsAway, dom, placar_home, placar_away, desafiante.comissao_prep_fisico, desafiado.comissao_prep_fisico);
     const lances_narracao = gerarLances(desafiante, desafiado, placar_home, placar_away, momentum);
 
     // Atualizações de saldo / ELO / XP por tipo de partida.
@@ -121,6 +128,9 @@ export default async function(req) {
       } else {
         novaWinStreak = 0;
       }
+      // Bônus de moedas do mandante: Estádio (+2%/nível) + Analista (+1,5%/nível em vitórias).
+      const bonusHome = 1 + 0.02 * (desafiante.estadio_nivel || 0) + (vencedor === 'home' ? 0.015 * (desafiante.comissao_analista || 0) : 0);
+      coinsHome = Math.round(coinsHome * bonusHome);
       updateHome.win_streak = novaWinStreak;
       updateHome.moedas = (desafiante.moedas || 0) + coinsHome;
       updateHome.xp = (desafiante.xp || 0) + xpHome;
@@ -131,9 +141,10 @@ export default async function(req) {
     } else {
       updateHome.energia_desafio = (desafiante.energia_desafio || 0) - 1;
       let transfer = 0;
+      const bonusHome = 1 + 0.02 * (desafiante.estadio_nivel || 0) + (vencedor === 'home' ? 0.015 * (desafiante.comissao_analista || 0) : 0);
       if (vencedor === 'home') {
-        transfer = aposta;
-        updateHome.moedas = (desafiante.moedas || 0) + aposta;
+        transfer = Math.round(aposta * bonusHome);
+        updateHome.moedas = (desafiante.moedas || 0) + transfer;
         updateAway.moedas = Math.max(0, (desafiado.moedas || 0) - aposta);
       } else if (vencedor === 'away') {
         transfer = -aposta;

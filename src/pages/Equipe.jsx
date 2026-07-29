@@ -94,7 +94,7 @@ export default function Equipe() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {ATRIBUTOS_INICIAIS.filter((a) => a.categoria === cat.key).map((a) => {
               const nivel = nivelDe(a.nome);
-              const custo = calcularCustoEvolucao(nivel, a.nome, clube.especializacao);
+              const custo = calcularCustoEvolucao(nivel, a.nome, clube.especializacao, clube.ct_nivel);
               const comDesconto = catFav === a.categoria;
               const podePagar = (clube.moedas || 0) >= custo;
               return (

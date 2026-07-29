@@ -1,26 +1,36 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
-import { Trophy, Coins } from "lucide-react";
+import { Trophy } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import EscudoClube from "@/components/clube/EscudoClube";
-import { premiacaoPorPosicao } from "@/lib/metas";
-import { ESPECIALIZACAO_LABELS } from "@/lib/tactical";
+
+const RANKINGS = [
+  { key: "global", label: "🏆 Global (ELO)", valorLabel: "Pontos ELO" },
+  { key: "vitorias", label: "⚔️ Mais Vitórias", valorLabel: "Vitórias no mês" },
+  { key: "ataque", label: "⚽ Melhor Ataque", valorLabel: "Gols pró no mês" },
+  { key: "defesa", label: "🛡️ Melhor Defesa", valorLabel: "Gols sofridos no mês" },
+  { key: "desafios", label: "🔥 Rei dos Desafios", valorLabel: "Vitórias em Desafio" },
+  { key: "infra", label: "🏛️ Maior Infraestrutura", valorLabel: "Soma dos níveis" },
+  { key: "comissao", label: "🎓 Melhor Comissão", valorLabel: "Soma dos níveis" },
+];
 
 export default function Ranking() {
-  const [todos, setTodos] = useState([]);
-  const [meuClube, setMeuClube] = useState(null);
+  const [dados, setDados] = useState(null);
+  const [meuClubeId, setMeuClubeId] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       try {
-        const user = await base44.auth.me();
-        const clubes = await base44.entities.Clube.filter({ user_id: user.id });
-        setMeuClube(clubes[0] || null);
-        const lista = await base44.entities.Clube.list("-ranking_elo", 2000);
-        setTodos(lista);
+        const res = await base44.functions.invoke("rankingsMensais", {});
+        const data = res?.data ?? res;
+        if (data && !data.error) {
+          setDados(data.rankings);
+          setMeuClubeId(data.meu_clube_id);
+        }
       } catch (e) {
         /* ignore */
       } finally {
@@ -29,83 +39,71 @@ export default function Ranking() {
     })();
   }, []);
 
-  if (loading) {
-    return <div className="p-8 text-center text-muted-foreground">Carregando ranking...</div>;
-  }
+  if (loading) return <div className="p-8 text-center text-muted-foreground">Carregando rankings...</div>;
+  if (!dados) return <div className="p-8 text-center text-muted-foreground">Falha ao carregar rankings.</div>;
 
-  const top100 = todos.slice(0, 100);
-  const minhaPos = meuClube ? todos.findIndex((c) => c.id === meuClube.id) + 1 : 0;
-  const meuPremio = premiacaoPorPosicao(minhaPos);
   const medalha = (pos) => (pos === 1 ? "🥇" : pos === 2 ? "🥈" : pos === 3 ? "🥉" : null);
+
+  const renderLista = (lista) => {
+    if (!lista || lista.length === 0) {
+      return <p className="text-sm text-muted-foreground text-center py-6">Sem dados ainda neste mês.</p>;
+    }
+    return (
+      <Card className="divide-y">
+        {lista.map((r) => {
+          const souEu = r.id === meuClubeId;
+          const clube = { id: r.id, nome_clube: r.nome, is_bot: r.is_bot, cor_principal: r.cor_principal, icone_escudo: r.icone_escudo };
+          return (
+            <div key={r.id} className={`flex items-center gap-3 p-3 ${souEu ? "bg-primary/10" : ""}`}>
+              <span className="w-8 text-center font-bold">{medalha(r.pos) || r.pos}</span>
+              <EscudoClube clube={clube} size={36} />
+              <div className="flex-1 min-w-0">
+                <p className="font-medium truncate flex items-center gap-2">
+                  {r.nome}
+                  {r.is_bot && <span className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground">BOT</span>}
+                  {souEu && <span className="text-xs text-primary">(Você)</span>}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="font-bold">{r.valor}</p>
+              </div>
+            </div>
+          );
+        })}
+      </Card>
+    );
+  };
 
   return (
     <div className="max-w-3xl mx-auto p-4 space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Trophy className="w-6 h-6 text-amber-500" />Ranking Global
+          <Trophy className="w-6 h-6 text-amber-500" />Rankings
         </h1>
         <Button asChild variant="outline">
           <Link to="/">Voltar</Link>
         </Button>
       </div>
 
-      {meuClube && (
-        <Card className="p-4 bg-gradient-to-r from-primary/10 to-primary/5 border-primary">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary text-primary-foreground font-bold">
-                {minhaPos}º
-              </div>
-              <EscudoClube clube={meuClube} size={36} />
-              <div>
-                <p className="font-bold">{meuClube.nome_clube}</p>
-                <p className="text-sm text-muted-foreground">Sua posição atual</p>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-muted-foreground">ELO</p>
-              <p className="font-bold text-lg">{meuClube.ranking_elo ?? 1000}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-muted-foreground flex items-center gap-1 justify-end">
-                <Coins className="w-3 h-3" />Premiação estimada
-              </p>
-              <p className="font-bold text-amber-600">{meuPremio.toLocaleString("pt-BR")}</p>
-            </div>
-          </div>
-        </Card>
-      )}
+      <p className="text-xs text-muted-foreground">
+        Premiação dos rankings especiais: 1º lugar recebe até 10% do prêmio do 1º lugar global; demais posições recebem proporcionalmente.
+      </p>
 
-      <Card className="divide-y">
-        {top100.map((c, i) => {
-          const pos = i + 1;
-          const souEu = meuClube?.id === c.id;
-          return (
-            <div key={c.id} className={`flex items-center gap-3 p-3 ${souEu ? "bg-primary/10" : ""}`}>
-              <span className="w-8 text-center font-bold">{medalha(pos) || pos}</span>
-              <EscudoClube clube={c} size={36} />
-              <div className="flex-1 min-w-0">
-                <p className="font-medium truncate flex items-center gap-2">
-                  {c.nome_clube}
-                  {c.is_bot && (
-                    <span className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground">BOT</span>
-                  )}
-                  {souEu && <span className="text-xs text-primary">(Você)</span>}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {ESPECIALIZACAO_LABELS[c.especializacao] || c.especializacao}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="font-bold">{c.ranking_elo ?? 1000}</p>
-                <p className="text-xs text-muted-foreground">
-                  {premiacaoPorPosicao(pos).toLocaleString("pt-BR")} moedas
-                </p>
-              </div>
-            </div>
-          );
-        })}
-      </Card>
+      <Tabs defaultValue="global" className="w-full">
+        <TabsList className="flex flex-wrap h-auto gap-1 w-full">
+          {RANKINGS.map((r) => (
+            <TabsTrigger key={r.key} value={r.key} className="text-xs flex-1 min-w-[45%]">
+              {r.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+        {RANKINGS.map((r) => (
+          <TabsContent key={r.key} value={r.key} className="mt-4 space-y-2">
+            <p className="text-xs text-muted-foreground">{r.valorLabel}</p>
+            {renderLista(dados[r.key])}
+          </TabsContent>
+        ))}
+      </Tabs>
     </div>
   );
 }

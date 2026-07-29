@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { calcularCustoEvolucao, CATEGORIA_POR_ATRIBUTO } from "../../shared/tactical.ts";
+import { calcularCustoEvolucaoComCT, CATEGORIA_POR_ATRIBUTO } from "../../shared/tactical.ts";
 
 export default async function(req) {
   try {
@@ -34,7 +34,7 @@ export default async function(req) {
     }
 
     const nivelAtual = atributo.nivel || 1;
-    const custo = calcularCustoEvolucao(nivelAtual, nome_atributo, clube.especializacao);
+    const custo = calcularCustoEvolucaoComCT(nivelAtual, nome_atributo, clube.especializacao, clube.ct_nivel);
 
     if ((clube.moedas || 0) < custo) {
       return Response.json({

@@ -67,20 +67,50 @@
     "cor_principal": {
       "type": "string",
       "title": "Cor Principal",
-      "default": "#3b82f6",
-      "description": "Cor prim\u00e1ria da identidade visual do clube (hex)"
+      "default": "#3b82f6"
     },
     "cor_secundaria": {
       "type": "string",
       "title": "Cor Secund\u00e1ria",
-      "default": "#ffffff",
-      "description": "Cor secund\u00e1ria da identidade visual do clube (hex)"
+      "default": "#ffffff"
     },
     "icone_escudo": {
       "type": "string",
       "title": "\u00cdcone do Escudo",
-      "default": "escudo",
-      "description": "Chave do \u00edcone do escudo (escudo, estrela, coroa, etc.)"
+      "default": "escudo"
+    },
+    "estadio_nivel": {
+      "type": "integer",
+      "title": "N\u00edvel do Est\u00e1dio",
+      "default": 0,
+      "description": "N\u00edvel infinito do est\u00e1dio (+2% moedas mandante/n\u00edvel)"
+    },
+    "ct_nivel": {
+      "type": "integer",
+      "title": "N\u00edvel do CT",
+      "default": 0,
+      "description": "N\u00edvel infinito do Centro de Treinamento (+1% desconto atributos/n\u00edvel, teto 85%)"
+    },
+    "medico_nivel": {
+      "type": "integer",
+      "title": "N\u00edvel do Dept. M\u00e9dico",
+      "default": 0,
+      "description": "Aumenta o teto e a recupera\u00e7\u00e3o de energia"
+    },
+    "comissao_prep_fisico": {
+      "type": "integer",
+      "title": "Preparador F\u00edsico",
+      "default": 0
+    },
+    "comissao_analista": {
+      "type": "integer",
+      "title": "Analista de Desempenho",
+      "default": 0
+    },
+    "comissao_auxiliar_tatico": {
+      "type": "integer",
+      "title": "Auxiliar T\u00e1tico",
+      "default": 0
     }
   },
   "required": [

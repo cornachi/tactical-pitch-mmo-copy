@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
-import { Coins, Trophy, Flame, Zap, Swords, Activity, Users, Award } from "lucide-react";
+import { Coins, Trophy, Flame, Zap, Swords, Activity, Users, Award, Building } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import ClubeHeader from "@/components/clube/ClubeHeader";
@@ -89,6 +89,9 @@ export default function Home() {
       <ModalConquistas clubeId={clube.id} open={conquistasOpen} onOpenChange={setConquistasOpen} onResgatado={carregar} />
       <Button asChild className="w-full" size="lg">
         <Link to="/equipe"><Users className="w-4 h-4 mr-2" />Gerenciar Equipe (Árvore Tática)</Link>
+      </Button>
+      <Button asChild variant="outline" className="w-full" size="lg">
+        <Link to="/estadio"><Building className="w-4 h-4 mr-2" />Estádio & Comissão</Link>
       </Button>
     </div>
   );

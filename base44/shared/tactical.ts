@@ -50,6 +50,18 @@ export function calcularCustoEvolucao(nivelAtual, nomeAtributo, especializacao) 
   return Math.floor(custoBase);
 }
 
+// Custo de evolução de atributo considerando também o desconto do Centro de
+// Treinamento (ctNivel), com teto acumulado de 85%.
+export function calcularCustoEvolucaoComCT(nivelAtual, nomeAtributo, especializacao, ctNivel) {
+  const base = 100 * Math.pow(1.15, nivelAtual - 1);
+  const catFav = CATEGORIA_DA_ESPECIALIZACAO[especializacao];
+  let desconto = 0;
+  if (catFav && CATEGORIA_POR_ATRIBUTO[nomeAtributo] === catFav) desconto += 0.10;
+  desconto += 0.01 * (ctNivel || 0);
+  desconto = Math.min(0.85, desconto);
+  return Math.floor(base * (1 - desconto));
+}
+
 // --- Motor de simulação de partidas ---
 
 // Categorias ofensivas (posse/construção + transição/contra-ataque) e defensivas.
@@ -122,7 +134,7 @@ export function poderFisico(atributos) {
 // Gera o momentum da partida dividido em 6 blocos de 15 minutos.
 // Cada bloco traz dominância, posse, xG, chutes e eventos (gols/cartões) com minuto exato.
 // Nos blocos 61-75' e 76-90' aplica queda de dominância se o físico/pressão for baixo.
-export function gerarMomentum(attrsHome, attrsAway, dom, placarHome, placarAway) {
+export function gerarMomentum(attrsHome, attrsAway, dom, placarHome, placarAway, prepHome = 0, prepAway = 0) {
   const blocos = [
     { rotulo: "0-15", inicio: 0, fim: 15 },
     { rotulo: "16-30", inicio: 16, fim: 30 },
@@ -139,8 +151,10 @@ export function gerarMomentum(attrsHome, attrsAway, dom, placarHome, placarAway)
     let domHome = dom.dominancia_home + (Math.random() * 20 - 10); // ruído ±10
     // cansaço nos dois últimos blocos: quem tem menos físico perde dominância
     if (i >= 4) {
-      const fadigaHome = Math.max(0, (baseFis - fisHome) / baseFis) * 12;
-      const fadigaAway = Math.max(0, (baseFis - fisAway) / baseFis) * 12;
+      const redHome = Math.min(0.8, 0.1 * (prepHome || 0));
+      const redAway = Math.min(0.8, 0.1 * (prepAway || 0));
+      const fadigaHome = Math.max(0, ((baseFis - fisHome) / baseFis) * 12) * (1 - redHome);
+      const fadigaAway = Math.max(0, ((baseFis - fisAway) / baseFis) * 12) * (1 - redAway);
       domHome = domHome - fadigaHome + fadigaAway * 0.5;
     }
     domHome = Math.max(5, Math.min(95, Math.round(domHome)));
