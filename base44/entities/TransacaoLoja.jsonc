@@ -26,10 +26,10 @@
       ],
       "default": "PENDENTE"
     },
-    "stripe_session_id": {
+    "mercadopago_payment_id": {
       "type": "string",
-      "title": "Stripe Session ID",
-      "description": "ID da sess\u00e3o de checkout do Stripe (garante idempot\u00eancia do cr\u00e9dito)"
+      "title": "Mercado Pago Payment ID",
+      "description": "ID do pagamento no Mercado Pago (garante idempot\u00eancia do cr\u00e9dito via webhook)"
     }
   },
   "required": [
