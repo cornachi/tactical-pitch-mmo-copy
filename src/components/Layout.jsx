@@ -8,6 +8,7 @@ import LanguageSelector from "@/components/i18n/LanguageSelector";
 import KeepAliveOutlet from "@/components/KeepAliveOutlet";
 import { useI18n } from "@/i18n/I18nContext";
 import { cn } from "@/lib/utils";
+import LogoutButton from "@/components/LogoutButton";
 
 const LOGO_URL = "https://media.base44.com/images/public/6a6a15126ba98b43c24c4540/546205407_Gemini_Generated_Image_41fdjs41fdjs41fd.png";
 
@@ -132,6 +133,7 @@ export default function Layout() {
             <LanguageSelector />
             <DesafiosNavItem />
             <NotificationCenter />
+            <LogoutButton />
           </div>
         </div>
       </header>
@@ -163,6 +165,7 @@ export default function Layout() {
           <div className="flex items-center gap-1">
             <LanguageSelector />
             <NotificationCenter />
+            <LogoutButton />
           </div>
         </div>
       </header>
