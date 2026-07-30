@@ -49,7 +49,7 @@ export default function ChaveCopa({ copa, clubesMap }) {
                       {home ? <EscudoClube clube={home} size={24} /> : <span className="w-6 h-6 rounded-full bg-muted" />}
                       <span className={`truncate ${homeVenceu ? "font-bold" : "text-muted-foreground"}`}>{home?.nome_clube || "—"}</span>
                     </span>
-                    <span className="font-mono text-xs px-2 rounded bg-muted">{j.placar_home} x {j.placar_away}</span>
+                    <span className="font-mono text-xs px-2 rounded bg-muted">{Number(j.placar_home)} x {Number(j.placar_away)}</span>
                     <span className="flex items-center gap-1.5 flex-1 min-w-0 justify-end">
                       <span className={`truncate ${!homeVenceu ? "font-bold" : "text-muted-foreground"}`}>{away?.nome_clube || "—"}</span>
                       {away ? <EscudoClube clube={away} size={24} /> : <span className="w-6 h-6 rounded-full bg-muted" />}

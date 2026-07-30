@@ -24,7 +24,7 @@ function MatchCard({ m, clubesMap, onSimular, podeSimular, simulando, isFinal })
         <span className="text-xs text-muted-foreground italic">A definir</span>
       )}
       {m.vencedor_id && (
-        <span className={`ml-auto text-sm font-bold ${venceu ? "text-emerald-600" : "text-muted-foreground"}`}>{placar}</span>
+        <span className={`ml-auto text-sm font-bold ${venceu ? "text-emerald-600" : "text-muted-foreground"}`}>{Number(placar)}</span>
       )}
     </div>
   );

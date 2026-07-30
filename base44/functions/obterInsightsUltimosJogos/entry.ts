@@ -12,19 +12,19 @@ const PERFIL_INFO = {
 
 const RECOMENDACOES = {
   CONTRA_ATAQUE: {
-    atributos: ['Marcação', 'Interceptação', 'Antecipação', 'Recuperação'],
+    atributos: ['Organização Defensiva', 'Defesa de Funil', 'Leitura de Jogo', 'Transição Defensiva (Perda-Pressiona)'],
     ajuste: 'Adote o estilo Pressão para recuperar a bola mais cedo e cortar as transições, ou reforce a defesa investindo no Auxiliar Tático.',
   },
   PRESSAO: {
-    atributos: ['Passe Curto', 'Controle de Bola', 'Visão de Jogo', 'Mobilidade'],
+    atributos: ['Passe Entre Linhas', 'Organização Ofensiva', 'Leitura de Jogo', 'Ataque Posicional'],
     ajuste: 'Adote o estilo Posse para cadenciar e escapar da pressão alta, e invista no Preparador Físico para sustentar a saída de bola.',
   },
   POSSE: {
-    atributos: ['Pressão', 'Desarme', 'Interceptação', 'Contra-Ataque'],
+    atributos: ['Pressão no Portador', 'Intensidade de Pressão', 'Defesa de Funil', 'Transição Ofensiva'],
     ajuste: 'Adote o estilo Pressão ou Contra-Ataque para roubar a bola do time de posse e puni-lo em transição rápida.',
   },
   EQUILIBRADO: {
-    atributos: ['Controle de Bola', 'Desarme', 'Posicionamento Ofensivo'],
+    atributos: ['Organização Ofensiva', 'Organização Defensiva', 'Ataque Posicional'],
     ajuste: 'Equilibre ataque e defesa; evolua o Auxiliar Tático para reforçar o atributo mais forte do seu elenco.',
   },
 };
