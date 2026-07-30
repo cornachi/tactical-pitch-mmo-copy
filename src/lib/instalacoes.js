@@ -1,11 +1,12 @@
 // Espelho frontend de Infraestrutura/Comissão (ver base44/shared/instalacoes.ts).
+// labelKey/descKey são chaves de tradução; label/descricao mantidos como fallback.
 export const INSTALACOES = {
-  estadio: { label: "Estádio", emoji: "🏟️", descricao: "+2% de bônus de moedas como mandante por nível", base: 150, fator: 1.28 },
-  ct: { label: "Centro de Treinamento", emoji: "🏋️", descricao: "+1% de desconto no custo dos atributos por nível (teto 85%)", base: 150, fator: 1.28 },
-  medico: { label: "Departamento Médico", emoji: "🏥", descricao: "Aumenta o teto e a recuperação de energia", base: 150, fator: 1.28 },
-  prep_fisico: { label: "Preparador Físico", emoji: "🏃", descricao: "Reduz a perda de dominância por cansaço nos 15' finais", base: 150, fator: 1.28 },
-  analista: { label: "Analista de Desempenho", emoji: "📊", descricao: "+1,5% de bônus de moedas em vitórias por nível", base: 150, fator: 1.28 },
-  auxiliar_tatico: { label: "Auxiliar Tático", emoji: "🧠", descricao: "Bônus de pontos táticos no atributo mais forte", base: 150, fator: 1.28 },
+  estadio: { labelKey: "inst.estadio", descKey: "inst.estadio.desc", label: "Estádio", emoji: "🏟️", base: 150, fator: 1.28 },
+  ct: { labelKey: "inst.ct", descKey: "inst.ct.desc", label: "Centro de Treinamento", emoji: "🏋️", base: 150, fator: 1.28 },
+  medico: { labelKey: "inst.medico", descKey: "inst.medico.desc", label: "Departamento Médico", emoji: "🏥", base: 150, fator: 1.28 },
+  prep_fisico: { labelKey: "inst.prep_fisico", descKey: "inst.prep_fisico.desc", label: "Preparador Físico", emoji: "🏃", base: 150, fator: 1.28 },
+  analista: { labelKey: "inst.analista", descKey: "inst.analista.desc", label: "Analista de Desempenho", emoji: "📊", base: 150, fator: 1.28 },
+  auxiliar_tatico: { labelKey: "inst.auxiliar_tatico", descKey: "inst.auxiliar_tatico.desc", label: "Auxiliar Tático", emoji: "🧠", base: 150, fator: 1.28 },
 };
 
 export const TIPOS_INSTALACAO = ["estadio", "ct", "medico"];

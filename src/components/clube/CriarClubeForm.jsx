@@ -54,7 +54,7 @@ export default function CriarClubeForm({ onCriado }) {
                 variant={especializacao === op ? "default" : "outline"}
                 onClick={() => setEspecializacao(op)}
               >
-                {ESPECIALIZACAO_LABELS[op]}
+                {t(ESPECIALIZACAO_LABELS[op])}
               </Button>
             ))}
           </div>

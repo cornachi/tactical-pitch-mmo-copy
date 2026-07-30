@@ -1,17 +1,17 @@
 import { Shield, Star, Crown, Flame, Swords, Trophy, Zap, Mountain, Anchor, Feather, Target } from "lucide-react";
 
 export const OPCOES_ICONE = [
-  { key: "escudo", label: "Escudo Tático", Icon: Shield },
-  { key: "estrela", label: "Estrela", Icon: Star },
-  { key: "coroa", label: "Coroa", Icon: Crown },
-  { key: "chama", label: "Chama", Icon: Flame },
-  { key: "espadas", label: "Espadas", Icon: Swords },
-  { key: "trofeu", label: "Troféu", Icon: Trophy },
-  { key: "raio", label: "Raio", Icon: Zap },
-  { key: "montanha", label: "Montanha", Icon: Mountain },
-  { key: "ancora", label: "Âncora", Icon: Anchor },
-  { key: "pena", label: "Pena", Icon: Feather },
-  { key: "mira", label: "Mira", Icon: Target },
+  { key: "escudo", labelKey: "icone.escudo", label: "Escudo Tático", Icon: Shield },
+  { key: "estrela", labelKey: "icone.estrela", label: "Estrela", Icon: Star },
+  { key: "coroa", labelKey: "icone.coroa", label: "Coroa", Icon: Crown },
+  { key: "chama", labelKey: "icone.chama", label: "Chama", Icon: Flame },
+  { key: "espadas", labelKey: "icone.espadas", label: "Espadas", Icon: Swords },
+  { key: "trofeu", labelKey: "icone.trofeu", label: "Troféu", Icon: Trophy },
+  { key: "raio", labelKey: "icone.raio", label: "Raio", Icon: Zap },
+  { key: "montanha", labelKey: "icone.montanha", label: "Montanha", Icon: Mountain },
+  { key: "ancora", labelKey: "icone.ancora", label: "Âncora", Icon: Anchor },
+  { key: "pena", labelKey: "icone.pena", label: "Pena", Icon: Feather },
+  { key: "mira", labelKey: "icone.mira", label: "Mira", Icon: Target },
 ];
 
 export const OPCOES_COR = [

@@ -5,6 +5,7 @@ import { ArrowLeft, TrendingUp, Target, Shield, BarChart3, AlertTriangle, Lightb
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useI18n } from "@/i18n/I18nContext";
+import { ESPECIALIZACAO_LABELS, ATTR_LABEL_BY_NOME } from "@/lib/tactical";
 
 function StatBox({ icon: Icon, label, value, color }) {
   return (
@@ -62,7 +63,7 @@ export default function RelatorioTatico() {
         <Card className="p-4 bg-rose-500/5 border-rose-500/30 flex items-center gap-3">
           <div className="text-2xl">{pior_perfil.emoji}</div>
           <p className="text-sm font-semibold text-rose-700 flex items-center gap-1">
-            <AlertTriangle className="w-4 h-4" /> {t("relatorioTatico.maiorDificuldade")}: {pior_perfil.label} ({pior_perfil.aproveitamento}% {t("relatorioTatico.aprov")})
+            <AlertTriangle className="w-4 h-4" /> {t("relatorioTatico.maiorDificuldade")}: {t(ESPECIALIZACAO_LABELS[pior_perfil.especializacao] || pior_perfil.label)} ({pior_perfil.aproveitamento}% {t("relatorioTatico.aprov")})
           </p>
         </Card>
       )}
@@ -85,7 +86,7 @@ export default function RelatorioTatico() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-2xl">{p.emoji}</span>
-                  <span className="font-bold">{p.label}</span>
+                  <span className="font-bold">{t(ESPECIALIZACAO_LABELS[p.especializacao] || p.label)}</span>
                 </div>
                 <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${p.alerta ? "bg-rose-500/15 text-rose-700" : "bg-emerald-500/15 text-emerald-700"}`}>
                   {p.aproveitamento}%
@@ -118,7 +119,7 @@ export default function RelatorioTatico() {
                     <p className="text-xs text-muted-foreground mb-1">{t("relatorioTatico.atributosRecomendados")}</p>
                     <div className="flex flex-wrap gap-1">
                       {p.recomendacoes.atributos.map((a) => (
-                        <span key={a} className="text-xs bg-amber-500/20 text-amber-800 px-2 py-0.5 rounded-full font-medium">+{a}</span>
+                        <span key={a} className="text-xs bg-amber-500/20 text-amber-800 px-2 py-0.5 rounded-full font-medium">+{t(ATTR_LABEL_BY_NOME[a] || a)}</span>
                       ))}
                     </div>
                   </div>

@@ -85,7 +85,7 @@ export default function IdentidadeClube({ clube, onSalvo }) {
               <button
                 key={o.key}
                 onClick={() => setIcone(o.key)}
-                title={o.label}
+                title={t(o.labelKey)}
                 className={`aspect-square rounded-lg flex items-center justify-center border-2 transition-colors ${
                   icone === o.key ? "border-primary bg-primary/10" : "border-border hover:bg-accent"
                 }`}

@@ -66,7 +66,7 @@ export default function Equipe() {
       {CATEGORIAS.map((cat) => (
         <div key={cat.key} className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">{cat.label}</h2>
+            <h2 className="text-lg font-semibold">{t(cat.labelKey)}</h2>
             {catFav === cat.key && (
               <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-600 font-medium">
                 {t("equipe.descontoEsp")}
@@ -87,7 +87,7 @@ export default function Equipe() {
                       <Star className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="font-medium">{a.nome}</p>
+                      <p className="font-medium">{t(a.labelKey)}</p>
                       <p className="text-xs text-muted-foreground">{t("common.nivel")} {nivel}</p>
                     </div>
                   </div>

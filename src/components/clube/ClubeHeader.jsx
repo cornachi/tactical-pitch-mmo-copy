@@ -15,7 +15,7 @@ export default function ClubeHeader({ clube }) {
       <div className="text-right">
         <p className="text-xs text-muted-foreground">{t("clube.especializacao")}</p>
         <p className="font-semibold">
-          {ESPECIALIZACAO_LABELS[clube.especializacao] || clube.especializacao}
+          {t(ESPECIALIZACAO_LABELS[clube.especializacao] || clube.especializacao)}
         </p>
       </div>
     </div>

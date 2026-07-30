@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Card } from "@/components/ui/card";
 import { Activity, Brain } from "lucide-react";
 import { useI18n } from "@/i18n/I18nContext";
+import { ATTR_LABEL_BY_NOME } from "@/lib/tactical";
 
 const FORMA_STYLE = { V: "bg-emerald-500", E: "bg-amber-500", D: "bg-rose-500" };
 const FORMA_LABEL = { V: "V", E: "E", D: "D" };
@@ -106,7 +107,7 @@ export default function RetrospectoCard({ clubeId }) {
           <div>
             <p className="text-xs text-muted-foreground">{t("retrospecto.armaSecreta")}</p>
             <p className="font-bold text-sm">
-              {stats.arma_secreta.nome} <span className="text-violet-600">{t("common.nivel")} {stats.arma_secreta.nivel}</span>
+              {t(ATTR_LABEL_BY_NOME[stats.arma_secreta.nome] || stats.arma_secreta.nome)} <span className="text-violet-600">{t("common.nivel")} {stats.arma_secreta.nivel}</span>
             </p>
           </div>
         </div>

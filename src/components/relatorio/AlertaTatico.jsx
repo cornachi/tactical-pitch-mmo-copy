@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { AlertTriangle, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useI18n } from "@/i18n/I18nContext";
+import { ESPECIALIZACAO_LABELS } from "@/lib/tactical";
 
 // Widget de alerta tático para o Dashboard: destaca o perfil de adversário
 // contra o qual o clube tem menor rendimento (aproveitamento < 50%).
@@ -35,7 +36,7 @@ export default function AlertaTatico() {
             <AlertTriangle className="w-4 h-4" /> {t("alerta.titulo")}
           </p>
           <p className="text-xs text-muted-foreground">
-            {t("alerta.sofre")} {pior.label}! {t("alerta.aproveitamento")} {pior.aproveitamento}% {t("alerta.jogos")} ({pior.jogos}).
+            {t("alerta.sofre")} {t(ESPECIALIZACAO_LABELS[pior.especializacao] || pior.label)}! {t("alerta.aproveitamento")} {pior.aproveitamento}% {t("alerta.jogos")} ({pior.jogos}).
           </p>
         </div>
         <ChevronRight className="w-5 h-5 text-muted-foreground" />

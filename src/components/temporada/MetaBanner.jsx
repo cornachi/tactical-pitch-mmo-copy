@@ -35,8 +35,8 @@ export default function MetaBanner() {
           <p className="text-xs font-medium text-amber-700 uppercase tracking-wide">
             {t("meta.evento")} {temporada?.mes_ano}
           </p>
-          <p className="font-bold text-lg">{meta.nome}</p>
-          <p className="text-sm text-muted-foreground">{meta.descricao}</p>
+          <p className="font-bold text-lg">{t(meta.nomeKey)}</p>
+          <p className="text-sm text-muted-foreground">{t(meta.descKey)}</p>
         </div>
       </div>
     </div>

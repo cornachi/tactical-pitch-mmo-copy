@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Search, Swords, Coins, Eye, Shield, Check, Zap } from "lucide-react";
-import { ESPECIALIZACAO_LABELS } from "@/lib/tactical";
+import { ESPECIALIZACAO_LABELS, ATTR_LABEL_BY_NOME } from "@/lib/tactical";
 import { useI18n } from "@/i18n/I18nContext";
 
 const TETO_APOSTA = 1000;
@@ -145,11 +145,11 @@ export default function ModalDesafio({ clube, open, onOpenChange }) {
                 <p className="text-sm text-muted-foreground">{t("desafio.espiando")}</p>
               ) : (
                 <div className="space-y-2">
-                  <p className="text-sm">{t("clube.especializacao")} <strong>{ESPECIALIZACAO_LABELS[espionagem.especializacao] || espionagem.especializacao}</strong></p>
+                  <p className="text-sm">{t("clube.especializacao")} <strong>{t(ESPECIALIZACAO_LABELS[espionagem.especializacao] || espionagem.especializacao)}</strong></p>
                   <p className="text-xs text-muted-foreground">{t("desafio.atributosForte")}</p>
                   {(espionagem.atributos_top || []).map((a, i) => (
                     <div key={i} className="flex justify-between text-sm bg-muted/50 rounded px-2 py-1">
-                      <span>{a.nome}</span>
+                      <span>{t(ATTR_LABEL_BY_NOME[a.nome] || a.nome)}</span>
                       <span className="font-semibold">{t("common.nivel")} {a.nivel}</span>
                     </div>
                   ))}

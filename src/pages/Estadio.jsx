@@ -50,8 +50,8 @@ export default function Estadio() {
         <div className="flex items-center gap-3">
           <span className="text-2xl">{c.emoji}</span>
           <div className="flex-1 min-w-0">
-            <p className="font-semibold">{c.label}</p>
-            <p className="text-xs text-muted-foreground">{c.descricao}</p>
+            <p className="font-semibold">{t(c.labelKey)}</p>
+            <p className="text-xs text-muted-foreground">{t(c.descKey)}</p>
           </div>
           <div className="text-right shrink-0">
             <p className="text-xs text-muted-foreground">{t("common.nivel")}</p>

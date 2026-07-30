@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import EscudoClube from "@/components/clube/EscudoClube";
 import { useI18n } from "@/i18n/I18nContext";
+import { ESPECIALIZACAO_LABELS, ATTR_LABEL_BY_NOME } from "@/lib/tactical";
 
 const MODELOS = [
   { key: "ATAQUE_POSICIONAL", labelKey: "pre.ataquePosicional", descKey: "pre.ataquePosicionalDesc", emoji: "🎯" },
@@ -107,7 +108,7 @@ export default function PrePartida() {
           <div className="text-center">
             <EscudoClube clube={adversario} size={48} />
             <p className="font-semibold mt-2 text-sm">{adversario.nome_clube}</p>
-            <p className="text-xs text-muted-foreground">{t("pre.especializacao")} {adversario.especializacao}</p>
+            <p className="text-xs text-muted-foreground">{t("pre.especializacao")} {t(ESPECIALIZACAO_LABELS[adversario.especializacao] || adversario.especializacao)}</p>
           </div>
         </div>
       </Card>
@@ -125,12 +126,12 @@ export default function PrePartida() {
               <p className="text-xs text-muted-foreground mb-1">{t("pre.top3")}</p>
               <div className="flex flex-wrap gap-2">
                 {scout.top3.map((a) => (
-                  <span key={a.nome} className="text-xs px-2 py-1 rounded bg-primary/10">{a.nome} · {t("common.nivel")}{a.nivel}</span>
+                  <span key={a.nome} className="text-xs px-2 py-1 rounded bg-primary/10">{t(ATTR_LABEL_BY_NOME[a.nome] || a.nome)} · {t("common.nivel")}{a.nivel}</span>
                 ))}
               </div>
             </div>
-            <p>{t("pre.modeloPrevisto")} <strong>{scout.modelo_previsao_label}</strong></p>
-            <p>{t("pre.climaPrevisto")} <strong>{scout.clima.emoji} {scout.clima.label}</strong></p>
+            <p>{t("pre.modeloPrevisto")} <strong>{t((MODELOS.find((m) => m.key === scout.modelo_previsao) || {}).labelKey || scout.modelo_previsao)}</strong></p>
+            <p>{t("pre.climaPrevisto")} <strong>{scout.clima.emoji} {t("clima." + scout.clima.key)}</strong></p>
           </div>
         ) : (
           <p className="text-xs text-muted-foreground">{t("pre.revele")}</p>
