@@ -311,3 +311,81 @@ export function gerarCartoes(defHome, defAway) {
   }
   return { eventos, expulsoes };
 }
+
+// Mapeia cada tipo de lance narrado a um atributo tático demandado na partida.
+const ATRIBUTO_POR_LANCE = {
+  GOL: "Eficácia de Finalização",
+  CHUTE_PERIGOSO: "Eficácia de Finalização",
+  DEFESA: "Organização Defensiva",
+  CONTRA_ATAQUE: "Transição Ofensiva",
+  FALTA: "Força de Duelo Individual",
+  CARTAO_AMARELO: "Concentração Tática",
+  CARTAO_VERMELHO: "Concentração Tática",
+};
+
+// Gera o painel de estatísticas pós-jogo: gerais (chutes, chutes a gol, posse,
+// faltas, cartões) + atributos demandados com contagem de solicitações e índice
+// de sucesso (sucesso reflete o nível investido no atributo, com variação).
+export function gerarEstatisticas(attrsHome, attrsAway, desafianteId, desafiadoId, lances, momentum, placarHome, placarAway, xgHome, xgAway) {
+  const nivelHome = Object.fromEntries((attrsHome || []).map((a) => [a.nome_atributo, a.nivel || 1]));
+  const nivelAway = Object.fromEntries((attrsAway || []).map((a) => [a.nome_atributo, a.nivel || 1]));
+  const getNivel = (side, attr) => (side === "home" ? nivelHome[attr] : nivelAway[attr]) || 1;
+
+  const chutesHome = momentum.reduce((s, b) => s + (b.chutes?.home || 0), 0);
+  const chutesAway = momentum.reduce((s, b) => s + (b.chutes?.away || 0), 0);
+  const chutesGolHome = Math.min(chutesHome, Math.round((xgHome || 0) * 2.2 + (placarHome || 0)));
+  const chutesGolAway = Math.min(chutesAway, Math.round((xgAway || 0) * 2.2 + (placarAway || 0)));
+  const posseHome = momentum.length ? Math.round(momentum.reduce((s, b) => s + (b.posse_pct?.home || 0), 0) / momentum.length) : 50;
+
+  let faltasHome = 0, faltasAway = 0, amarelosHome = 0, amarelosAway = 0, vermelhosHome = 0, vermelhosAway = 0;
+  const acc = { home: {}, away: {} };
+  const addSolic = (side, attr, n = 1) => { acc[side][attr] = (acc[side][attr] || 0) + n; };
+
+  (lances || []).forEach((l) => {
+    const side = l.clube_autor_id === desafianteId ? "home" : "away";
+    if (l.tipo === "FALTA" || l.tipo === "CARTAO_AMARELO" || l.tipo === "CARTAO_VERMELHO") {
+      if (side === "home") faltasHome++; else faltasAway++;
+    }
+    if (l.tipo === "CARTAO_AMARELO") { if (side === "home") amarelosHome++; else amarelosAway++; }
+    if (l.tipo === "CARTAO_VERMELHO") { if (side === "home") vermelhosHome++; else vermelhosAway++; }
+    const attr = ATRIBUTO_POR_LANCE[l.tipo];
+    if (attr) addSolic(side, attr);
+  });
+
+  // Posse/defesa derivadas por bloco (liga atributos de construção e pressão ao fluxo).
+  (momentum || []).forEach((b) => {
+    const domSide = (b.posse_pct?.home || 50) >= 50 ? "home" : "away";
+    const defSide = domSide === "home" ? "away" : "home";
+    const domPct = Math.max(b.posse_pct?.home || 50, b.posse_pct?.away || 50);
+    addSolic(domSide, "Passe Entre Linhas", Math.round(domPct / 8));
+    addSolic(defSide, "Pressão no Portador", Math.round((100 - domPct) / 8));
+  });
+
+  const attrSet = new Set([...Object.keys(acc.home), ...Object.keys(acc.away)]);
+  const atributos = [...attrSet]
+    .map((attr) => {
+      const sH = acc.home[attr] || 0;
+      const sA = acc.away[attr] || 0;
+      const sucesso = (side) => {
+        const n = side === "home" ? sH : sA;
+        if (n === 0) return 0;
+        const nivel = getNivel(side, attr);
+        return Math.max(35, Math.min(95, Math.round(45 + nivel * 6 + (Math.random() - 0.5) * 24)));
+      };
+      return { atributo: attr, solicitacoes: { home: sH, away: sA }, sucesso: { home: sucesso("home"), away: sucesso("away") } };
+    })
+    .filter((a) => a.solicitacoes.home > 0 || a.solicitacoes.away > 0)
+    .sort((a, b) => (b.solicitacoes.home + b.solicitacoes.away) - (a.solicitacoes.home + a.solicitacoes.away));
+
+  return {
+    gerais: {
+      chutes: { home: chutesHome, away: chutesAway },
+      chutes_gol: { home: chutesGolHome, away: chutesGolAway },
+      posse: { home: posseHome, away: 100 - posseHome },
+      faltas: { home: faltasHome, away: faltasAway },
+      amarelos: { home: amarelosHome, away: amarelosAway },
+      vermelhos: { home: vermelhosHome, away: vermelhosAway },
+    },
+    atributos,
+  };
+}

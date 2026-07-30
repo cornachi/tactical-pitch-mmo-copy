@@ -7,7 +7,7 @@ import { Crown } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useI18n } from "@/i18n/I18nContext";
 
-export default function MomentumTab({ momentum, nomeHome, nomeAway }) {
+export default function MomentumTab({ momentum, nomeHome, nomeAway, corHome = "#3b82f6", corAway = "#f43f5e" }) {
   const { t } = useI18n();
   if (!momentum || momentum.length === 0) {
     return (
@@ -60,16 +60,16 @@ export default function MomentumTab({ momentum, nomeHome, nomeAway }) {
             <YAxis domain={[0, 100]} unit="%" />
             <Tooltip labelFormatter={(v) => `${v}'`} />
             <ReferenceLine y={50} strokeDasharray="4 4" stroke="#94a3b8" />
-            <Line type="monotone" dataKey="home" name={nomeHome} stroke="#3b82f6" strokeWidth={2} dot={{ r: 3 }} />
-            <Line type="monotone" dataKey="away" name={nomeAway} stroke="#f43f5e" strokeWidth={2} dot={{ r: 3 }} />
+            <Line type="monotone" dataKey="home" name={nomeHome} stroke={corHome} strokeWidth={2} dot={{ r: 3 }} />
+            <Line type="monotone" dataKey="away" name={nomeAway} stroke={corAway} strokeWidth={2} dot={{ r: 3 }} />
             {gols.map((g, i) => (
               <ReferenceDot key={i} x={g.minuto} y={g.y} r={5} fill="#facc15" stroke="#000" strokeWidth={1} />
             ))}
           </LineChart>
         </ResponsiveContainer>
         <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground flex-wrap">
-          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-blue-500" />{nomeHome}</span>
-          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-rose-500" />{nomeAway}</span>
+          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full" style={{ background: corHome }} />{nomeHome}</span>
+          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full" style={{ background: corAway }} />{nomeAway}</span>
           <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-yellow-400 border border-black" />{t("mt.gol")}</span>
         </div>
       </Card>

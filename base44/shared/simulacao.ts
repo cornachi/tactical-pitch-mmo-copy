@@ -7,6 +7,7 @@ import {
   gerarMomentum,
   gerarLances,
   gerarCartoes,
+  gerarEstatisticas,
   CLIMAS,
   MODELO_CONTRA,
   preverModeloJogo,
@@ -147,6 +148,8 @@ export async function simularCore(base44, opts) {
   });
   const lances_narracao = [...lancesBase, ...cartoesNarr].sort((a, b) => a.minuto - b.minuto);
 
+  const estatisticas = gerarEstatisticas(attrsHome, attrsAway, desafianteId, desafiadoId, lances_narracao, momentum, placar_home, placar_away, dom.xg_home, dom.xg_away);
+
   const updateHome = {};
   const updateAway = {};
   let moedas_ganhas = 0;
@@ -265,7 +268,7 @@ Retorne JSON no formato {"insights": ["insight1", "insight2", "insight3"]}.`;
     xg_away: dom.xg_away,
     dominancia_home: dom.dominancia_home,
     aposta_moedas: tipoPartida === "DESAFIO" ? aposta : 0,
-    insights: { insights, dominancia_home: dom.dominancia_home, dominancia_away: dom.dominancia_away, atkHome, atkAway, defHome, defAway, momentum, lances_narracao },
+    insights: { insights, dominancia_home: dom.dominancia_home, dominancia_away: dom.dominancia_away, atkHome, atkAway, defHome, defAway, momentum, lances_narracao, estatisticas },
   });
 
   try {
@@ -302,6 +305,7 @@ Retorne JSON no formato {"insights": ["insight1", "insight2", "insight3"]}.`;
     modelo_adversario: modeloAdversario,
     vantagem_tatica: vantagemTatica,
     termometro_torcida: updateHome.termometro_torcida,
+    estatisticas,
     insights,
   };
 }

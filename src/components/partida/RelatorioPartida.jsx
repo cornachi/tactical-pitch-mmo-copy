@@ -20,7 +20,9 @@ const ICONE_LANCE = {
   CONTRA_ATAQUE: "⚡",
 };
 
-function BarraAtributo({ label, home, away, nomeHome, nomeAway }) {
+function BarraAtributo({ label, home, away, nomeHome, nomeAway, corHome, corAway }) {
+  const cHome = corHome || "#3b82f6";
+  const cAway = corAway || "#f43f5e";
   const total = Math.max(1, home + away);
   const pctHome = Math.round((home / total) * 100);
   return (
@@ -31,8 +33,8 @@ function BarraAtributo({ label, home, away, nomeHome, nomeAway }) {
         <span>{nomeAway}: <strong className="text-foreground">{away}</strong></span>
       </div>
       <div className="flex h-3 rounded-full overflow-hidden bg-muted">
-        <div className="bg-blue-500" style={{ width: `${pctHome}%` }} />
-        <div className="bg-rose-500 flex-1" />
+        <div style={{ width: `${pctHome}%`, background: cHome }} />
+        <div style={{ flex: 1, background: cAway }} />
       </div>
     </div>
   );
@@ -155,15 +157,15 @@ export default function RelatorioPartida({ partida, clubeHome, clubeAway, meuClu
           </table>
         </div>
         <div className="space-y-2 pt-2">
-          <BarraDominancia domHome={partida.dominancia_home ?? ins.dominancia_home} domAway={100 - (partida.dominancia_home ?? ins.dominancia_home ?? 50)} nomeHome={nomeHome} nomeAway={nomeAway} />
+          <BarraDominancia domHome={partida.dominancia_home ?? ins.dominancia_home} domAway={100 - (partida.dominancia_home ?? ins.dominancia_home ?? 50)} nomeHome={nomeHome} nomeAway={nomeAway} corHome={clubeHome.cor_principal} corAway={clubeAway.cor_principal} />
         </div>
       </Card>
 
       <Card className="p-4 space-y-3">
         <h2 className="font-semibold flex items-center gap-2"><Swords className="w-5 h-5 text-rose-500" /> {t("relatorio.atributos")}</h2>
         <div className="space-y-3">
-          <BarraAtributo label={t("relatorio.ataque")} home={atkHome} away={atkAway} nomeHome={nomeHome} nomeAway={nomeAway} />
-          <BarraAtributo label={t("relatorio.defesa")} home={defHome} away={defAway} nomeHome={nomeHome} nomeAway={nomeAway} />
+          <BarraAtributo label={t("relatorio.ataque")} home={atkHome} away={atkAway} nomeHome={nomeHome} nomeAway={nomeAway} corHome={clubeHome.cor_principal} corAway={clubeAway.cor_principal} />
+          <BarraAtributo label={t("relatorio.defesa")} home={defHome} away={defAway} nomeHome={nomeHome} nomeAway={nomeAway} corHome={clubeHome.cor_principal} corAway={clubeAway.cor_principal} />
         </div>
       </Card>
 
@@ -175,7 +177,7 @@ export default function RelatorioPartida({ partida, clubeHome, clubeAway, meuClu
       {momentum.length > 0 && (
         <Card className="p-4">
           <h2 className="font-semibold mb-3 flex items-center gap-2"><Activity className="w-5 h-5 text-blue-500" /> {t("relatorio.momentum")}</h2>
-          <MomentumTab momentum={momentum} nomeHome={nomeHome} nomeAway={nomeAway} />
+          <MomentumTab momentum={momentum} nomeHome={nomeHome} nomeAway={nomeAway} corHome={clubeHome.cor_principal} corAway={clubeAway.cor_principal} />
         </Card>
       )}
     </div>

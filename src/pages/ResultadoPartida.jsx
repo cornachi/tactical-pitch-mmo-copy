@@ -9,6 +9,7 @@ import BarraDominancia from "@/components/partida/BarraDominancia";
 import InsightsTreinador from "@/components/partida/InsightsTreinador";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import MomentumTab from "@/components/partida/MomentumTab";
+import EstatisticasPartida from "@/components/partida/EstatisticasPartida";
 import VozTorcida from "@/components/partida/VozTorcida";
 import { useI18n } from "@/i18n/I18nContext";
 
@@ -47,9 +48,10 @@ export default function ResultadoPartida() {
       </motion.div>
 
       <Tabs defaultValue="resumo" className="w-full">
-        <TabsList className="grid grid-cols-2 w-full">
+        <TabsList className="grid grid-cols-3 w-full">
           <TabsTrigger value="resumo">{t("resultado.resumo")}</TabsTrigger>
           <TabsTrigger value="momentum">{t("resultado.momentum")}</TabsTrigger>
+          <TabsTrigger value="estatisticas">{t("stats.estatisticas")}</TabsTrigger>
         </TabsList>
         <TabsContent value="resumo" className="space-y-6 mt-4">
           <Card className="p-4">
@@ -73,6 +75,8 @@ export default function ResultadoPartida() {
               domAway={r.dominancia_away}
               nomeHome={r.desafiante.nome_clube}
               nomeAway={r.desafiado.nome_clube}
+              corHome={r.desafiante.cor_principal}
+              corAway={r.desafiado.cor_principal}
             />
           </Card>
 
@@ -130,10 +134,13 @@ export default function ResultadoPartida() {
         </TabsContent>
         <TabsContent value="momentum" className="space-y-6 mt-4">
           {r.momentum ? (
-            <MomentumTab momentum={r.momentum} nomeHome={r.desafiante.nome_clube} nomeAway={r.desafiado.nome_clube} />
+            <MomentumTab momentum={r.momentum} nomeHome={r.desafiante.nome_clube} nomeAway={r.desafiado.nome_clube} corHome={r.desafiante.cor_principal} corAway={r.desafiado.cor_principal} />
           ) : (
             <p className="text-sm text-muted-foreground text-center py-8">{t("resultado.semMomentum")}</p>
           )}
+        </TabsContent>
+        <TabsContent value="estatisticas" className="space-y-6 mt-4">
+          <EstatisticasPartida estatisticas={r.estatisticas} clubeHome={r.desafiante} clubeAway={r.desafiado} />
         </TabsContent>
       </Tabs>
 
