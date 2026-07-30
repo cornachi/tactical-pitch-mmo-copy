@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Shield, Home, Users, Trophy, ShoppingBag, Building, Medal, ChevronLeft } from "lucide-react";
+import { Home, Users, Trophy, ShoppingBag, Building, Medal, ChevronLeft } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import NotificationCenter from "@/components/notificacao/NotificationCenter";
 import DesafiosNavItem from "@/components/desafio/DesafiosNavItem";
@@ -8,6 +8,8 @@ import LanguageSelector from "@/components/i18n/LanguageSelector";
 import KeepAliveOutlet from "@/components/KeepAliveOutlet";
 import { useI18n } from "@/i18n/I18nContext";
 import { cn } from "@/lib/utils";
+
+const LOGO_URL = "https://media.base44.com/images/public/6a6a15126ba98b43c24c4540/546205407_Gemini_Generated_Image_41fdjs41fdjs41fd.png";
 
 const NAV = [
   { to: "/", labelKey: "nav.dashboard", icon: Home },
@@ -92,16 +94,18 @@ export default function Layout() {
     : "Tactical Pitch";
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background tactical-field-bg">
       {/* Desktop top navbar */}
       <header
         className="hidden md:flex sticky top-0 z-40 border-b bg-background/95 backdrop-blur"
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
         <div className="max-w-4xl mx-auto w-full flex items-center justify-between px-4 h-14">
-          <Link to="/" className="flex items-center gap-2 font-bold shrink-0">
-            <Shield className="w-5 h-5 text-primary" />
-            <span>Tactical Pitch</span>
+          <Link to="/" className="flex items-center gap-2 shrink-0">
+            <img src={LOGO_URL} alt="Tactical Pitch" className="h-8 w-8 rounded-lg ring-1 ring-primary/50" />
+            <span className="text-base font-extrabold tracking-tight leading-none">
+              <span className="text-foreground">TACTICAL</span>{' '}<span className="text-primary">PITCH</span>
+            </span>
           </Link>
           <nav className="flex items-center gap-1">
             {NAV.map((item) => {
@@ -150,7 +154,7 @@ export default function Layout() {
             </button>
           ) : (
             <Link to="/" className="flex items-center gap-2 font-bold px-1.5">
-              <Shield className="w-5 h-5 text-primary" />
+              <img src={LOGO_URL} alt="Tactical Pitch" className="h-7 w-7 rounded-lg ring-1 ring-primary/50" />
             </Link>
           )}
           <span className="font-semibold truncate flex-1 text-center">
