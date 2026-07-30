@@ -9,6 +9,7 @@ import StatCard from "@/components/clube/StatCard";
 import CriarClubeForm from "@/components/clube/CriarClubeForm";
 import PartidaRapida from "@/components/partida/PartidaRapida";
 import ModalDesafio from "@/components/partida/ModalDesafio";
+import RecargaAnuncioEnergia from "@/components/partida/RecargaAnuncioEnergia";
 import MetaBanner from "@/components/temporada/MetaBanner";
 import RetrospectoCard from "@/components/clube/RetrospectoCard";
 import AlertaTatico from "@/components/relatorio/AlertaTatico";
@@ -44,14 +45,17 @@ export default function Home() {
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <Card className="p-4 flex items-center gap-3">
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-600">
-            <Zap className="w-5 h-5" />
+        <Card className="p-4 space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-600">
+              <Zap className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">{t("home.energiaMatchmaking")}</p>
+              <p className="text-xl font-bold">{clube.energia_matchmaking ?? 0}<span className="text-sm text-muted-foreground">/{20 + (clube.medico_nivel || 0)}</span></p>
+            </div>
           </div>
-          <div>
-            <p className="text-xs text-muted-foreground">{t("home.energiaMatchmaking")}</p>
-            <p className="text-xl font-bold">{clube.energia_matchmaking ?? 0}<span className="text-sm text-muted-foreground">/{20 + (clube.medico_nivel || 0)}</span></p>
-          </div>
+          <RecargaAnuncioEnergia onConcluido={refetch} />
         </Card>
         <Card className="p-4 flex items-center gap-3">
           <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-rose-500/10 text-rose-600">
