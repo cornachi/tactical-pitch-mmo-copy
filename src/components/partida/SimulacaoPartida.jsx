@@ -205,9 +205,9 @@ export default function SimulacaoPartida({ result, onConcluir }) {
               <span className="text-xs font-medium truncate max-w-full text-center">{desafiante.nome_clube}</span>
             </div>
             <div className="flex items-center gap-3 text-4xl font-bold tabular-nums">
-              <motion.span key={golHome} initial={{ scale: 1.6 }} animate={{ scale: 1 }} style={{ color: corHome }}>{Number(golHome)}</motion.span>
+              <span style={{ color: corHome }}>{Number(golHome)}</span>
               <span className="text-muted-foreground font-light text-2xl">:</span>
-              <motion.span key={golAway} initial={{ scale: 1.6 }} animate={{ scale: 1 }} style={{ color: corAway }}>{Number(golAway)}</motion.span>
+              <span style={{ color: corAway }}>{Number(golAway)}</span>
             </div>
             <div className="flex flex-col items-center gap-1 flex-1">
               <EscudoClube clube={desafiado} size={44} />
