@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { gerarDiagnosticoLocalizado, ajusteRecomendacao, SEM_CONFRONTOS, PERFIL_NOME, normalizarIdioma } from "../../shared/i18nConteudo.ts";
 
 // Análise tática das últimas 10 partidas do clube, agrupando os adversários
 // em 4 perfis (Equilibrado, Pressão, Posse, Contra-Ataque) conforme a especialização.
@@ -57,6 +58,9 @@ export default async function(req) {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
+    let idioma = 'pt';
+    try { const body = await req.json(); if (body?.idioma) idioma = body.idioma; } catch (e) {}
+    const lang = normalizarIdioma(idioma);
     const clubes = await base44.asServiceRole.entities.Clube.filter({ user_id: user.id });
     const meu = clubes[0];
     if (!meu) return Response.json({ error: 'Clube não encontrado' }, { status: 404 });
@@ -119,7 +123,7 @@ export default async function(req) {
       const posseMed = jogos ? Math.round(a.posseSum / jogos) : 0;
       const aprov = ap(a.V, a.E, jogos);
       const info = PERFIL_INFO[p];
-      const diagnostico = jogos > 0 ? gerarDiagnostico(p, gpMed, gcMed, posseMed) : 'Sem confrontos registrados neste perfil.';
+      const diagnostico = jogos > 0 ? gerarDiagnosticoLocalizado(p, gpMed, gcMed, posseMed, PERFIL_NOME[lang][p], idioma) : SEM_CONFRONTOS[lang];
       const mostrarPlano = jogos > 0 && aprov < 50;
       const rec = RECOMENDACOES[p];
       return {
@@ -129,7 +133,7 @@ export default async function(req) {
         posse_media: posseMed, aproveitamento: aprov,
         diagnostico,
         alerta: mostrarPlano,
-        recomendacoes: mostrarPlano ? { atributos: rec.atributos, ajuste: rec.ajuste } : null,
+        recomendacoes: mostrarPlano ? { atributos: rec.atributos, ajuste: ajusteRecomendacao(p, idioma) } : null,
       };
     });
 

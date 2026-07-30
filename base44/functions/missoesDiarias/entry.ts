@@ -8,7 +8,7 @@ export default async function(req) {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
-    const { acao, clube_id, missao_id } = body || {};
+    const { acao, clube_id, missao_id, idioma } = body || {};
     if (!clube_id) return Response.json({ error: 'clube_id é obrigatório' }, { status: 400 });
 
     const clube = await base44.asServiceRole.entities.Clube.get(clube_id);
@@ -20,7 +20,7 @@ export default async function(req) {
     const client = base44.asServiceRole;
 
     if (acao === 'listar' || !acao) {
-      const missoes = await getMissoesDiarias(client, clube_id);
+      const missoes = await getMissoesDiarias(client, clube_id, idioma);
       const todasConcluidas = missoes.length >= 3 && missoes.every((m) => m.concluida);
       const bonusResgatado = missoes.length >= 3 && missoes.every((m) => m.bonus_resgatado);
       return Response.json({

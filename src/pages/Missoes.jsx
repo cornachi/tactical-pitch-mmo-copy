@@ -7,7 +7,7 @@ import { Target, Coins, Gift, CheckCircle2, Lock, Loader2, ArrowLeft } from "luc
 import { useI18n } from "@/i18n/I18nContext";
 
 export default function Missoes() {
-  const { t } = useI18n();
+  const { t, idioma } = useI18n();
   const navigate = useNavigate();
   const [clube, setClube] = useState(null);
   const [dados, setDados] = useState(null);
@@ -22,7 +22,7 @@ export default function Missoes() {
       const c = clubes[0];
       setClube(c);
       if (!c) return;
-      const res = await base44.functions.invoke("missoesDiarias", { acao: "listar", clube_id: c.id });
+      const res = await base44.functions.invoke("missoesDiarias", { acao: "listar", clube_id: c.id, idioma });
       const d = res?.data ?? res;
       if (d?.error) { setErro(d.error); return; }
       setDados(d);

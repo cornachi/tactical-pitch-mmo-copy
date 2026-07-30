@@ -11,7 +11,7 @@ import { useClube } from "@/hooks/useClube";
 import { useI18n } from "@/i18n/I18nContext";
 
 export default function Desafios() {
-  const { t } = useI18n();
+  const { t, idioma } = useI18n();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [erro, setErro] = useState("");
@@ -39,7 +39,7 @@ export default function Desafios() {
 
   const responderMutation = useMutation({
     mutationFn: async ({ desafio_id, acao }) => {
-      const res = await base44.functions.invoke("responderDesafio", { desafio_id, acao });
+      const res = await base44.functions.invoke("responderDesafio", { desafio_id, acao, idioma });
       return res?.data ?? res;
     },
     onSuccess: (data, vars) => {

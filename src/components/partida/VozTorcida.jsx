@@ -7,9 +7,9 @@ import { useI18n } from "@/i18n/I18nContext";
 // Calcula o texto uma única vez (useState initializer) para não mudar a
 // cada re-render.
 export default function VozTorcida({ placarHome, placarAway, domHome, domAway, momentum, expulsoes }) {
-  const { t } = useI18n();
+  const { t, idioma } = useI18n();
   const [texto] = useState(() =>
-    gerarVozTorcida({ placarHome, placarAway, domHome, domAway, momentum, expulsoes })
+    gerarVozTorcida({ placarHome, placarAway, domHome, domAway, momentum, expulsoes }, idioma)
   );
 
   return (

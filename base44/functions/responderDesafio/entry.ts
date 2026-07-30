@@ -10,7 +10,7 @@ export default async function(req) {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { desafio_id, acao } = await req.json();
+    const { desafio_id, acao, idioma } = await req.json();
     if (!desafio_id || !['aceitar', 'recusar', 'cancelar'].includes(acao)) {
       return Response.json({ error: 'desafio_id e acao (aceitar|recusar|cancelar) são obrigatórios' }, { status: 400 });
     }
@@ -100,6 +100,7 @@ export default async function(req) {
       aposta,
       consumirEnergia: false,
       potReservado: true,
+      idioma,
     });
 
     const vencedorId = result.vencedor === 'home' ? desafio.desafiante_id

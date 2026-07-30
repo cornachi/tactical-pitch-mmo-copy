@@ -18,7 +18,7 @@ function StatBox({ icon: Icon, label, value, color }) {
 }
 
 export default function RelatorioTatico() {
-  const { t } = useI18n();
+  const { t, idioma } = useI18n();
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,7 +26,7 @@ export default function RelatorioTatico() {
 
   useEffect(() => {
     let active = true;
-    base44.functions.invoke("obterInsightsUltimosJogos", {})
+    base44.functions.invoke("obterInsightsUltimosJogos", { idioma })
       .then((res) => {
         const d = res?.data ?? res;
         if (active) {

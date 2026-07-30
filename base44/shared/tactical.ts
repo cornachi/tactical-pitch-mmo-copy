@@ -2,6 +2,8 @@
 // Os 18 atributos iniciais e o mapeamento atributo -> categoria que define
 // os descontos de custo conforme a especialização do clube.
 
+import { narrar } from "./i18nConteudo.ts";
+
 export const ATRIBUTOS_INICIAIS = [
   { nome: "Organização Ofensiva", categoria: "POSSE" },
   { nome: "Ataque Posicional", categoria: "POSSE" },
@@ -249,7 +251,7 @@ export function gerarMomentum(attrsHome, attrsAway, dom, placarHome, placarAway,
 
 // Gera o feed de narração (lances_narracao) cobrindo os 90 minutos.
 // Inclui os gols reais (no minuto exato) mais 8-12 lances marcantes.
-export function gerarLances(desafiante, desafiado, placarHome, placarAway, momentum) {
+export function gerarLances(desafiante, desafiado, placarHome, placarAway, momentum, idioma = "pt") {
   const lances = [];
   const ocupados = new Set();
 
@@ -261,18 +263,12 @@ export function gerarLances(desafiante, desafiado, placarHome, placarAway, momen
         minuto: e.minuto,
         tipo: "GOL",
         clube_autor_id: autor.id,
-        texto_narrativo: `Aos ${e.minuto}' - ${autor.nome_clube} arma a jogada, o atacante finaliza e É GOOOOOL! A torcida explode!`,
+        texto_narrativo: narrar("GOL", autor.nome_clube, e.minuto, idioma),
       });
     });
   });
 
-  const TIPOS = [
-    { tipo: "CHUTE_PERIGOSO", tpl: (a, m) => `Aos ${m}' - ${a.nome_clube} arrisca de longe, a bola passa raspando a trave!` },
-    { tipo: "DEFESA", tpl: (a, m) => `Aos ${m}' - Contra-ataque de ${a.nome_clube}, mas o goleiro voa e faz defesa espetacular!` },
-    { tipo: "CARTAO", tpl: (a, m) => `Aos ${m}' - Falta dura e o árbitro mostra cartão amarelo para ${a.nome_clube}.` },
-    { tipo: "CONTRA_ATAQUE", tpl: (a, m) => `Aos ${m}' - Recupera a bola e ${a.nome_clube} dispara em contra-ataque em velocidade!` },
-    { tipo: "FALTA", tpl: (a, m) => `Aos ${m}' - Falta perigosa na entrada da área cobrada por ${a.nome_clube}... a bola passa perto!` },
-  ];
+  const TIPOS = ["CHUTE_PERIGOSO", "DEFESA", "CARTAO_AMARELO", "CONTRA_ATAQUE", "FALTA"];
 
   const alvo = 8 + Math.floor(Math.random() * 5); // 8 a 12
   let tentativas = 0;
@@ -281,13 +277,13 @@ export function gerarLances(desafiante, desafiado, placarHome, placarAway, momen
     const m = 1 + Math.floor(Math.random() * 90);
     if (ocupados.has(m)) continue;
     ocupados.add(m);
-    const t = TIPOS[Math.floor(Math.random() * TIPOS.length)];
+    const tipo = TIPOS[Math.floor(Math.random() * TIPOS.length)];
     const autor = Math.random() < 0.5 ? desafiante : desafiado;
     lances.push({
       minuto: m,
-      tipo: t.tipo,
+      tipo,
       clube_autor_id: autor.id,
-      texto_narrativo: t.tpl(autor, m),
+      texto_narrativo: narrar(tipo, autor.nome_clube, m, idioma),
     });
   }
 

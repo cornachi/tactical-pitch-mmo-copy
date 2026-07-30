@@ -15,6 +15,7 @@ import {
 import { getMeta, aplicarMetaEfeito } from "./metas.ts";
 import { registrarProgresso } from "./missoes.ts";
 import { acrescentarPote } from "./pote.ts";
+import { narrar, fallbackInsights, IDIOMA_LLM_NOME, normalizarIdioma } from "./i18nConteudo.ts";
 
 // Núcleo da simulação de partida, compartilhado entre simularPartida (matchmaking)
 // e responderDesafio (fluxo de desafio com reserva prévia de apostas).
@@ -27,6 +28,7 @@ export async function simularCore(base44, opts) {
     desafiante, desafiado, desafianteId, desafiadoId,
     tipoPartida, aposta, consumirEnergia, potReservado,
     modeloJogoHome, clima: climaForcado,
+    idioma = "pt",
   } = opts;
 
   const attrsHome = await base44.asServiceRole.entities.AtributoTatico.filter({ clube_id: desafianteId });
@@ -138,13 +140,12 @@ export async function simularCore(base44, opts) {
     });
   }
 
-  const lancesBase = gerarLances(desafiante, desafiado, placar_home, placar_away, momentum);
+  const lancesBase = gerarLances(desafiante, desafiado, placar_home, placar_away, momentum, normalizarIdioma(idioma));
   const cartoesNarr = cartoes.map((c) => {
     const clube = c.lado === "home" ? desafiante : desafiado;
-    const texto = c.tipo === "vermelho"
-      ? `Aos ${c.minuto}' - Falta dura e o árbitro mostra cartão VERMELHO! ${clube.nome_clube} fica com um a menos 🟥.`
-      : `Aos ${c.minuto}' - Falta dura e o árbitro mostra cartão amarelo para ${clube.nome_clube} 🟨.`;
-    return { minuto: c.minuto, tipo: c.tipo === "vermelho" ? "CARTAO_VERMELHO" : "CARTAO_AMARELO", clube_autor_id: clube.id, texto_narrativo: texto, lado: c.lado };
+    const tipoCard = c.tipo === "vermelho" ? "CARTAO_VERMELHO" : "CARTAO_AMARELO";
+    const texto = narrar(tipoCard, clube.nome_clube, c.minuto, idioma);
+    return { minuto: c.minuto, tipo: tipoCard, clube_autor_id: clube.id, texto_narrativo: texto, lado: c.lado };
   });
   const lances_narracao = [...lancesBase, ...cartoesNarr].sort((a, b) => a.minuto - b.minuto);
 
@@ -230,7 +231,7 @@ export async function simularCore(base44, opts) {
   if (Object.keys(updateHome).length > 0) await base44.asServiceRole.entities.Clube.update(desafianteId, updateHome);
   if (Object.keys(updateAway).length > 0) await base44.asServiceRole.entities.Clube.update(desafiadoId, updateAway);
 
-  const prompt = `Você é um analista tático de futebol. Com base na partida abaixo, gere exatamente 3 insights táticos curtos (1 frase cada) em português do Brasil, explicando os fatores decisivos do resultado. Varie entre posse, contra-ataque, pressão, defesa e xG. Seja específico.
+  const prompt = `Você é um analista tático de futebol. Com base na partida abaixo, gere exatamente 3 insights táticos curtos (1 frase cada) em ${IDIOMA_LLM_NOME[normalizarIdioma(idioma)] || "português do Brasil"}, explicando os fatores decisivos do resultado. Varie entre posse, contra-ataque, pressão, defesa e xG. Seja específico.
 
 Partida: ${desafiante.nome_clube} (${desafiante.especializacao}) ${placar_home}x${placar_away} ${desafiado.nome_clube} (${desafiado.especializacao})
 Dominância: ${dom.dominancia_home}% x ${dom.dominancia_away}%
@@ -252,13 +253,7 @@ Retorne JSON no formato {"insights": ["insight1", "insight2", "insight3"]}.`;
     });
     insights = llmRes.insights || [];
   } catch (e) {
-    insights = [
-      `${desafiante.nome_clube} teve ${dom.dominancia_home}% de dominância contra ${dom.dominancia_away}% do adversário.`,
-      vencedor === "empate"
-        ? "A partida terminou em empate, com placar equilibrado."
-        : `${vencedor === "home" ? desafiante.nome_clube : desafiado.nome_clube} foi mais eficiente no xG (${vencedor === "home" ? dom.xg_home : dom.xg_away}).`,
-      `xG final de ${dom.xg_home} x ${dom.xg_away} reflete a produção ofensiva dos dois times.`,
-    ];
+    insights = fallbackInsights(desafiante, desafiado, dom, vencedor, idioma);
   }
 
   const historico = await base44.asServiceRole.entities.HistoricoPartida.create({

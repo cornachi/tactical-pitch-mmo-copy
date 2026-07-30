@@ -16,7 +16,7 @@ const MODELOS = [
 ];
 
 export default function PrePartida() {
-  const { t } = useI18n();
+  const { t, idioma } = useI18n();
   const location = useLocation();
   const navigate = useNavigate();
   const { desafiante_id, desafiado_id } = location.state || {};
@@ -82,6 +82,7 @@ export default function PrePartida() {
         tipo_partida: "MATCHMAKING",
         modelo_jogo: modelo,
         clima: scout?.clima?.key,
+        idioma,
       });
       const data = res?.data ?? res;
       if (data?.error) { setErro(data.error); return; }

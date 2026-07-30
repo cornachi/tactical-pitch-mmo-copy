@@ -9,13 +9,13 @@ import { ESPECIALIZACAO_LABELS } from "@/lib/tactical";
 // Widget de alerta tático para o Dashboard: destaca o perfil de adversário
 // contra o qual o clube tem menor rendimento (aproveitamento < 50%).
 export default function AlertaTatico() {
-  const { t } = useI18n();
+  const { t, idioma } = useI18n();
   const [pior, setPior] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
-    base44.functions.invoke("obterInsightsUltimosJogos", {})
+    base44.functions.invoke("obterInsightsUltimosJogos", { idioma })
       .then((res) => {
         const d = res?.data ?? res;
         if (active && d && !d.error && d.pior_perfil) setPior(d.pior_perfil);

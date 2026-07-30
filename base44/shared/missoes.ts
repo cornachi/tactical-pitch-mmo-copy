@@ -3,11 +3,13 @@
 // (America/Sao_Paulo) das missões existentes for diferente de hoje, elas
 // são recriadas com novos objetivos.
 
+import { descMissao } from "./i18nConteudo.ts";
+
 export const TIPOS_MISSAO = {
-  PARTIDAS: { tipo: "PARTIDAS", desc: (n) => `Jogar ${n} partida(s)`, objMin: 2, objMax: 4, recompensa: 120 },
-  GOLS: { tipo: "GOLS", desc: (n) => `Marcar ${n} gol(s)`, objMin: 2, objMax: 4, recompensa: 150 },
-  EVOLUIR: { tipo: "EVOLUIR", desc: (n) => `Evoluir ${n} atributo(s) tático(s)`, objMin: 1, objMax: 2, recompensa: 130 },
-  VENCER_DESAFIO: { tipo: "VENCER_DESAFIO", desc: (n) => `Vencer ${n} partida(s) no Modo Desafio`, objMin: 1, objMax: 2, recompensa: 200 },
+  PARTIDAS: { tipo: "PARTIDAS", objMin: 2, objMax: 4, recompensa: 120 },
+  GOLS: { tipo: "GOLS", objMin: 2, objMax: 4, recompensa: 150 },
+  EVOLUIR: { tipo: "EVOLUIR", objMin: 1, objMax: 2, recompensa: 130 },
+  VENCER_DESAFIO: { tipo: "VENCER_DESAFIO", objMin: 1, objMax: 2, recompensa: 200 },
 };
 
 export const RECOMPENSA_BONUS_DIARIO = 300;
@@ -25,7 +27,7 @@ function randInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export async function gerarMissoesDiarias(client, clube_id) {
+export async function gerarMissoesDiarias(client, clube_id, idioma = "pt") {
   await client.entities.MissaoDiaria.deleteMany({ clube_id });
   const hoje = hojeSaoPaulo();
   const tipos = Object.values(TIPOS_MISSAO);
@@ -35,7 +37,7 @@ export async function gerarMissoesDiarias(client, clube_id) {
     return {
       clube_id,
       tipo: t.tipo,
-      descricao: t.desc(objetivo),
+      descricao: descMissao(t.tipo, objetivo, idioma),
       objetivo,
       progresso: 0,
       concluida: false,
@@ -48,12 +50,12 @@ export async function gerarMissoesDiarias(client, clube_id) {
   return client.entities.MissaoDiaria.bulkCreate(registros);
 }
 
-export async function getMissoesDiarias(client, clube_id) {
+export async function getMissoesDiarias(client, clube_id, idioma = "pt") {
   const hoje = hojeSaoPaulo();
   const existentes = await client.entities.MissaoDiaria.filter({ clube_id });
   const precisaGerar = existentes.length === 0 || existentes.some((m) => m.data !== hoje);
   if (precisaGerar) {
-    return gerarMissoesDiarias(client, clube_id);
+    return gerarMissoesDiarias(client, clube_id, idioma);
   }
   return existentes;
 }
