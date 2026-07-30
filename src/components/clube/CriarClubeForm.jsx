@@ -5,10 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { ESPECIALIZACAO_LABELS } from "@/lib/tactical";
+import { useI18n } from "@/i18n/I18nContext";
 
 const OPCOES = ["EQUILIBRADO", "POSSE", "CONTRA_ATAQUE", "PRESSAO"];
 
 export default function CriarClubeForm({ onCriado }) {
+  const { t } = useI18n();
   const [nome, setNome] = useState("");
   const [pais, setPais] = useState("");
   const [especializacao, setEspecializacao] = useState("EQUILIBRADO");
@@ -16,7 +18,7 @@ export default function CriarClubeForm({ onCriado }) {
   const [erro, setErro] = useState("");
 
   const criar = async () => {
-    if (!nome || !pais) { setErro("Preencha nome e país"); return; }
+    if (!nome || !pais) { setErro(t("criarClube.erroCampos")); return; }
     setLoading(true); setErro("");
     try {
       await base44.functions.invoke("criarClube", {
@@ -26,24 +28,24 @@ export default function CriarClubeForm({ onCriado }) {
       });
       onCriado();
     } catch (e) {
-      setErro(e.response?.data?.error || e.message || "Erro ao criar clube");
+      setErro(e.response?.data?.error || e.message || "Erro");
     } finally { setLoading(false); }
   };
 
   return (
     <Card className="p-6 max-w-md mx-auto mt-10">
-      <h2 className="text-xl font-bold mb-4">Criar seu clube</h2>
+      <h2 className="text-xl font-bold mb-4">{t("criarClube.titulo")}</h2>
       <div className="space-y-4">
         <div>
-          <Label htmlFor="nome">Nome do clube</Label>
-          <Input id="nome" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex: Tropeços FC" />
+          <Label htmlFor="nome">{t("criarClube.nome")}</Label>
+          <Input id="nome" value={nome} onChange={(e) => setNome(e.target.value)} placeholder={t("criarClube.placeholderNome")} />
         </div>
         <div>
-          <Label htmlFor="pais">País</Label>
-          <Input id="pais" value={pais} onChange={(e) => setPais(e.target.value)} placeholder="Ex: Brasil" />
+          <Label htmlFor="pais">{t("criarClube.pais")}</Label>
+          <Input id="pais" value={pais} onChange={(e) => setPais(e.target.value)} placeholder={t("criarClube.placeholderPais")} />
         </div>
         <div>
-          <Label>Especialização</Label>
+          <Label>{t("criarClube.especializacao")}</Label>
           <div className="grid grid-cols-2 gap-2 mt-1">
             {OPCOES.map((op) => (
               <Button
@@ -59,7 +61,7 @@ export default function CriarClubeForm({ onCriado }) {
         </div>
         {erro && <p className="text-sm text-destructive">{erro}</p>}
         <Button className="w-full" disabled={loading} onClick={criar}>
-          {loading ? "Criando..." : "Criar clube"}
+          {loading ? t("criarClube.criando") : t("criarClube.criar")}
         </Button>
       </div>
     </Card>

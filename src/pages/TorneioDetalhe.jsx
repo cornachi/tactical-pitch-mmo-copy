@@ -8,12 +8,6 @@ import EscudoClube from "@/components/clube/EscudoClube";
 import ChaveTorneio from "@/components/torneio/ChaveTorneio";
 import { useI18n } from "@/i18n/I18nContext";
 
-const STATUS_LABEL = {
-  MONTANDO: "Montando",
-  EM_ANDAMENTO: "Em andamento",
-  CONCLUIDO: "Concluído",
-};
-
 export default function TorneioDetalhe() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -26,6 +20,12 @@ export default function TorneioDetalhe() {
   const [copiado, setCopiado] = useState(false);
   const [simulandoKey, setSimulandoKey] = useState("");
   const [iniciando, setIniciando] = useState(false);
+
+  const statusLabel = (st) => ({
+    MONTANDO: t("torneios.statusMontando"),
+    EM_ANDAMENTO: t("torneios.statusAndamento"),
+    CONCLUIDO: t("torneios.statusConcluido"),
+  })[st] || st;
 
   const carregar = useCallback(async () => {
     try {
@@ -41,7 +41,7 @@ export default function TorneioDetalhe() {
       }
       setClubesMap(map);
     } catch (e) {
-      setErro(e.message || "Erro ao carregar torneio");
+      setErro(e.message || "Erro");
     } finally {
       setLoading(false);
     }
@@ -98,12 +98,12 @@ export default function TorneioDetalhe() {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2"><Trophy className="w-6 h-6 text-amber-500" /> {torneio.nome}</h1>
-          <p className="text-sm text-muted-foreground">{STATUS_LABEL[torneio.status]} • Pote: {(torneio.pote_moedas || 0).toLocaleString("pt-BR")} moedas</p>
+          <p className="text-sm text-muted-foreground">{statusLabel(torneio.status)} • {t("torneios.pote")} {(torneio.pote_moedas || 0).toLocaleString("pt-BR")} {t("common.moedas")}</p>
         </div>
         {torneio.status === "MONTANDO" && (
           <Button variant="outline" onClick={copiarCodigo}>
             {copiado ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-            {copiado ? "Copiado!" : `Código: ${torneio.codigo_convite}`}
+            {copiado ? "✓" : `${t("torneios.codigo")}: ${torneio.codigo_convite}`}
           </Button>
         )}
       </div>
@@ -112,20 +112,20 @@ export default function TorneioDetalhe() {
 
       {torneio.status === "MONTANDO" && (
         <Card className="p-4 space-y-3">
-          <h2 className="font-semibold">Participantes ({participantes.length}/8)</h2>
+          <h2 className="font-semibold">{t("torneios.participantes")} ({participantes.length}/8)</h2>
           <div className="space-y-2">
             {participantes.map((pid) => (
               <div key={pid} className="flex items-center gap-2">
                 <EscudoClube clube={clubesMap[pid]} size={24} />
                 <span className="text-sm">{clubesMap[pid]?.nome_clube || "—"}</span>
-                {pid === torneio.criador_id && <span className="text-xs text-amber-500 font-semibold">Criador</span>}
+                {pid === torneio.criador_id && <span className="text-xs text-amber-500 font-semibold">{t("torneios.criador")}</span>}
               </div>
             ))}
           </div>
-          <p className="text-xs text-muted-foreground">Compartilhe o código <strong>{torneio.codigo_convite}</strong> com seus amigos. Ao entrar o 8º, a chave é gerada automaticamente.</p>
+          <p className="text-xs text-muted-foreground">{t("torneios.compartilhar")} <strong>{torneio.codigo_convite}</strong></p>
           {souCriador && participantes.length >= 2 && (
             <Button onClick={iniciar} disabled={iniciando} className="w-full">
-              <Play className="w-4 h-4" /> {iniciando ? "Iniciando..." : t("torneios.iniciar")}
+              <Play className="w-4 h-4" /> {iniciando ? "..." : t("torneios.iniciar")}
             </Button>
           )}
         </Card>
@@ -144,10 +144,10 @@ export default function TorneioDetalhe() {
       {torneio.status === "CONCLUIDO" && (
         <Card className="p-5 space-y-4 text-center bg-amber-500/5 border-amber-500/30">
           <Crown className="w-10 h-10 mx-auto text-amber-500" />
-          <h2 className="text-xl font-bold">Torneio Concluído!</h2>
+          <h2 className="text-xl font-bold">{t("torneios.concluidoTitulo")}</h2>
           <div className="flex justify-center gap-6">
             <div>
-              <p className="text-xs text-muted-foreground">🥇 Campeão</p>
+              <p className="text-xs text-muted-foreground">{t("torneios.campeao")}</p>
               <div className="flex items-center gap-2 justify-center mt-1">
                 <EscudoClube clube={clubesMap[torneio.campeao_id]} size={28} />
                 <span className="font-bold">{clubesMap[torneio.campeao_id]?.nome_clube || "—"}</span>
@@ -155,7 +155,7 @@ export default function TorneioDetalhe() {
               <p className="text-sm text-emerald-600 font-semibold mt-1 flex items-center justify-center gap-1"><Coins className="w-3 h-3" /> +{Math.round((torneio.pote_moedas || 0) * 0.7).toLocaleString("pt-BR")}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">🥈 Vice</p>
+              <p className="text-xs text-muted-foreground">{t("torneios.vice")}</p>
               <div className="flex items-center gap-2 justify-center mt-1">
                 <EscudoClube clube={clubesMap[torneio.vice_id]} size={28} />
                 <span className="font-semibold">{clubesMap[torneio.vice_id]?.nome_clube || "—"}</span>

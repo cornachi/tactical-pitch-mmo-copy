@@ -8,16 +8,10 @@ import { Card } from "@/components/ui/card";
 import EscudoClube from "@/components/clube/EscudoClube";
 import PullToRefresh from "@/components/PullToRefresh";
 import { useClube } from "@/hooks/useClube";
-
-const STATUS_LABEL = {
-  PENDENTE: "Pendente",
-  ACEITO: "Aceito",
-  RECUSADO: "Recusado",
-  CANCELADO: "Cancelado",
-  CONCLUIDO: "Concluído",
-};
+import { useI18n } from "@/i18n/I18nContext";
 
 export default function Desafios() {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [erro, setErro] = useState("");
@@ -56,7 +50,7 @@ export default function Desafios() {
       }
     },
     onError: (e) => {
-      setErro(e.response?.data?.error || e.message || "Falha ao processar desafio");
+      setErro(e.response?.data?.error || e.message || "Erro");
     },
   });
 
@@ -65,9 +59,9 @@ export default function Desafios() {
   const clubesMap = desafiosData?.clubesMap || {};
 
   if (clubeLoading || (clube && desafiosLoading)) {
-    return <div className="p-8 text-center text-muted-foreground">Carregando...</div>;
+    return <div className="p-8 text-center text-muted-foreground">{t("common.carregando")}</div>;
   }
-  if (!clube) return <div className="p-8 text-center text-muted-foreground">Crie um clube primeiro.</div>;
+  if (!clube) return <div className="p-8 text-center text-muted-foreground">{t("desafios.crieClube")}</div>;
 
   const recebidosPendentes = recebidos.filter((d) => d.status === "PENDENTE");
   const enviadosPendentes = enviados.filter((d) => d.status === "PENDENTE");
@@ -94,7 +88,7 @@ export default function Desafios() {
             </div>
           </div>
           <div className="text-right">
-            <p className="text-xs text-muted-foreground">Aposta All-In</p>
+            <p className="text-xs text-muted-foreground">{t("desafios.apostaAllIn")}</p>
             <p className="font-bold text-amber-600 flex items-center gap-1 justify-end"><Coins className="w-4 h-4" />{d.aposta_moedas?.toLocaleString("pt-BR")}</p>
           </div>
         </div>
@@ -102,15 +96,15 @@ export default function Desafios() {
         {tipo === "recebido" ? (
           <div className="flex gap-2">
             <Button className="flex-1 bg-emerald-600 hover:bg-emerald-700" disabled={responderMutation.isPending} onClick={() => responder(d, "aceitar")}>
-              {procId === d.id && procAcao === "aceitar" ? <><Loader2 className="w-4 h-4 mr-1 animate-spin" />Simulando...</> : <><Check className="w-4 h-4 mr-1" />Aceitar</>}
+              {procId === d.id && procAcao === "aceitar" ? <><Loader2 className="w-4 h-4 mr-1 animate-spin" />{t("desafios.simulando")}</> : <><Check className="w-4 h-4 mr-1" />{t("desafios.aceitar")}</>}
             </Button>
             <Button variant="outline" className="flex-1 text-rose-600 border-rose-300 hover:bg-rose-50" disabled={responderMutation.isPending} onClick={() => responder(d, "recusar")}>
-              {procId === d.id && procAcao === "recusar" ? <Loader2 className="w-4 h-4 animate-spin" /> : <><X className="w-4 h-4 mr-1" />Recusar</>}
+              {procId === d.id && procAcao === "recusar" ? <Loader2 className="w-4 h-4 animate-spin" /> : <><X className="w-4 h-4 mr-1" />{t("desafios.recusar")}</>}
             </Button>
           </div>
         ) : (
           <Button variant="outline" className="w-full" disabled={responderMutation.isPending} onClick={() => responder(d, "cancelar")}>
-            {procId === d.id && procAcao === "cancelar" ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : "Cancelar Desafio"}
+            {procId === d.id && procAcao === "cancelar" ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : t("desafios.cancelarDesafio")}
           </Button>
         )}
       </Card>
@@ -121,16 +115,16 @@ export default function Desafios() {
     <PullToRefresh onRefresh={refetch}>
     <div className="max-w-4xl mx-auto p-4 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold flex items-center gap-2"><Swords className="w-6 h-6 text-rose-500" /> Central de Desafios</h1>
-        <Button asChild variant="outline" size="sm"><span onClick={() => navigate("/")}><ArrowLeft className="w-4 h-4 mr-1" />Dashboard</span></Button>
+        <h1 className="text-2xl font-bold flex items-center gap-2"><Swords className="w-6 h-6 text-rose-500" /> {t("desafios.titulo")}</h1>
+        <Button asChild variant="outline" size="sm"><span onClick={() => navigate("/")}><ArrowLeft className="w-4 h-4 mr-1" />{t("common.voltarDashboard")}</span></Button>
       </div>
 
       {erro && <p className="text-sm text-destructive">{erro}</p>}
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold flex items-center gap-2"><Inbox className="w-5 h-5 text-emerald-600" /> Desafios Recebidos {recebidosPendentes.length > 0 && <span className="bg-rose-600 text-white text-xs font-bold rounded-full px-2 py-0.5">{recebidosPendentes.length}</span>}</h2>
+        <h2 className="text-lg font-semibold flex items-center gap-2"><Inbox className="w-5 h-5 text-emerald-600" /> {t("desafios.recebidos")} {recebidosPendentes.length > 0 && <span className="bg-rose-600 text-white text-xs font-bold rounded-full px-2 py-0.5">{recebidosPendentes.length}</span>}</h2>
         {recebidosPendentes.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Nenhum desafio pendente. Quando alguém te desafiar, aparecerá aqui.</p>
+          <p className="text-sm text-muted-foreground">{t("desafios.nenhumRecebido")}</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {recebidosPendentes.map((d) => <CartaoDesafio key={d.id} d={d} tipo="recebido" />)}
@@ -139,9 +133,9 @@ export default function Desafios() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold flex items-center gap-2"><Send className="w-5 h-5 text-blue-600" /> Desafios Enviados {enviadosPendentes.length > 0 && <span className="bg-amber-500 text-white text-xs font-bold rounded-full px-2 py-0.5">{enviadosPendentes.length}</span>}</h2>
+        <h2 className="text-lg font-semibold flex items-center gap-2"><Send className="w-5 h-5 text-blue-600" /> {t("desafios.enviados")} {enviadosPendentes.length > 0 && <span className="bg-amber-500 text-white text-xs font-bold rounded-full px-2 py-0.5">{enviadosPendentes.length}</span>}</h2>
         {enviadosPendentes.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Você não enviou desafios pendentes.</p>
+          <p className="text-sm text-muted-foreground">{t("desafios.nenhumEnviado")}</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {enviadosPendentes.map((d) => <CartaoDesafio key={d.id} d={d} tipo="enviado" />)}
@@ -150,9 +144,9 @@ export default function Desafios() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold flex items-center gap-2"><History className="w-5 h-5 text-muted-foreground" /> Desafios Recentes</h2>
+        <h2 className="text-lg font-semibold flex items-center gap-2"><History className="w-5 h-5 text-muted-foreground" /> {t("desafios.recentes")}</h2>
         {recentes.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Nenhum desafio concluído ainda.</p>
+          <p className="text-sm text-muted-foreground">{t("desafios.nenhumConcluido")}</p>
         ) : (
           <div className="space-y-2">
             {recentes.map((d) => {
@@ -160,20 +154,19 @@ export default function Desafios() {
               const rivalId = souDesafiante ? d.desafiado_id : d.desafiante_id;
               const rival = clubesMap[rivalId];
               const meuResultado = d.status === "CONCLUIDO"
-                ? (d.vencedor_id === null ? "Empate" : d.vencedor_id === clube.id ? "Vitória" : "Derrota")
+                ? (d.vencedor_id === null ? t("desafios.empate") : d.vencedor_id === clube.id ? t("desafios.vitoria") : t("desafios.derrota"))
                 : null;
-              const corResultado = meuResultado === "Vitória" ? "text-emerald-600" : meuResultado === "Derrota" ? "text-rose-600" : "text-muted-foreground";
+              const corResultado = meuResultado === t("desafios.vitoria") ? "text-emerald-600" : meuResultado === t("desafios.derrota") ? "text-rose-600" : "text-muted-foreground";
               return (
                 <Card key={d.id} className="p-3 flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium">{souDesafiante ? "vs " : "de "}{rival?.nome_clube || "—"}</span>
-                    <span className="text-muted-foreground">• {d.aposta_moedas?.toLocaleString("pt-BR")} moedas</span>
+                    <span className="font-medium">{souDesafiante ? `${t("desafios.vs")} ` : `${t("desafios.de")}`}{rival?.nome_clube || "—"}</span>
+                    <span className="text-muted-foreground">• {d.aposta_moedas?.toLocaleString("pt-BR")} {t("common.moedas")}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     {meuResultado && <span className={`font-semibold ${corResultado}`}>{meuResultado}{d.moedas_ganhas ? ` (${d.moedas_ganhas > 0 ? "+" : ""}${d.moedas_ganhas})` : ""}</span>}
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-muted">{STATUS_LABEL[d.status]}</span>
                     {d.partida_id && (
-                      <Button size="sm" variant="outline" onClick={() => navigate(`/desafios/relatorio/${d.partida_id}`)}>📊 Ver Relatório</Button>
+                      <Button size="sm" variant="outline" onClick={() => navigate(`/desafios/relatorio/${d.partida_id}`)}>{t("desafios.verRelatorio")}</Button>
                     )}
                   </div>
                 </Card>

@@ -6,8 +6,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Trophy, Coins, Sparkles, Lock, Check } from "lucide-react";
+import { useI18n } from "@/i18n/I18nContext";
 
 export default function ModalConquistas({ clubeId, open, onOpenChange, onResgatado }) {
+  const { t } = useI18n();
   const [lista, setLista] = useState([]);
   const [loading, setLoading] = useState(false);
   const [resgatando, setResgatando] = useState(null);
@@ -56,14 +58,14 @@ export default function ModalConquistas({ clubeId, open, onOpenChange, onResgata
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-amber-500" />Conquistas
+            <Trophy className="w-5 h-5 text-amber-500" />{t("conquistas.titulo")}
           </DialogTitle>
         </DialogHeader>
 
         {erro && <p className="text-sm text-destructive">{erro}</p>}
 
         {loading ? (
-          <p className="text-sm text-muted-foreground text-center py-4">Carregando...</p>
+          <p className="text-sm text-muted-foreground text-center py-4">{t("common.carregando")}</p>
         ) : (
           <div className="space-y-3 max-h-[60vh] overflow-y-auto">
             {lista.map((c) => {
@@ -103,7 +105,7 @@ export default function ModalConquistas({ clubeId, open, onOpenChange, onResgata
                   </div>
 
                   {c.resgatada ? (
-                    <p className="text-xs text-emerald-600 text-center font-medium">Recompensa resgatada</p>
+                    <p className="text-xs text-emerald-600 text-center font-medium">{t("conquistas.resgatado")}</p>
                   ) : c.desbloqueada ? (
                     <Button
                       size="sm"
@@ -111,7 +113,7 @@ export default function ModalConquistas({ clubeId, open, onOpenChange, onResgata
                       disabled={resgatando === c.titulo}
                       onClick={() => resgatar(c.titulo)}
                     >
-                      {resgatando === c.titulo ? "Resgatando..." : "Resgatar Recompensa"}
+                      {resgatando === c.titulo ? t("conquistas.resgatando") : t("conquistas.resgatar")}
                     </Button>
                   ) : null}
                 </Card>

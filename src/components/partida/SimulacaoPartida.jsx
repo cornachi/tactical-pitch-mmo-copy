@@ -6,22 +6,25 @@ import { Button } from "@/components/ui/button";
 import EscudoClube from "@/components/clube/EscudoClube";
 import CampoFutebol from "@/components/partida/CampoFutebol";
 import MomentumLive from "@/components/partida/MomentumLive";
+import { useI18n } from "@/i18n/I18nContext";
 
 const DURACAO_BASE = 60000; // 60s reais em 1x = 90 min de jogo
 const VELOCIDADES = [1, 2, 4];
-const POSTURAS = [
-  { key: "ULTRA_OFENSIVO", label: "Ultra Ofensivo", desc: "+Pressão ofensiva, mais desgaste", emoji: "🔥" },
-  { key: "EQUILIBRADO", label: "Equilibrado", desc: "Postura padrão", emoji: "⚖️" },
-  { key: "CONTRA_ATAQUE", label: "Contra-Ataque", desc: "Recuar e castigar em transição", emoji: "🏹" },
-];
 
 export default function SimulacaoPartida({ result, onConcluir }) {
+  const { t } = useI18n();
   const desafiante = result.desafiante;
   const desafiado = result.desafiado;
   const lances = result.lances_narracao || [];
   const momentum = result.momentum || [];
   const expulsoes = result.expulsoes || [];
   const clima = result.clima;
+
+  const POSTURAS = [
+    { key: "ULTRA_OFENSIVO", label: t("simulacao.posturaUltra"), desc: t("simulacao.posturaUltraDesc"), emoji: "🔥" },
+    { key: "EQUILIBRADO", label: t("simulacao.posturaEq"), desc: t("simulacao.posturaEqDesc"), emoji: "⚖️" },
+    { key: "CONTRA_ATAQUE", label: t("simulacao.posturaContra"), desc: t("simulacao.posturaContraDesc"), emoji: "🏹" },
+  ];
 
   const [elapsed, setElapsed] = useState(0);
   const [velocidade, setVelocidade] = useState(1);
@@ -57,7 +60,6 @@ export default function SimulacaoPartida({ result, onConcluir }) {
 
   const minutoJogo = Math.min(90, Math.round((elapsed / DURACAO_BASE) * 90));
 
-  // Intervalo tático aos 45' — pausa manual obrigatória (sem auto-retomada).
   useEffect(() => {
     if (minutoJogo >= 45 && !intervaloMostradoRef.current) {
       intervaloMostradoRef.current = true;
@@ -77,7 +79,6 @@ export default function SimulacaoPartida({ result, onConcluir }) {
     });
   }, [minutoJogo, lances]);
 
-  // Auto-scroll da narração para o último lance (topo)
   useEffect(() => {
     if (narraRef.current) narraRef.current.scrollTop = 0;
   }, [minutoJogo]);
@@ -111,7 +112,6 @@ export default function SimulacaoPartida({ result, onConcluir }) {
     } catch (e) { /* silencioso */ }
   };
 
-  // --- Resistência física (stamina) ---
   const taxaPerda = (prep, fisico) => {
     const reducao = Math.min(0.55, (prep || 0) * 0.035 + Math.min(24, fisico || 0) * 0.01);
     return 0.75 * (1 - reducao);
@@ -143,7 +143,6 @@ export default function SimulacaoPartida({ result, onConcluir }) {
   const golHome = lances.filter((l) => l.tipo === "GOL" && l.clube_autor_id === desafiante.id && l.minuto <= minutoJogo).length;
   const golAway = lances.filter((l) => l.tipo === "GOL" && l.clube_autor_id === desafiado.id && l.minuto <= minutoJogo).length;
 
-  // Momentum ao vivo com postura (2º tempo) e penalidade de expulsão (-20%).
   const bloco = momentum.find((b) => minutoJogo >= b.inicio && minutoJogo <= b.fim) || momentum[momentum.length - 1];
   let baseHome = bloco ? bloco.dominancia_pct.home : 50;
   if (minutoJogo > 45 && postura === "ULTRA_OFENSIVO") baseHome += 12;
@@ -188,11 +187,10 @@ export default function SimulacaoPartida({ result, onConcluir }) {
               ))}
             </div>
             <Button variant="outline" size="sm" onClick={pular} className="gap-1">
-              <Forward className="w-4 h-4" /> Pular
+              <Forward className="w-4 h-4" /> {t("simulacao.pular")}
             </Button>
           </div>
 
-          {/* Clima no topo do placar */}
           {clima && (
             <div className="flex items-center justify-center gap-1.5 text-sm">
               <span className="text-lg">{clima.emoji}</span>
@@ -217,13 +215,11 @@ export default function SimulacaoPartida({ result, onConcluir }) {
             </div>
           </div>
 
-          {/* Barras de resistência */}
           <div className="grid grid-cols-2 gap-3">
-            <BarraResistencia cor={corHome} nome={desafiante.nome_clube} stamina={staminaHome} />
-            <BarraResistencia cor={corAway} nome={desafiado.nome_clube} stamina={staminaAway} align="right" />
+            <BarraResistencia cor={corHome} nome={desafiante.nome_clube} stamina={staminaHome} t={t} />
+            <BarraResistencia cor={corAway} nome={desafiado.nome_clube} stamina={staminaAway} align="right" t={t} />
           </div>
 
-          {/* Campo 2D */}
           <CampoFutebol
             minutoJogo={minutoJogo}
             domHome={domHome}
@@ -234,7 +230,6 @@ export default function SimulacaoPartida({ result, onConcluir }) {
             corAway={corAway}
           />
 
-          {/* Relógio + progresso */}
           <div className="text-center">
             <div className="text-2xl font-bold tabular-nums flex items-center justify-center gap-2 flex-wrap">
               <span className="flex items-center gap-1"><Gauge className="w-4 h-4 text-muted-foreground" /> {minutoJogo}'</span>
@@ -242,7 +237,7 @@ export default function SimulacaoPartida({ result, onConcluir }) {
                 <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">{posturaLabel}</span>
               )}
               {(redCardHome || redCardAway) && (
-                <span className="text-xs font-semibold text-rose-600 flex items-center gap-0.5"><AlertTriangle className="w-3 h-3" /> Expulsão</span>
+                <span className="text-xs font-semibold text-rose-600 flex items-center gap-0.5"><AlertTriangle className="w-3 h-3" /> {t("simulacao.expulsao")}</span>
               )}
             </div>
             <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden mt-1">
@@ -250,14 +245,13 @@ export default function SimulacaoPartida({ result, onConcluir }) {
             </div>
           </div>
 
-          {/* Ações táticas de emergência (75' ao fim) */}
           {minutoJogo >= 75 && !finalizado && (
             <Card className="p-3 space-y-2 border-amber-500/40 bg-amber-500/5">
-              <p className="text-xs font-semibold text-amber-700 flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" /> Ações de Emergência (15' finais)</p>
+              <p className="text-xs font-semibold text-amber-700 flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" /> {t("simulacao.emergencia")}</p>
               <div className="grid grid-cols-3 gap-2">
-                <EmergenciaBtn label="Ataque Total" emoji="💣" active={acaoEmergencia === "ATAQUE_TOTAL"} onClick={() => setAcaoEmergencia("ATAQUE_TOTAL")} />
-                <EmergenciaBtn label="Retranca" emoji="🛡️" active={acaoEmergencia === "RETRANCA_TOTAL"} onClick={() => setAcaoEmergencia("RETRANCA_TOTAL")} />
-                <EmergenciaBtn label="Manter" emoji="⚖️" active={acaoEmergencia === "MANTER"} onClick={() => setAcaoEmergencia("MANTER")} />
+                <EmergenciaBtn label={t("simulacao.ataqueTotal")} emoji="💣" active={acaoEmergencia === "ATAQUE_TOTAL"} onClick={() => setAcaoEmergencia("ATAQUE_TOTAL")} />
+                <EmergenciaBtn label={t("simulacao.retranca")} emoji="🛡️" active={acaoEmergencia === "RETRANCA_TOTAL"} onClick={() => setAcaoEmergencia("RETRANCA_TOTAL")} />
+                <EmergenciaBtn label={t("simulacao.manter")} emoji="⚖️" active={acaoEmergencia === "MANTER"} onClick={() => setAcaoEmergencia("MANTER")} />
               </div>
             </Card>
           )}
@@ -267,14 +261,13 @@ export default function SimulacaoPartida({ result, onConcluir }) {
         <div className="space-y-3">
           <MomentumLive momentum={momentum} minutoJogo={minutoJogo} corHome={corHome} corAway={corAway} domHome={domHome} />
 
-          {/* Ticker de narração */}
           <Card className="p-0 overflow-hidden flex flex-col max-h-[300px] lg:max-h-[55vh]">
             <div className="bg-muted px-3 py-2 text-xs font-semibold flex items-center gap-2 shrink-0">
-              <Activity className="w-4 h-4 text-rose-500" /> Narração ao Vivo
+              <Activity className="w-4 h-4 text-rose-500" /> {t("simulacao.narracao")}
             </div>
             <div ref={narraRef} className="flex-1 overflow-y-auto p-3 space-y-2 min-h-[200px]">
               {revealed.length === 0 && !finalizado && (
-                <p className="text-sm text-muted-foreground text-center py-8">A bola está rolando...</p>
+                <p className="text-sm text-muted-foreground text-center py-8">{t("simulacao.bolaRolando")}</p>
               )}
               <AnimatePresence initial={false}>
                 {revealed.map((l, i) => {
@@ -286,7 +279,7 @@ export default function SimulacaoPartida({ result, onConcluir }) {
                       key={`${l.minuto}-${l.tipo}-${l.clube_autor_id}-${i}`}
                       initial={{ opacity: 0, x: -12, scale: 0.96 }}
                       animate={{ opacity: 1, x: 0, scale: 1 }}
-                      className={`flex gap-2 p-2 rounded-lg text-sm ${
+                      className={`flex gap-2 p-2 rounded-lg text-sm selectable-content ${
                         isGoal ? "bg-amber-500/15 border border-amber-500/40" : isCard ? "bg-rose-500/10 border border-rose-500/30" : isLatest ? "bg-muted/60" : ""
                       }`}
                     >
@@ -308,8 +301,8 @@ export default function SimulacaoPartida({ result, onConcluir }) {
             <motion.div initial={{ scale: 0.9, y: 10 }} animate={{ scale: 1, y: 0 }} className="bg-card rounded-2xl p-6 max-w-md w-full space-y-4 shadow-2xl">
               <div className="text-center space-y-1">
                 <Pause className="w-10 h-10 mx-auto text-primary" />
-                <h2 className="text-xl font-bold">⏸️ Intervalo de Jogo</h2>
-                <p className="text-sm text-muted-foreground">Ajuste a postura tática para o 2º tempo:</p>
+                <h2 className="text-xl font-bold">{t("simulacao.intervalo")}</h2>
+                <p className="text-sm text-muted-foreground">{t("simulacao.ajustePostura")}</p>
               </div>
               <div className="space-y-2">
                 {POSTURAS.map((p) => (
@@ -326,8 +319,8 @@ export default function SimulacaoPartida({ result, onConcluir }) {
                   </button>
                 ))}
               </div>
-              <Button className="w-full" size="lg" disabled={!postura} onClick={continuarSegundoTempo}>▶️ Continuar para o 2º Tempo</Button>
-              {!postura && <p className="text-xs text-center text-muted-foreground">Escolha uma postura para continuar</p>}
+              <Button className="w-full" size="lg" disabled={!postura} onClick={continuarSegundoTempo}>{t("simulacao.continuar")}</Button>
+              {!postura && <p className="text-xs text-center text-muted-foreground">{t("simulacao.escolhaPostura")}</p>}
             </motion.div>
           </motion.div>
         )}
@@ -338,9 +331,9 @@ export default function SimulacaoPartida({ result, onConcluir }) {
         {finalizado && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md mx-auto mt-4 space-y-2">
             <p className="text-center text-sm text-muted-foreground">
-              Apito final! {desafiante.nome_clube} {Number(result.placar_home)} x {Number(result.placar_away)} {desafiado.nome_clube}
+              {t("simulacao.apitoFinal")} {desafiante.nome_clube} {Number(result.placar_home)} x {Number(result.placar_away)} {desafiado.nome_clube}
             </p>
-            <Button className="w-full" size="lg" onClick={onConcluir}>Ver Relatório Completo & Insights</Button>
+            <Button className="w-full" size="lg" onClick={onConcluir}>{t("simulacao.verRelatorio")}</Button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -348,7 +341,7 @@ export default function SimulacaoPartida({ result, onConcluir }) {
   );
 }
 
-function BarraResistencia({ cor, nome, stamina, align = "left" }) {
+function BarraResistencia({ cor, nome, stamina, align = "left", t }) {
   const cansado = stamina < 30;
   const corBarra = stamina > 60 ? "#22c55e" : stamina > 30 ? "#eab308" : "#ef4444";
   return (
@@ -358,7 +351,7 @@ function BarraResistencia({ cor, nome, stamina, align = "left" }) {
         <span className="text-xs text-muted-foreground truncate max-w-[120px]">{nome}</span>
         {cansado && (
           <span className="text-[10px] font-bold text-amber-600 flex items-center gap-0.5">
-            <AlertTriangle className="w-3 h-3" /> Cansaço
+            <AlertTriangle className="w-3 h-3" /> {t("simulacao.cansado")}
           </span>
         )}
       </div>

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, TrendingUp, Target, Shield, BarChart3, AlertTriangle, Lightbulb, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useI18n } from "@/i18n/I18nContext";
 
 function StatBox({ icon: Icon, label, value, color }) {
   return (
@@ -16,6 +17,7 @@ function StatBox({ icon: Icon, label, value, color }) {
 }
 
 export default function RelatorioTatico() {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -31,18 +33,18 @@ export default function RelatorioTatico() {
           else setData(d);
         }
       })
-      .catch((e) => { if (active) setErro(e.message || "Erro ao carregar relatório"); })
+      .catch((e) => { if (active) setErro(e.message || "Erro"); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, []);
 
-  if (loading) return <div className="p-8 text-center text-muted-foreground">Montando relatório tático...</div>;
+  if (loading) return <div className="p-8 text-center text-muted-foreground">{t("relatorioTatico.montando")}</div>;
   if (erro) return <div className="p-8 text-center text-destructive">{erro}</div>;
   if (!data || !data.overall || data.overall.jogos === 0) {
     return (
       <div className="max-w-3xl mx-auto p-4 space-y-4">
-        <Button variant="outline" size="sm" onClick={() => navigate("/")}><ArrowLeft className="w-4 h-4 mr-1" />Dashboard</Button>
-        <p className="text-center text-muted-foreground py-8">Você ainda não disputou partidas suficientes para um relatório tático.</p>
+        <Button variant="outline" size="sm" onClick={() => navigate("/")}><ArrowLeft className="w-4 h-4 mr-1" />{t("nav.dashboard")}</Button>
+        <p className="text-center text-muted-foreground py-8">{t("relatorioTatico.insuficientes")}</p>
       </div>
     );
   }
@@ -52,33 +54,31 @@ export default function RelatorioTatico() {
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold flex items-center gap-2"><BarChart3 className="w-6 h-6 text-primary" /> Relatório Tático</h1>
-        <Button variant="outline" size="sm" onClick={() => navigate("/")}><ArrowLeft className="w-4 h-4 mr-1" />Dashboard</Button>
+        <h1 className="text-2xl font-bold flex items-center gap-2"><BarChart3 className="w-6 h-6 text-primary" /> {t("relatorioTatico.titulo")}</h1>
+        <Button variant="outline" size="sm" onClick={() => navigate("/")}><ArrowLeft className="w-4 h-4 mr-1" />{t("nav.dashboard")}</Button>
       </div>
 
       {pior_perfil && (
         <Card className="p-4 bg-rose-500/5 border-rose-500/30 flex items-center gap-3">
           <div className="text-2xl">{pior_perfil.emoji}</div>
           <p className="text-sm font-semibold text-rose-700 flex items-center gap-1">
-            <AlertTriangle className="w-4 h-4" /> Maior dificuldade: {pior_perfil.label} ({pior_perfil.aproveitamento}% de aproveitamento)
+            <AlertTriangle className="w-4 h-4" /> {t("relatorioTatico.maiorDificuldade")}: {pior_perfil.label} ({pior_perfil.aproveitamento}% {t("relatorioTatico.aprov")})
           </p>
         </Card>
       )}
 
-      {/* Resumo geral */}
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold flex items-center gap-2"><TrendingUp className="w-5 h-5 text-emerald-600" /> Últimas {overall.jogos} partidas</h2>
+        <h2 className="text-lg font-semibold flex items-center gap-2"><TrendingUp className="w-5 h-5 text-emerald-600" /> {t("relatorioTatico.ultimas")} {overall.jogos} {t("relatorioTatico.partidas")}</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <StatBox icon={TrendingUp} label="Aproveitamento" value={`${overall.aproveitamento}%`} color="text-emerald-600" />
-          <StatBox icon={Target} label="V / E / D" value={`${overall.vitorias} / ${overall.empates} / ${overall.derrotas}`} color="text-blue-600" />
-          <StatBox icon={Coins} label="Gols Pró / Contra" value={`${overall.gols_pro} / ${overall.gols_contra}`} color="text-amber-600" />
-          <StatBox icon={BarChart3} label="Posse Média" value={`${overall.posse_media}%`} color="text-violet-600" />
+          <StatBox icon={TrendingUp} label={t("relatorioTatico.aproveitamento")} value={`${overall.aproveitamento}%`} color="text-emerald-600" />
+          <StatBox icon={Target} label={t("relatorioTatico.ved")} value={`${overall.vitorias} / ${overall.empates} / ${overall.derrotas}`} color="text-blue-600" />
+          <StatBox icon={Coins} label={t("relatorioTatico.golsProContra")} value={`${overall.gols_pro} / ${overall.gols_contra}`} color="text-amber-600" />
+          <StatBox icon={BarChart3} label={t("relatorioTatico.posseMedia")} value={`${overall.posse_media}%`} color="text-violet-600" />
         </div>
       </section>
 
-      {/* Cards por perfil */}
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Análise por Perfil de Adversário</h2>
+        <h2 className="text-lg font-semibold">{t("relatorioTatico.perfis")}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {perfis.map((p) => (
             <Card key={p.especializacao} className={`p-4 space-y-3 ${p.alerta ? "border-rose-500/40" : ""}`}>
@@ -93,19 +93,19 @@ export default function RelatorioTatico() {
               </div>
 
               {p.jogos === 0 ? (
-                <p className="text-sm text-muted-foreground">Sem confrontos registrados.</p>
+                <p className="text-sm text-muted-foreground">{t("relatorioTatico.semConfrontos")}</p>
               ) : (
                 <>
                   <div className="grid grid-cols-3 gap-2 text-center text-sm">
-                    <div><p className="text-xs text-muted-foreground">Retrospecto</p><p className="font-semibold">{p.vitorias}V-{p.empates}E-{p.derrotas}D</p></div>
-                    <div><p className="text-xs text-muted-foreground">Gols Pró</p><p className="font-semibold text-emerald-600">{p.gols_pro_med.toFixed(1)}</p></div>
-                    <div><p className="text-xs text-muted-foreground">Gols Contra</p><p className="font-semibold text-rose-600">{p.gols_contra_med.toFixed(1)}</p></div>
+                    <div><p className="text-xs text-muted-foreground">{t("relatorioTatico.retrospecto")}</p><p className="font-semibold">{p.vitorias}V-{p.empates}E-{p.derrotas}D</p></div>
+                    <div><p className="text-xs text-muted-foreground">{t("relatorioTatico.golsPro")}</p><p className="font-semibold text-emerald-600">{p.gols_pro_med.toFixed(1)}</p></div>
+                    <div><p className="text-xs text-muted-foreground">{t("relatorioTatico.golsContra")}</p><p className="font-semibold text-rose-600">{p.gols_contra_med.toFixed(1)}</p></div>
                   </div>
                   <div className="text-xs text-muted-foreground flex items-center justify-between">
-                    <span>Posse média</span><span className="font-semibold text-foreground">{p.posse_media}%</span>
+                    <span>{t("relatorioTatico.posseMediaLbl")}</span><span className="font-semibold text-foreground">{p.posse_media}%</span>
                   </div>
-                  <div className="text-sm">
-                    <p className="text-xs font-semibold text-muted-foreground mb-1">Diagnóstico Tático</p>
+                  <div className="text-sm selectable-content">
+                    <p className="text-xs font-semibold text-muted-foreground mb-1">{t("relatorioTatico.diagnostico")}</p>
                     <p className="text-sm">{p.diagnostico}</p>
                   </div>
                 </>
@@ -113,9 +113,9 @@ export default function RelatorioTatico() {
 
               {p.recomendacoes && (
                 <div className="rounded-lg bg-amber-500/10 border border-amber-500/30 p-3 space-y-2">
-                  <p className="text-sm font-semibold text-amber-700 flex items-center gap-1"><Lightbulb className="w-4 h-4" /> Plano de Ação</p>
+                  <p className="text-sm font-semibold text-amber-700 flex items-center gap-1"><Lightbulb className="w-4 h-4" /> {t("relatorioTatico.planoAcao")}</p>
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">Atributos recomendados:</p>
+                    <p className="text-xs text-muted-foreground mb-1">{t("relatorioTatico.atributosRecomendados")}</p>
                     <div className="flex flex-wrap gap-1">
                       {p.recomendacoes.atributos.map((a) => (
                         <span key={a} className="text-xs bg-amber-500/20 text-amber-800 px-2 py-0.5 rounded-full font-medium">+{a}</span>

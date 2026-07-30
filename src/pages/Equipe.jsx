@@ -11,12 +11,13 @@ import { useClube, useEvoluirAtributo } from "@/hooks/useClube";
 import {
   ATRIBUTOS_INICIAIS,
   CATEGORIAS,
-  CATEGORIA_POR_ATRIBUTO,
   CATEGORIA_DA_ESPECIALIZACAO,
   calcularCustoEvolucao,
 } from "@/lib/tactical";
+import { useI18n } from "@/i18n/I18nContext";
 
 export default function Equipe() {
+  const { t } = useI18n();
   const [erro, setErro] = useState("");
   const { data: clube, isLoading, error, refetch } = useClube();
   const { data: atributos = [] } = useQuery({
@@ -35,16 +36,16 @@ export default function Equipe() {
     try {
       await evoluirMutation.mutateAsync({ nome_atributo: nome, custo });
     } catch (e) {
-      setErro(e.response?.data?.error || e.message || "Erro ao evoluir atributo");
+      setErro(e.response?.data?.error || e.message || t("equipe.erroEvoluir"));
     }
   };
 
-  if (isLoading) return <div className="p-8 text-center text-muted-foreground">Carregando...</div>;
+  if (isLoading) return <div className="p-8 text-center text-muted-foreground">{t("common.carregando")}</div>;
   if (error && !clube) return <div className="p-8 text-center text-destructive">{error.message}</div>;
   if (!clube) return (
     <div className="p-8 text-center">
-      <p className="mb-4 text-muted-foreground">Você ainda não tem um clube.</p>
-      <Link to="/" className="text-primary underline">Voltar</Link>
+      <p className="mb-4 text-muted-foreground">{t("equipe.semClube")}</p>
+      <Link to="/" className="text-primary underline">{t("common.voltar")}</Link>
     </div>
   );
 
@@ -54,7 +55,7 @@ export default function Equipe() {
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6">
       <Link to="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="w-4 h-4 mr-1" /> Voltar ao Dashboard
+        <ArrowLeft className="w-4 h-4 mr-1" /> {t("common.voltarDashboard")}
       </Link>
 
       <ClubeHeader clube={clube} />
@@ -68,7 +69,7 @@ export default function Equipe() {
             <h2 className="text-lg font-semibold">{cat.label}</h2>
             {catFav === cat.key && (
               <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-600 font-medium">
-                -10% (especialização)
+                {t("equipe.descontoEsp")}
               </span>
             )}
           </div>
@@ -87,7 +88,7 @@ export default function Equipe() {
                     </div>
                     <div>
                       <p className="font-medium">{a.nome}</p>
-                      <p className="text-xs text-muted-foreground">Nível {nivel}</p>
+                      <p className="text-xs text-muted-foreground">{t("common.nivel")} {nivel}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -101,7 +102,7 @@ export default function Equipe() {
                       disabled={!podePagar || evoluindo}
                       onClick={() => evoluir(a.nome)}
                     >
-                      {evoluindo ? "..." : "Evoluir"}
+                      {evoluindo ? "..." : t("equipe.evoluir")}
                     </Button>
                   </div>
                 </Card>

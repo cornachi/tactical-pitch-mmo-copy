@@ -42,22 +42,22 @@ function tabOf(p) {
 function resolveHeader(pathname) {
   if (MAIN_TABS.includes(pathname)) return { sub: false };
   const staticMap = {
-    "/ranking": "Ranking",
-    "/missoes": "Missões",
-    "/desafios": "Desafios",
-    "/torneios": "Torneios",
-    "/simular-partida": "Simulação",
-    "/pre-partida": "Pré-Partida",
-    "/resultado-partida": "Resultado",
-    "/torneios/criar": "Criar Torneio",
-    "/relatorio-tatico": "Relatório Tático",
+    "/ranking": "layout.ranking",
+    "/missoes": "layout.missoes",
+    "/desafios": "layout.desafios",
+    "/torneios": "layout.torneios",
+    "/simular-partida": "layout.simulacao",
+    "/pre-partida": "layout.prePartida",
+    "/resultado-partida": "layout.resultado",
+    "/torneios/criar": "layout.criarTorneio",
+    "/relatorio-tatico": "layout.relatorioTatico",
   };
-  if (staticMap[pathname]) return { sub: true, label: staticMap[pathname] };
-  if (pathname.startsWith("/desafios/relatorio/")) return { sub: true, label: "Relatório do Desafio" };
+  if (staticMap[pathname]) return { sub: true, labelKey: staticMap[pathname] };
+  if (pathname.startsWith("/desafios/relatorio/")) return { sub: true, labelKey: "layout.relatorioDesafio" };
   if (pathname.startsWith("/torneios/")) {
-    return { sub: true, label: null, torneioId: pathname.split("/")[2] };
+    return { sub: true, labelKey: null, torneioId: pathname.split("/")[2] };
   }
-  return { sub: true, label: "Tactical Pitch" };
+  return { sub: true, labelKey: "nav.dashboard" };
 }
 
 export default function Layout() {
@@ -73,23 +73,22 @@ export default function Layout() {
     if (headerInfo.torneioId) {
       setTorneioNome(null);
       base44.entities.Torneio.get(headerInfo.torneioId)
-        .then((tr) => setTorneioNome(tr?.nome || "Torneio"))
-        .catch(() => setTorneioNome("Torneio"));
+        .then((tr) => setTorneioNome(tr?.nome || t("layout.torneio")))
+        .catch(() => setTorneioNome(t("layout.torneio")));
     } else {
       setTorneioNome(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
-  // Memória de navegação: guarda o último caminho ativo de cada aba.
   useEffect(() => {
     lastPaths.current[tabOf(pathname)] = pathname;
   }, [pathname]);
 
   const mobileTitle = headerInfo.sub
     ? headerInfo.torneioId
-      ? (torneioNome || "Torneio")
-      : headerInfo.label
+      ? (torneioNome || t("layout.torneio"))
+      : t(headerInfo.labelKey)
     : "Tactical Pitch";
 
   return (
@@ -144,10 +143,10 @@ export default function Layout() {
               type="button"
               onClick={() => navigate(-1)}
               className="flex items-center gap-0.5 text-sm font-medium text-muted-foreground hover:text-foreground px-1.5 py-1 -ml-1"
-              aria-label="Voltar"
+              aria-label={t("layout.voltar")}
             >
               <ChevronLeft className="w-5 h-5" />
-              <span>Voltar</span>
+              <span>{t("layout.voltar")}</span>
             </button>
           ) : (
             <Link to="/" className="flex items-center gap-2 font-bold px-1.5">
@@ -164,7 +163,6 @@ export default function Layout() {
         </div>
       </header>
 
-      {/* Page content: keep-alive para abas + transição para sub-rotas */}
       <main className="pt-[calc(3rem+env(safe-area-inset-top))] md:pt-[calc(3.5rem+env(safe-area-inset-top))] pb-20 md:pb-0">
         <KeepAliveOutlet />
       </main>

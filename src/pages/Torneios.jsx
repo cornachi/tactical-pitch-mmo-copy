@@ -9,12 +9,6 @@ import EscudoClube from "@/components/clube/EscudoClube";
 import PullToRefresh from "@/components/PullToRefresh";
 import { useI18n } from "@/i18n/I18nContext";
 
-const STATUS_LABEL = {
-  MONTANDO: "Montando",
-  EM_ANDAMENTO: "Em andamento",
-  CONCLUIDO: "Concluído",
-};
-
 export default function Torneios() {
   const { t } = useI18n();
   const navigate = useNavigate();
@@ -25,6 +19,12 @@ export default function Torneios() {
   const [entrando, setEntrando] = useState(false);
   const [erro, setErro] = useState("");
 
+  const statusLabel = (st) => ({
+    MONTANDO: t("torneios.statusMontando"),
+    EM_ANDAMENTO: t("torneios.statusAndamento"),
+    CONCLUIDO: t("torneios.statusConcluido"),
+  })[st] || st;
+
   const carregar = async () => {
     try {
       const user = await base44.auth.me();
@@ -34,15 +34,13 @@ export default function Torneios() {
       const todos = await base44.entities.Torneio.list("-created_date", 50);
       if (c) setTorneios(todos.filter((tr) => (tr.participantes || []).includes(c.id) || tr.criador_id === c.id));
     } catch (e) {
-      setErro(e.message || "Erro ao carregar");
+      setErro(e.message || "Erro");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    carregar();
-  }, []);
+  useEffect(() => { carregar(); }, []);
 
   const entrar = async () => {
     setEntrando(true);
@@ -53,7 +51,7 @@ export default function Torneios() {
       if (data?.error) { setErro(data.error); return; }
       navigate(`/torneios/${data.torneio.id}`);
     } catch (e) {
-      setErro(e.response?.data?.error || e.message || "Falha ao entrar");
+      setErro(e.response?.data?.error || e.message || "Erro");
     } finally {
       setEntrando(false);
     }
@@ -65,32 +63,32 @@ export default function Torneios() {
     <PullToRefresh onRefresh={carregar}>
     <div className="max-w-3xl mx-auto p-4 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold flex items-center gap-2"><Trophy className="w-6 h-6 text-amber-500" /> {t("torneios.criar")}</h1>
-        <Button asChild><Link to="/torneios/criar"><Plus className="w-4 h-4" /> Criar</Link></Button>
+        <h1 className="text-2xl font-bold flex items-center gap-2"><Trophy className="w-6 h-6 text-amber-500" /> {t("torneios.meusTorneios")}</h1>
+        <Button asChild><Link to="/torneios/criar"><Plus className="w-4 h-4" /> {t("common.criar")}</Link></Button>
       </div>
 
       <Card className="p-4 space-y-3">
-        <h2 className="font-semibold flex items-center gap-2"><LogIn className="w-4 h-4" /> Entrar com código</h2>
+        <h2 className="font-semibold flex items-center gap-2"><LogIn className="w-4 h-4" /> {t("torneios.entrarCodigo")}</h2>
         <div className="flex gap-2">
-          <Input placeholder="CÓDIGO" value={codigo} onChange={(e) => setCodigo(e.target.value.toUpperCase())} maxLength={6} />
+          <Input placeholder={t("torneios.codigoPlaceholder")} value={codigo} onChange={(e) => setCodigo(e.target.value.toUpperCase())} maxLength={6} />
           <Button disabled={entrando || codigo.length < 6} onClick={entrar}>{entrando ? "..." : t("torneios.entrar")}</Button>
         </div>
         {erro && <p className="text-sm text-destructive">{erro}</p>}
       </Card>
 
       <div className="space-y-3">
-        <h2 className="font-semibold">Meus Torneios</h2>
-        {torneios.length === 0 && <p className="text-sm text-muted-foreground">Você ainda não está em nenhum torneio.</p>}
+        <h2 className="font-semibold">{t("torneios.meusTorneios")}</h2>
+        {torneios.length === 0 && <p className="text-sm text-muted-foreground">{t("torneios.semTorneios")}</p>}
         {torneios.map((tr) => (
           <Card key={tr.id} className="p-4 flex items-center gap-3">
             <EscudoClube clube={clube} size={36} />
             <div className="flex-1 min-w-0">
               <Link to={`/torneios/${tr.id}`} className="font-semibold hover:underline truncate block">{tr.nome}</Link>
               <p className="text-xs text-muted-foreground">
-                {STATUS_LABEL[tr.status]} • {(tr.participantes || []).length}/8 • Pote: {(tr.pote_moedas || 0).toLocaleString("pt-BR")}
+                {statusLabel(tr.status)} • {(tr.participantes || []).length}/8 • {t("torneios.pote")} {(tr.pote_moedas || 0).toLocaleString("pt-BR")}
               </p>
             </div>
-            <Button asChild variant="outline" size="sm"><Link to={`/torneios/${tr.id}`}>Ver</Link></Button>
+            <Button asChild variant="outline" size="sm"><Link to={`/torneios/${tr.id}`}>{t("common.ver")}</Link></Button>
           </Card>
         ))}
       </div>

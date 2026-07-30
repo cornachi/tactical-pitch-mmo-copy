@@ -3,10 +3,12 @@ import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { AlertTriangle, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { useI18n } from "@/i18n/I18nContext";
 
 // Widget de alerta tático para o Dashboard: destaca o perfil de adversário
 // contra o qual o clube tem menor rendimento (aproveitamento < 50%).
 export default function AlertaTatico() {
+  const { t } = useI18n();
   const [pior, setPior] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -30,10 +32,10 @@ export default function AlertaTatico() {
         <div className="text-2xl">{pior.emoji}</div>
         <div className="flex-1">
           <p className="text-sm font-semibold text-rose-700 flex items-center gap-1">
-            <AlertTriangle className="w-4 h-4" /> Alerta Tático
+            <AlertTriangle className="w-4 h-4" /> {t("alerta.titulo")}
           </p>
           <p className="text-xs text-muted-foreground">
-            Seu time sofre contra equipes de {pior.label}! Aproveitamento de {pior.aproveitamento}% em {pior.jogos} jogo(s).
+            {t("alerta.sofre")} {pior.label}! {t("alerta.aproveitamento")} {pior.aproveitamento}% {t("alerta.jogos")} ({pior.jogos}).
           </p>
         </div>
         <ChevronRight className="w-5 h-5 text-muted-foreground" />

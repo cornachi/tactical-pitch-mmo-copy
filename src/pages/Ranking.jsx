@@ -7,17 +7,19 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import EscudoClube from "@/components/clube/EscudoClube";
 import PoteTemporada from "@/components/ranking/PoteTemporada";
+import { useI18n } from "@/i18n/I18nContext";
 
 const RANKINGS = [
-  { key: "global", label: "🏆 Global (ELO)", valorLabel: "Pontos ELO" },
-  { key: "vitorias", label: "⚔️ Mais Vitórias", valorLabel: "Vitórias no mês" },
-  { key: "ataque", label: "⚽ Melhor Ataque", valorLabel: "Gols pró no mês" },
-  { key: "desafios", label: "🔥 Rei dos Desafios", valorLabel: "Vitórias em Desafio" },
-  { key: "infra", label: "🏛️ Maior Infraestrutura", valorLabel: "Soma dos níveis" },
-  { key: "comissao", label: "🎓 Melhor Comissão", valorLabel: "Soma dos níveis" },
+  { key: "global", labelKey: "ranking.global", valorKey: "ranking.globalValor" },
+  { key: "vitorias", labelKey: "ranking.vitorias", valorKey: "ranking.vitoriasValor" },
+  { key: "ataque", labelKey: "ranking.ataque", valorKey: "ranking.ataqueValor" },
+  { key: "desafios", labelKey: "ranking.desafios", valorKey: "ranking.desafiosValor" },
+  { key: "infra", labelKey: "ranking.infra", valorKey: "ranking.infraValor" },
+  { key: "comissao", labelKey: "ranking.comissao", valorKey: "ranking.comissaoValor" },
 ];
 
 export default function Ranking() {
+  const { t } = useI18n();
   const [dados, setDados] = useState(null);
   const [meuClubeId, setMeuClubeId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -48,14 +50,14 @@ export default function Ranking() {
     })();
   }, []);
 
-  if (loading) return <div className="p-8 text-center text-muted-foreground">Carregando rankings...</div>;
-  if (!dados) return <div className="p-8 text-center text-muted-foreground">Falha ao carregar rankings.</div>;
+  if (loading) return <div className="p-8 text-center text-muted-foreground">{t("ranking.carregando")}</div>;
+  if (!dados) return <div className="p-8 text-center text-muted-foreground">{t("ranking.falha")}</div>;
 
   const medalha = (pos) => (pos === 1 ? "🥇" : pos === 2 ? "🥈" : pos === 3 ? "🥉" : null);
 
   const renderLista = (lista) => {
     if (!lista || lista.length === 0) {
-      return <p className="text-sm text-muted-foreground text-center py-6">Sem dados ainda neste mês.</p>;
+      return <p className="text-sm text-muted-foreground text-center py-6">{t("ranking.semDados")}</p>;
     }
     return (
       <Card className="divide-y">
@@ -69,8 +71,8 @@ export default function Ranking() {
               <div className="flex-1 min-w-0">
                 <p className="font-medium truncate flex items-center gap-2">
                   {r.nome}
-                  {r.is_bot && <span className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground">BOT</span>}
-                  {souEu && <span className="text-xs text-primary">(Você)</span>}
+                  {r.is_bot && <span className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{t("common.bot")}</span>}
+                  {souEu && <span className="text-xs text-primary">{t("common.voce")}</span>}
                 </p>
               </div>
               <div className="text-right">
@@ -87,44 +89,40 @@ export default function Ranking() {
     <div className="max-w-3xl mx-auto p-4 space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Trophy className="w-6 h-6 text-amber-500" />Rankings
+          <Trophy className="w-6 h-6 text-amber-500" />{t("ranking.titulo")}
         </h1>
         <Button asChild variant="outline">
-          <Link to="/">Voltar</Link>
+          <Link to="/">{t("common.voltar")}</Link>
         </Button>
       </div>
 
       <PoteTemporada pote={pote} />
 
-      <p className="text-xs text-muted-foreground">
-        Premiação dos rankings especiais: 1º lugar recebe até 10% do prêmio do 1º lugar global; demais posições recebem proporcionalmente.
-      </p>
+      <p className="text-xs text-muted-foreground">{t("ranking.premiacao")}</p>
 
       <Tabs defaultValue="global" className="w-full">
         <TabsList className="flex flex-wrap h-auto gap-1 w-full">
           {RANKINGS.map((r) => (
             <TabsTrigger key={r.key} value={r.key} className="text-xs flex-1 min-w-[45%]">
-              {r.label}
+              {t(r.labelKey)}
             </TabsTrigger>
           ))}
           <TabsTrigger value="hall" className="text-xs flex-1 min-w-[45%]">
-            🏛️ Hall da Fama
+            {t("ranking.hall")}
           </TabsTrigger>
         </TabsList>
         {RANKINGS.map((r) => (
           <TabsContent key={r.key} value={r.key} className="mt-4 space-y-2">
-            <p className="text-xs text-muted-foreground">{r.valorLabel}</p>
+            <p className="text-xs text-muted-foreground">{t(r.valorKey)}</p>
             {renderLista(dados[r.key])}
           </TabsContent>
         ))}
         <TabsContent value="hall" className="mt-4 space-y-2">
-          <p className="text-xs text-muted-foreground">
-            Pontos de Glória Históricos: 🏆 Temporada Global = 100 • 🥇 Copa dos Campeões = 50 • ⚔️ Torneio de 8 = 15 • 🥈 Vice = 10
-          </p>
+          <p className="text-xs text-muted-foreground">{t("ranking.hallInfo")}</p>
           {hallLoading ? (
-            <p className="text-sm text-muted-foreground text-center py-6">Carregando Hall da Fama...</p>
+            <p className="text-sm text-muted-foreground text-center py-6">{t("ranking.carregandoHall")}</p>
           ) : !hall || hall.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-6">Nenhum campeão coroado ainda.</p>
+            <p className="text-sm text-muted-foreground text-center py-6">{t("ranking.semCampeoes")}</p>
           ) : (
             <Card className="divide-y">
               {hall.map((r, i) => {
@@ -137,14 +135,14 @@ export default function Ranking() {
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate flex items-center gap-2">
                         {r.nome}
-                        {r.is_bot && <span className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground">BOT</span>}
-                        {souEu && <span className="text-xs text-primary">(Você)</span>}
+                        {r.is_bot && <span className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{t("common.bot")}</span>}
+                        {souEu && <span className="text-xs text-primary">{t("common.voce")}</span>}
                       </p>
                       <p className="text-xs text-muted-foreground">🏆 {r.titulos.RANKING_GLOBAL} • 🥇 {r.titulos.COPA_CAMPEOES} • ⚔️ {r.titulos.TORNEIO_8}</p>
                     </div>
                     <div className="text-right">
                       <p className="font-bold">{r.pontos}</p>
-                      <p className="text-xs text-muted-foreground">pts</p>
+                      <p className="text-xs text-muted-foreground">{t("ranking.pts")}</p>
                     </div>
                   </div>
                 );

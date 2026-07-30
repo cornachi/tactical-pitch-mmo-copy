@@ -4,8 +4,10 @@ import { Bell, Check, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/i18n/I18nContext";
 
 export default function NotificationCenter() {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const [notifs, setNotifs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -60,12 +62,12 @@ export default function NotificationCenter() {
         </PopoverTrigger>
         <PopoverContent align="end" className="w-80 p-0">
           <div className="p-3 border-b font-semibold flex items-center gap-2">
-            <Bell className="w-4 h-4" />Notificações
+            <Bell className="w-4 h-4" />{t("notif.titulo")}
           </div>
           <div className="max-h-80 overflow-y-auto">
-            {loading && <p className="p-4 text-sm text-muted-foreground text-center">Carregando...</p>}
+            {loading && <p className="p-4 text-sm text-muted-foreground text-center">{t("common.carregando")}</p>}
             {!loading && notifs.length === 0 && (
-              <p className="p-4 text-sm text-muted-foreground text-center">Nenhuma notificação.</p>
+              <p className="p-4 text-sm text-muted-foreground text-center">{t("notif.vazia")}</p>
             )}
             {notifs.map((n) => (
               <div key={n.id} className={`p-3 border-b ${n.lida ? "" : "bg-primary/5"}`}>
@@ -77,12 +79,12 @@ export default function NotificationCenter() {
                 <div className="flex gap-2 mt-2">
                   {n.partida_id && (
                     <Button size="sm" variant="outline" onClick={() => verRelatorio(n)}>
-                      <BarChart3 className="w-3 h-3 mr-1" />Ver Relatório
+                      <BarChart3 className="w-3 h-3 mr-1" />{t("notif.verRelatorio")}
                     </Button>
                   )}
                   {!n.lida && (
                     <Button size="sm" variant="ghost" onClick={() => marcarLida(n.id)}>
-                      <Check className="w-3 h-3 mr-1" />Marcar lida
+                      <Check className="w-3 h-3 mr-1" />{t("notif.marcarLida")}
                     </Button>
                   )}
                 </div>

@@ -6,19 +6,20 @@ import { Card } from "@/components/ui/card";
 import { useI18n } from "@/i18n/I18nContext";
 
 const PACOTES = [
-  { id: "iniciante", nome: "Iniciante", moedas: 10000, valor: 4.9, selo: null },
-  { id: "treinador", nome: "Treinador", moedas: 50000, valor: 19.9, selo: "Mais Popular" },
-  { id: "dirigente", nome: "Dirigente", moedas: 200000, valor: 49.9, selo: null },
-  { id: "dono", nome: "Dono de Clube", moedas: 1000000, valor: 149.9, selo: "Melhor Custo-Benefício" },
+  { id: "iniciante", nomeKey: "loja.pacoteIniciante", moedas: 10000, valor: 4.9, selo: null },
+  { id: "treinador", nomeKey: "loja.pacoteTreinador", moedas: 50000, valor: 19.9, seloKey: "loja.seloPopular" },
+  { id: "dirigente", nomeKey: "loja.pacoteDirigente", moedas: 200000, valor: 49.9, selo: null },
+  { id: "dono", nomeKey: "loja.pacoteDono", moedas: 1000000, valor: 149.9, seloKey: "loja.seloCusto" },
 ];
 
 const ENERGIA_PACOTES = [
-  { id: "e5", qtd: 5, custo: 300, nome: "+5 Energias" },
-  { id: "e10", qtd: 10, custo: 500, nome: "+10 Energias" },
-  { id: "e20", qtd: 20, custo: 800, nome: "+20 Energias", selo: "Mais Econômico" },
+  { id: "e5", qtd: 5, custo: 300, nomeKey: "loja.pacoteIniciante", nomeRaw: "+5" },
+  { id: "e10", qtd: 10, custo: 500, nomeRaw: "+10" },
+  { id: "e20", qtd: 20, custo: 800, nomeRaw: "+20", seloKey: "loja.seloEconomico" },
 ];
 
 export default function Loja() {
+  const { t } = useI18n();
   const [clube, setClube] = useState(null);
   const [loading, setLoading] = useState(true);
   const [comprando, setComprando] = useState("");
@@ -26,7 +27,6 @@ export default function Loja() {
   const [sucesso, setSucesso] = useState(null);
   const [sucessoEnergia, setSucessoEnergia] = useState(null);
   const [erro, setErro] = useState("");
-  const { t } = useI18n();
 
   const carregar = async () => {
     try {
@@ -34,7 +34,7 @@ export default function Loja() {
       const clubes = await base44.entities.Clube.filter({ user_id: user.id });
       setClube(clubes[0] || null);
     } catch (e) {
-      setErro(e.message || "Erro ao carregar");
+      setErro(e.message || "Erro");
     } finally {
       setLoading(false);
     }
@@ -42,7 +42,6 @@ export default function Loja() {
 
   useEffect(() => { carregar(); }, []);
 
-  // Verifica o retorno do Checkout Pro (redirect do MP com ?status=...&payment_id=...).
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const status = params.get("status");
@@ -65,6 +64,7 @@ export default function Loja() {
         setErro(t("loja.pagamentoPendente"));
       }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const comprar = async (pacote) => {
@@ -81,7 +81,7 @@ export default function Loja() {
       if (data?.error) { setErro(data.error); return; }
       if (data.init_point) window.location.href = data.init_point;
     } catch (e) {
-      setErro(e.response?.data?.error || e.message || "Falha ao iniciar pagamento");
+      setErro(e.response?.data?.error || e.message || t("loja.falhaPagamento"));
     } finally {
       setComprando("");
     }
@@ -95,10 +95,10 @@ export default function Loja() {
       const res = await base44.functions.invoke("comprarEnergia", { qtd: pacote.qtd });
       const data = res?.data ?? res;
       if (data?.error) { setErro(data.error); return; }
-      setSucessoEnergia({ nome: pacote.nome, credito: data.energias_creditadas, energia: data.energia_matchmaking, max: data.max_energia });
+      setSucessoEnergia({ nome: pacote.nomeRaw, credito: data.energias_creditadas, energia: data.energia_matchmaking, max: data.max_energia });
       carregar();
     } catch (e) {
-      setErro(e.response?.data?.error || e.message || "Falha na compra de energia");
+      setErro(e.response?.data?.error || e.message || t("loja.falhaEnergia"));
     } finally {
       setComprandoEnergia("");
     }
@@ -126,17 +126,17 @@ export default function Loja() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {PACOTES.map((p) => (
           <Card key={p.id} className="p-5 flex flex-col relative">
-            {p.selo && (
+            {p.seloKey && (
               <span className="absolute top-3 right-3 text-xs font-semibold px-2 py-1 rounded-full bg-amber-500 text-white">
-                {p.selo}
+                {t(p.seloKey)}
               </span>
             )}
-            <h3 className="text-lg font-bold">{p.nome}</h3>
+            <h3 className="text-lg font-bold">{t(p.nomeKey)}</h3>
             <div className="flex items-center gap-2 my-2">
               <Coins className="w-7 h-7 text-amber-500" />
               <span className="text-3xl font-bold text-amber-600">{p.moedas.toLocaleString("pt-BR")}</span>
             </div>
-            <p className="text-sm text-muted-foreground">moedas</p>
+            <p className="text-sm text-muted-foreground">{t("common.moedas")}</p>
             <p className="text-2xl font-bold mt-3">R$ {p.valor.toFixed(2).replace(".", ",")}</p>
             <Button className="w-full mt-4" disabled={comprando === p.id} onClick={() => comprar(p)}>
               {comprando === p.id ? t("loja.redirecionando") : t("loja.comprar")}
@@ -145,7 +145,6 @@ export default function Loja() {
         ))}
       </div>
 
-      {/* Recarga de Energia */}
       <div className="pt-2">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xl font-bold flex items-center gap-2"><Zap className="w-5 h-5 text-amber-500" /> {t("loja.recargaEnergia")}</h2>
@@ -158,19 +157,19 @@ export default function Loja() {
         </div>
         {sucessoEnergia && (
           <Card className="p-3 mb-3 bg-amber-500/10 border-amber-500/30">
-            <p className="flex items-center gap-2 text-amber-700 font-semibold"><Zap className="w-4 h-4" /> +{sucessoEnergia.credito} energias creditadas!</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Saldo de energia: {sucessoEnergia.energia} / {sucessoEnergia.max}</p>
+            <p className="flex items-center gap-2 text-amber-700 font-semibold"><Zap className="w-4 h-4" /> +{sucessoEnergia.credito} {t("loja.energiaCreditada")}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{t("loja.saldoEnergia")} {sucessoEnergia.energia} / {sucessoEnergia.max}</p>
           </Card>
         )}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {ENERGIA_PACOTES.map((e) => (
             <Card key={e.id} className="p-4 flex flex-col relative">
-              {e.selo && (
-                <span className="absolute top-2 right-2 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-500 text-white">{e.selo}</span>
+              {e.seloKey && (
+                <span className="absolute top-2 right-2 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-500 text-white">{t(e.seloKey)}</span>
               )}
               <div className="flex items-center gap-2 mb-1">
                 <Zap className="w-6 h-6 text-amber-500" />
-                <span className="text-2xl font-bold text-amber-600">{e.nome}</span>
+                <span className="text-2xl font-bold text-amber-600">{e.nomeRaw} {t("loja.energiasLabel")}</span>
               </div>
               <p className="text-sm text-muted-foreground mb-2">{t("loja.energiasMatchmaking")}</p>
               <p className="text-lg font-bold">{e.custo.toLocaleString("pt-BR")} <span className="text-sm font-normal text-muted-foreground">{t("common.moedas")}</span></p>

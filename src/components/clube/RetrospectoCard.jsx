@@ -2,11 +2,13 @@ import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card } from "@/components/ui/card";
 import { Activity, Brain } from "lucide-react";
+import { useI18n } from "@/i18n/I18nContext";
 
 const FORMA_STYLE = { V: "bg-emerald-500", E: "bg-amber-500", D: "bg-rose-500" };
 const FORMA_LABEL = { V: "V", E: "E", D: "D" };
 
 export default function RetrospectoCard({ clubeId }) {
+  const { t } = useI18n();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -29,7 +31,7 @@ export default function RetrospectoCard({ clubeId }) {
   if (loading) {
     return (
       <Card className="p-4">
-        <p className="text-sm text-muted-foreground text-center">Carregando retrospecto...</p>
+        <p className="text-sm text-muted-foreground text-center">{t("common.carregando")}</p>
       </Card>
     );
   }
@@ -39,49 +41,49 @@ export default function RetrospectoCard({ clubeId }) {
     <Card className="p-4 space-y-4">
       <div className="flex items-center gap-2">
         <Activity className="w-5 h-5 text-primary" />
-        <h2 className="font-semibold">Retrospecto Geral</h2>
+        <h2 className="font-semibold">{t("retrospecto.titulo")}</h2>
       </div>
 
       <div className="grid grid-cols-4 gap-2 text-center">
         <div>
-          <p className="text-xs text-muted-foreground">Jogos</p>
+          <p className="text-xs text-muted-foreground">{t("retrospecto.jogos")}</p>
           <p className="font-bold">{stats.jogos}</p>
         </div>
         <div>
-          <p className="text-xs text-emerald-600">Vitórias</p>
+          <p className="text-xs text-emerald-600">{t("retrospecto.vitorias")}</p>
           <p className="font-bold text-emerald-600">{stats.vitorias}</p>
         </div>
         <div>
-          <p className="text-xs text-amber-600">Empates</p>
+          <p className="text-xs text-amber-600">{t("retrospecto.empates")}</p>
           <p className="font-bold text-amber-600">{stats.empates}</p>
         </div>
         <div>
-          <p className="text-xs text-rose-600">Derrotas</p>
+          <p className="text-xs text-rose-600">{t("retrospecto.derrotas")}</p>
           <p className="font-bold text-rose-600">{stats.derrotas}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-4 gap-2 text-center">
         <div>
-          <p className="text-xs text-muted-foreground">Gols Pró</p>
+          <p className="text-xs text-muted-foreground">{t("retrospecto.golsPro")}</p>
           <p className="font-bold">⚽ {stats.gols_pro}</p>
         </div>
         <div>
-          <p className="text-xs text-muted-foreground">Gols Contra</p>
+          <p className="text-xs text-muted-foreground">{t("retrospecto.golsContra")}</p>
           <p className="font-bold">{stats.gols_contra}</p>
         </div>
         <div>
-          <p className="text-xs text-muted-foreground">Saldo</p>
+          <p className="text-xs text-muted-foreground">{t("retrospecto.saldo")}</p>
           <p className="font-bold">{stats.saldo >= 0 ? "+" : ""}{stats.saldo}</p>
         </div>
         <div>
-          <p className="text-xs text-muted-foreground">Aproveit.</p>
+          <p className="text-xs text-muted-foreground">{t("retrospecto.aproveit")}</p>
           <p className="font-bold">{stats.aproveitamento}%</p>
         </div>
       </div>
 
       <div>
-        <p className="text-xs text-muted-foreground mb-1.5">Forma Recente (últimos 5)</p>
+        <p className="text-xs text-muted-foreground mb-1.5">{t("retrospecto.forma")}</p>
         <div className="flex gap-1.5">
           {stats.forma && stats.forma.length > 0 ? (
             stats.forma.map((f, i) => (
@@ -93,7 +95,7 @@ export default function RetrospectoCard({ clubeId }) {
               </span>
             ))
           ) : (
-            <span className="text-sm text-muted-foreground">Sem partidas</span>
+            <span className="text-sm text-muted-foreground">{t("retrospecto.semPartidas")}</span>
           )}
         </div>
       </div>
@@ -102,9 +104,9 @@ export default function RetrospectoCard({ clubeId }) {
         <div className="flex items-center gap-3 bg-violet-500/10 rounded-lg p-3">
           <Brain className="w-5 h-5 text-violet-600" />
           <div>
-            <p className="text-xs text-muted-foreground">Arma Secreta</p>
+            <p className="text-xs text-muted-foreground">{t("retrospecto.armaSecreta")}</p>
             <p className="font-bold text-sm">
-              {stats.arma_secreta.nome} <span className="text-violet-600">Nv {stats.arma_secreta.nivel}</span>
+              {stats.arma_secreta.nome} <span className="text-violet-600">{t("common.nivel")} {stats.arma_secreta.nivel}</span>
             </p>
           </div>
         </div>

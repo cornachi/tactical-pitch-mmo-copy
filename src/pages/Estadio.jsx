@@ -7,8 +7,10 @@ import { useClube, useEvoluirInstalacao } from "@/hooks/useClube";
 import {
   INSTALACOES, TIPOS_INSTALACAO, TIPOS_COMISSAO, CAMPO_NIVEL, custoInstalacao,
 } from "@/lib/instalacoes";
+import { useI18n } from "@/i18n/I18nContext";
 
 export default function Estadio() {
+  const { t } = useI18n();
   const [erro, setErro] = useState("");
   const { data: clube, isLoading } = useClube();
   const upgrade = useEvoluirInstalacao();
@@ -26,11 +28,11 @@ export default function Estadio() {
     }
   };
 
-  if (isLoading) return <div className="p-8 text-center text-muted-foreground">Carregando...</div>;
+  if (isLoading) return <div className="p-8 text-center text-muted-foreground">{t("common.carregando")}</div>;
   if (!clube) {
     return (
       <div className="p-8 text-center">
-        <Link to="/" className="text-primary underline">Voltar ao Dashboard</Link>
+        <Link to="/" className="text-primary underline">{t("common.voltarDashboard")}</Link>
       </div>
     );
   }
@@ -52,7 +54,7 @@ export default function Estadio() {
             <p className="text-xs text-muted-foreground">{c.descricao}</p>
           </div>
           <div className="text-right shrink-0">
-            <p className="text-xs text-muted-foreground">Nível</p>
+            <p className="text-xs text-muted-foreground">{t("common.nivel")}</p>
             <p className="font-bold text-lg">{nivel}</p>
           </div>
         </div>
@@ -62,7 +64,7 @@ export default function Estadio() {
             {custo.toLocaleString("pt-BR")}
           </span>
           <Button size="sm" disabled={!pode || evoluindo} onClick={() => evoluir(tipo)}>
-            {evoluindo ? "..." : "Evoluir"}
+            {evoluindo ? "..." : t("estadio.evoluir")}
           </Button>
         </div>
       </Card>
@@ -72,25 +74,25 @@ export default function Estadio() {
   return (
     <div className="max-w-3xl mx-auto p-4 space-y-6">
       <Link to="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="w-4 h-4 mr-1" /> Voltar ao Dashboard
+        <ArrowLeft className="w-4 h-4 mr-1" /> {t("common.voltarDashboard")}
       </Link>
 
       <div>
-        <h1 className="text-2xl font-bold">Estádio & Infraestrutura</h1>
-        <p className="text-sm text-muted-foreground">Moedas: {clube.moedas?.toLocaleString("pt-BR")}</p>
+        <h1 className="text-2xl font-bold">{t("estadio.titulo")}</h1>
+        <p className="text-sm text-muted-foreground">{t("estadio.moedas")} {clube.moedas?.toLocaleString("pt-BR")}</p>
       </div>
 
       {erro && <p className="text-sm text-destructive">{erro}</p>}
 
       <div className="space-y-2">
-        <h2 className="text-lg font-semibold">Infraestrutura</h2>
+        <h2 className="text-lg font-semibold">{t("estadio.infraestrutura")}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {TIPOS_INSTALACAO.map(renderItem)}
         </div>
       </div>
 
       <div className="space-y-2">
-        <h2 className="text-lg font-semibold">Comissão Técnica</h2>
+        <h2 className="text-lg font-semibold">{t("estadio.comissao")}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {TIPOS_COMISSAO.map(renderItem)}
         </div>

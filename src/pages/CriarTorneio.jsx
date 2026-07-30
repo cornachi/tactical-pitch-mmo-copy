@@ -25,7 +25,7 @@ export default function CriarTorneio() {
       if (data?.error) { setErro(data.error); return; }
       navigate(`/torneios/${data.torneio.id}`);
     } catch (e) {
-      setErro(e.response?.data?.error || e.message || "Falha ao criar torneio");
+      setErro(e.response?.data?.error || e.message || "Erro");
     } finally {
       setCriando(false);
     }
@@ -34,21 +34,21 @@ export default function CriarTorneio() {
   return (
     <div className="max-w-md mx-auto p-4 space-y-6">
       <Button variant="ghost" size="sm" onClick={() => navigate("/torneios")}><ArrowLeft className="w-4 h-4" /> {t("common.voltar")}</Button>
-      <h1 className="text-2xl font-bold flex items-center gap-2"><Trophy className="w-6 h-6 text-amber-500" /> {t("torneios.criar")}</h1>
+      <h1 className="text-2xl font-bold flex items-center gap-2"><Trophy className="w-6 h-6 text-amber-500" /> {t("torneios.criarBtn")}</h1>
 
       <Card className="p-5 space-y-4">
         <div className="space-y-2">
           <Label htmlFor="nome">{t("torneios.nome")}</Label>
-          <Input id="nome" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Copa dos Amigos" maxLength={40} />
+          <Input id="nome" value={nome} onChange={(e) => setNome(e.target.value)} placeholder={t("torneios.placeholder")} maxLength={40} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="taxa" className="flex items-center gap-1"><Coins className="w-4 h-4 text-amber-500" /> {t("torneios.taxa")} (0 = grátis)</Label>
+          <Label htmlFor="taxa" className="flex items-center gap-1"><Coins className="w-4 h-4 text-amber-500" /> {t("torneios.taxa")} {t("torneios.gratis")}</Label>
           <Input id="taxa" type="number" min={0} value={taxa} onChange={(e) => setTaxa(e.target.value)} />
-          <p className="text-xs text-muted-foreground">O pote (70% campeão / 30% vice) é formado pela soma das taxas dos 8 jogadores.</p>
+          <p className="text-xs text-muted-foreground">{t("torneios.poteInfo")}</p>
         </div>
         {erro && <p className="text-sm text-destructive">{erro}</p>}
         <Button className="w-full" disabled={criando || !nome.trim()} onClick={criar}>
-          {criando ? "Criando..." : "Criar Torneio"}
+          {criando ? t("torneios.criando") : t("torneios.criarBtn")}
         </Button>
       </Card>
     </div>
