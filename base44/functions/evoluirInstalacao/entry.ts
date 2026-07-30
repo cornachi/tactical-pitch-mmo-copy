@@ -20,12 +20,12 @@ export default async function(req) {
     const nivelAtual = clube[campo] || 0;
     const custo = custoInstalacao(tipo, nivelAtual);
 
-    if ((clube.moedas || 0) < custo) {
-      return Response.json({ error: 'Moedas insuficientes', custo, moedas_atuais: clube.moedas || 0 }, { status: 400 });
+    if ((clube.xp || 0) < custo) {
+      return Response.json({ error: 'XP insuficiente para evoluir', custo, xp_atual: clube.xp || 0 }, { status: 400 });
     }
 
-    const novasMoedas = (clube.moedas || 0) - custo;
-    await base44.asServiceRole.entities.Clube.update(clube_id, { moedas: novasMoedas, [campo]: nivelAtual + 1 });
+    const novoXp = (clube.xp || 0) - custo;
+    await base44.asServiceRole.entities.Clube.update(clube_id, { xp: novoXp, [campo]: nivelAtual + 1 });
 
     return Response.json({
       success: true,
@@ -33,7 +33,7 @@ export default async function(req) {
       nivel_anterior: nivelAtual,
       novo_nivel: nivelAtual + 1,
       custo,
-      moedas_restantes: novasMoedas,
+      xp_restante: novoXp,
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

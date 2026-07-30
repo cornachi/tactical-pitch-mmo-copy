@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Coins } from "lucide-react";
+import { ArrowLeft, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useClube, useEvoluirInstalacao } from "@/hooks/useClube";
@@ -43,7 +43,7 @@ export default function Estadio() {
     const c = INSTALACOES[tipo];
     const nivel = clube[CAMPO_NIVEL[tipo]] || 0;
     const custo = custoInstalacao(tipo, nivel);
-    const pode = (clube.moedas || 0) >= custo;
+    const pode = (clube.xp || 0) >= custo;
     const evoluindo = evoluindoTipo === tipo;
     return (
       <Card key={tipo} className="p-4 space-y-2">
@@ -60,8 +60,8 @@ export default function Estadio() {
         </div>
         <div className="flex items-center justify-between">
           <span className="inline-flex items-center text-sm font-medium">
-            <Coins className="w-4 h-4 mr-1 text-amber-500" />
-            {custo.toLocaleString("pt-BR")}
+            <Activity className="w-4 h-4 mr-1 text-primary" />
+            {custo.toLocaleString("pt-BR")} XP
           </span>
           <Button size="sm" disabled={!pode || evoluindo} onClick={() => evoluir(tipo)}>
             {evoluindo ? "..." : t("estadio.evoluir")}
@@ -79,7 +79,7 @@ export default function Estadio() {
 
       <div>
         <h1 className="text-2xl font-bold">{t("estadio.titulo")}</h1>
-        <p className="text-sm text-muted-foreground">{t("estadio.moedas")} {clube.moedas?.toLocaleString("pt-BR")}</p>
+        <p className="text-sm text-muted-foreground">{t("home.xp")} {clube.xp?.toLocaleString("pt-BR")}</p>
       </div>
 
       {erro && <p className="text-sm text-destructive">{erro}</p>}

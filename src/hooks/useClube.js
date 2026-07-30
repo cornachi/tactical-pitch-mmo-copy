@@ -68,7 +68,7 @@ export function useEvoluirInstalacao() {
       if (prev) {
         qc.setQueryData(CLUBE_KEY, {
           ...prev,
-          moedas: Math.max(0, (prev.moedas || 0) - custo),
+          xp: Math.max(0, (prev.xp || 0) - custo),
           [campo]: (prev[campo] || 0) + 1,
         });
       }
