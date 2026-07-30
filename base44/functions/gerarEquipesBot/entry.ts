@@ -38,7 +38,6 @@ export default async function(req) {
       pais: "Botlândia",
       moedas: 1000,
       xp: 0,
-      ranking_elo: Math.floor(Math.random() * 201) + 900,
       energia_matchmaking: 6,
       energia_desafio: 3,
       win_streak: 0,

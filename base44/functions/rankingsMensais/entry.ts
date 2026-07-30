@@ -10,7 +10,7 @@ export default async function(req) {
 
     const agora = new Date();
     const anoMes = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, "0")}`;
-    const clubes = await base44.asServiceRole.entities.Clube.list("-ranking_elo", 10000);
+    const clubes = await base44.asServiceRole.entities.Clube.list("-pontos_ranking", 10000);
     const meuClube = clubes.find((c) => c.user_id === user.id) || null;
     const rankings = await calcularRankingsMensais(base44, clubes, anoMes);
     const temporada = (await base44.asServiceRole.entities.Temporada.filter({ ativa: true }))[0];

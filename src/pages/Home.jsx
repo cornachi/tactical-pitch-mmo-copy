@@ -39,7 +39,7 @@ export default function Home() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard icon={Coins} label={t("home.moedas")} value={clube.moedas ?? 0} color={clube.cor_principal} accent="bg-amber-500/10 text-amber-600" />
         <StatCard icon={Activity} label={t("home.xp")} value={clube.xp ?? 0} color={clube.cor_principal} accent="bg-violet-500/10 text-violet-600" />
-        <StatCard icon={Trophy} label={t("home.rankingElo")} value={clube.ranking_elo ?? 1000} color={clube.cor_principal} accent="bg-blue-500/10 text-blue-600" />
+        <StatCard icon={Trophy} label={t("home.pontosRanking")} value={clube.pontos_ranking ?? 0} color={clube.cor_principal} accent="bg-blue-500/10 text-blue-600" />
         <StatCard icon={Flame} label={t("home.winStreak")} value={clube.win_streak ?? 0} color={clube.cor_principal} accent="bg-orange-500/10 text-orange-600" />
       </div>
 

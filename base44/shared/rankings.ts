@@ -47,8 +47,8 @@ export async function calcularRankingsMensais(base44, clubes, anoMes) {
     valor: (c.comissao_prep_fisico || 0) + (c.comissao_analista || 0) + (c.comissao_auxiliar_tatico || 0),
   })).sort((a, b) => b.valor - a.valor).slice(0, 50).map((s, i) => ({ pos: i + 1, ...s }));
 
-  const global = clubes.slice().sort((a, b) => (b.ranking_elo || 0) - (a.ranking_elo || 0)).slice(0, 100).map((c, i) => ({
-    pos: i + 1, id: c.id, nome: c.nome_clube, is_bot: c.is_bot, valor: c.ranking_elo || 0,
+  const global = clubes.slice().sort((a, b) => (b.pontos_ranking || 0) - (a.pontos_ranking || 0)).slice(0, 100).map((c, i) => ({
+    pos: i + 1, id: c.id, nome: c.nome_clube, is_bot: c.is_bot, valor: c.pontos_ranking || 0,
     cor_principal: c.cor_principal, icone_escudo: c.icone_escudo,
   }));
 

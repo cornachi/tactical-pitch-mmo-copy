@@ -32,7 +32,7 @@ export default function ModalDesafio({ clube, open, onOpenChange }) {
     setH2h(null);
     setErro("");
     setEnviado(false);
-    base44.entities.Clube.list("-ranking_elo", 50)
+    base44.entities.Clube.list("-pontos_ranking", 50)
       .then((todos) => setClubes(todos.filter((c) => c.id !== clube.id)))
       .catch((e) => setErro(e.message))
       .finally(() => setLoading(false));
@@ -117,7 +117,7 @@ export default function ModalDesafio({ clube, open, onOpenChange }) {
                       <Shield className="w-4 h-4 text-primary" />
                       <span className="font-medium">{c.nome_clube}</span>
                     </div>
-                    <span className="text-xs text-muted-foreground">{t("desafio.elo")} {c.ranking_elo ?? 1000}</span>
+                    <span className="text-xs text-muted-foreground">{t("desafio.pontos")} {c.pontos_ranking ?? 0}</span>
                   </Card>
                 </button>
               ))}
@@ -135,7 +135,7 @@ export default function ModalDesafio({ clube, open, onOpenChange }) {
               </div>
               <div>
                 <p className="font-bold text-lg">{selecionado.nome_clube}</p>
-                <p className="text-sm text-muted-foreground">{t("desafio.elo")} {selecionado.ranking_elo ?? 1000}</p>
+                <p className="text-sm text-muted-foreground">{t("desafio.pontos")} {selecionado.pontos_ranking ?? 0}</p>
               </div>
             </div>
 

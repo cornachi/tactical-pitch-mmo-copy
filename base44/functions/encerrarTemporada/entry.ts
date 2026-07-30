@@ -3,9 +3,9 @@ import { sortearMeta } from "../../shared/metas.ts";
 import { calcularRankingsMensais } from "../../shared/rankings.ts";
 import { registrarTrofeu } from "../../shared/trofeus.ts";
 
-// Encerra a temporada: distribui premiação global (ELO) + premiações dos rankings
+// Encerra a temporada: distribui premiação global (pontuação) + premiações dos rankings
 // especiais (teto de 10% do prêmio do 1º lugar global, proporcionais por posição),
-// reseta ELO e inicia nova temporada com novo Evento Meta.
+// zera a pontuação e inicia nova temporada com novo Evento Meta.
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -19,7 +19,7 @@ export default async function(req) {
     const anoMesFechamento = temporadaAtual?.mes_ano
       || `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, "0")}`;
 
-    const clubes = await base44.asServiceRole.entities.Clube.list("-ranking_elo", 10000);
+    const clubes = await base44.asServiceRole.entities.Clube.list("-pontos_ranking", 10000);
 
     // Rankings especiais do mês que está sendo encerrado.
     const rankings = await calcularRankingsMensais(base44, clubes, anoMesFechamento);
@@ -51,12 +51,12 @@ export default async function(req) {
     const updates = clubes.map((c, i) => {
       const pos = i + 1;
       const premio = premioPorPos(pos) + (premioExtra[c.id] || 0);
-      const novoElo = Math.round(1000 + (c.ranking_elo || 1000) * 0.2);
-      return { id: c.id, moedas: (c.moedas || 0) + premio, ranking_elo: novoElo };
+      // Zera a pontuação direta para a nova temporada.
+      return { id: c.id, moedas: (c.moedas || 0) + premio, pontos_ranking: 0 };
     });
     await base44.asServiceRole.entities.Clube.bulkUpdate(updates);
 
-    // Troféu de Campeão da Temporada Global (1º do ELO) para o Hall da Fama.
+    // Troféu de Campeão da Temporada Global (1º da pontuação) para o Hall da Fama.
     if (clubes[0]) {
       await registrarTrofeu(base44, {
         clube_id: clubes[0].id,

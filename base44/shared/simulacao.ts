@@ -4,7 +4,6 @@ import {
   poderFisico,
   calcularDominancia,
   amostraPoisson,
-  atualizarElo,
   gerarMomentum,
   gerarLances,
   gerarCartoes,
@@ -111,7 +110,6 @@ export async function simularCore(base44, opts) {
   const placar_home = amostraPoisson(dom.xg_home);
   const placar_away = amostraPoisson(dom.xg_away);
   const vencedor = placar_home > placar_away ? "home" : placar_home < placar_away ? "away" : "empate";
-  const scoreHome = vencedor === "home" ? 1 : vencedor === "empate" ? 0.5 : 0;
 
   const momentum = gerarMomentum(attrsHome, attrsAway, dom, placar_home, placar_away, desafiante.comissao_prep_fisico, desafiado.comissao_prep_fisico);
 
@@ -153,18 +151,19 @@ export async function simularCore(base44, opts) {
   const updateAway = {};
   let moedas_ganhas = 0;
   let xp_ganhos = 0;
-  let novoEloHome = desafiante.ranking_elo || 1000;
-  let novoEloAway = desafiado.ranking_elo || 1000;
   let novaWinStreak = desafiante.win_streak || 0;
+  let pontosHome = 0;
+  let pontosAway = 0;
 
   if (tipoPartida === "MATCHMAKING") {
     if (consumirEnergia) updateHome.energia_matchmaking = (desafiante.energia_matchmaking || 0) - 1;
 
-    const elo = atualizarElo(desafiante.ranking_elo || 1000, desafiado.ranking_elo || 1000, scoreHome);
-    novoEloHome = elo.novoA;
-    novoEloAway = elo.novoB;
-    updateHome.ranking_elo = novoEloHome;
-    updateAway.ranking_elo = novoEloAway;
+    // Pontuação direta: 3 vitória, 1 empate, 0 derrota (apenas matchmaking).
+    if (vencedor === "home") { pontosHome = 3; pontosAway = 0; }
+    else if (vencedor === "away") { pontosHome = 0; pontosAway = 3; }
+    else { pontosHome = 1; pontosAway = 1; }
+    updateHome.pontos_ranking = (desafiante.pontos_ranking || 0) + pontosHome;
+    updateAway.pontos_ranking = (desafiado.pontos_ranking || 0) + pontosAway;
 
     let coinsHome, xpHome, coinsAway, xpAway;
     if (vencedor === "home") { coinsHome = 150; xpHome = 60; coinsAway = 40; xpAway = 20; }
@@ -294,7 +293,7 @@ Retorne JSON no formato {"insights": ["insight1", "insight2", "insight3"]}.`;
     win_streak: novaWinStreak,
     moedas_ganhas,
     xp_ganhos,
-    novo_elo_desafiante: novoEloHome,
+    pontos_ganhos: pontosHome,
     momentum,
     lances_narracao,
     expulsoes,

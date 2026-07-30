@@ -33,7 +33,7 @@ export default function ResultadoPartida() {
   const titulo = empate ? t("resultado.empate") : venceu ? t("resultado.vitoria") : t("resultado.derrota");
   const corTitulo = empate ? "text-muted-foreground" : venceu ? "text-emerald-600" : "text-rose-600";
   const moedasViewer = r.viewer_moedas ?? r.moedas_ganhas;
-  const eloViewer = r.viewer_elo ?? r.novo_elo_desafiante;
+  const pontosGanhos = r.pontos_ganhos ?? 0;
 
   return (
     <div className="max-w-3xl mx-auto p-4 space-y-6">
@@ -98,8 +98,8 @@ export default function ResultadoPartida() {
             </Card>
             <Card className="p-3 text-center">
               <Trophy className="w-5 h-5 mx-auto mb-1 text-blue-500" />
-              <p className="text-xs text-muted-foreground">{t("resultado.elo")}</p>
-              <p className="text-2xl font-bold">{eloViewer}</p>
+              <p className="text-xs text-muted-foreground">{t("resultado.pontos")}</p>
+              <p className="text-2xl font-bold text-emerald-600">+{pontosGanhos}</p>
             </Card>
           </div>
 

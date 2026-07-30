@@ -29,8 +29,15 @@
     },
     "ranking_elo": {
       "type": "integer",
-      "title": "Ranking Elo",
-      "default": 1000
+      "title": "Ranking Elo (legado)",
+      "default": 1000,
+      "description": "Campo legado do antigo sistema Elo \u2014 n\u00e3o \u00e9 mais usado pelo ranking (substitu\u00eddo por pontos_ranking)."
+    },
+    "pontos_ranking": {
+      "type": "integer",
+      "title": "Pontos do Ranking",
+      "default": 0,
+      "description": "Pontua\u00e7\u00e3o direta da temporada: 3 por vit\u00f3ria, 1 por empate, 0 por derrota (apenas matchmaking). Zera a cada temporada."
     },
     "energia_matchmaking": {
       "type": "integer",

@@ -2,7 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { simularConfrontoCopa } from "../../shared/copa.ts";
 import { registrarTrofeu } from "../../shared/trofeus.ts";
 
-// Gera a Copa dos Campeões Semanal: classifica os 16 melhores por ELO, monta o
+// Gera a Copa dos Campeões Semanal: classifica os 16 melhores por pontuação, monta o
 // mata-mata com seed padrão e simula todas as rodadas até o campeão. Premia o
 // campeão (2000 moedas + conquista) e o vice (1000 moedas). Notifica o campeão.
 const PREMIO_CAMPEAO = 2000;
@@ -31,14 +31,14 @@ export default async function(req) {
       return Response.json({ error: 'Copa desta semana já foi gerada', semana_ano: semanaAno }, { status: 409 });
     }
 
-    const clubes = await base44.asServiceRole.entities.Clube.list("-ranking_elo", 10000);
+    const clubes = await base44.asServiceRole.entities.Clube.list("-pontos_ranking", 10000);
     if (clubes.length < 2) return Response.json({ error: 'Clubes insuficientes para a Copa' }, { status: 400 });
 
     const classificados = clubes.slice(0, 16);
     const clubesMap = {};
     classificados.forEach((c) => { clubesMap[c.id] = c; });
 
-    // Monta a chave: aplica seed de 16 se houver 16 classificados; senão usa a ordem do ELO.
+    // Monta a chave: aplica seed de 16 se houver 16 classificados; senão usa a ordem dos pontos.
     let chave;
     if (classificados.length === 16) {
       chave = SEED_16.map((i) => classificados[i]).filter(Boolean);
