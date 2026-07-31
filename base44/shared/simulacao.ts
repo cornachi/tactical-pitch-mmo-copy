@@ -71,11 +71,12 @@ export async function simularCore(base44, opts) {
   // --- Termômetro da Torcida (fator casa do desafiante) ---
   // 0-25: revolta -> penalidade leve no fator casa. 81-100: êxtase -> +5% resiliência.
   const termTorcida = desafiante.termometro_torcida ?? 50;
+  const ampEstadio = 1 + (desafiante.estadio_nivel || 0) * 0.01; // instalações de torcida amplificam o fator casa
   if (termTorcida <= 25) {
-    atkHome = Math.round(atkHome * 0.95);
-    defHome = Math.round(defHome * 0.95);
+    atkHome = Math.round(atkHome * (1 - 0.05 / ampEstadio));
+    defHome = Math.round(defHome * (1 - 0.05 / ampEstadio));
   } else if (termTorcida >= 81) {
-    defHome = Math.round(defHome * 1.05);
+    defHome = Math.round(defHome * (1 + 0.05 * ampEstadio));
   }
 
   // --- Cartões e expulsões gerados cedo (penalizam o placar, não só o visual) ---
@@ -112,7 +113,7 @@ export async function simularCore(base44, opts) {
   const placar_away = amostraPoisson(dom.xg_away);
   const vencedor = placar_home > placar_away ? "home" : placar_home < placar_away ? "away" : "empate";
 
-  const momentum = gerarMomentum(attrsHome, attrsAway, dom, placar_home, placar_away, desafiante.comissao_prep_fisico, desafiado.comissao_prep_fisico);
+  const momentum = gerarMomentum(attrsHome, attrsAway, dom, placar_home, placar_away, desafiante.comissao_prep_fisico, desafiado.comissao_prep_fisico, desafiante.estadio_nivel || 0);
 
   // Penalidade visual no momentum + desgaste extra de stamina nos blocos finais.
   const fatorExpulsao = (n) => (n >= 2 ? 0.5 : n === 1 ? 0.8 : 1);
@@ -148,7 +149,7 @@ export async function simularCore(base44, opts) {
   });
   const lances_narracao = [...lancesBase, ...cartoesNarr].sort((a, b) => a.minuto - b.minuto);
 
-  const estatisticas = gerarEstatisticas(attrsHome, attrsAway, desafianteId, desafiadoId, lances_narracao, momentum, placar_home, placar_away, dom.xg_home, dom.xg_away);
+  const estatisticas = gerarEstatisticas(attrsHome, attrsAway, desafiante.especializacao, desafiado.especializacao, desafianteId, desafiadoId, lances_narracao, momentum, placar_home, placar_away, dom.xg_home, dom.xg_away, { ct_nivel: desafiante.ct_nivel, estadio_nivel: desafiante.estadio_nivel, medico_nivel: desafiante.medico_nivel }, { ct_nivel: desafiado.ct_nivel, estadio_nivel: desafiado.estadio_nivel, medico_nivel: desafiado.medico_nivel });
 
   const updateHome = {};
   const updateAway = {};

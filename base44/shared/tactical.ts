@@ -174,7 +174,7 @@ export function poderFisico(atributos) {
 // Gera o momentum da partida dividido em 6 blocos de 15 minutos.
 // Cada bloco traz dominância, posse, xG, chutes e eventos (gols/cartões) com minuto exato.
 // Nos blocos 61-75' e 76-90' aplica queda de dominância se o físico/pressão for baixo.
-export function gerarMomentum(attrsHome, attrsAway, dom, placarHome, placarAway, prepHome = 0, prepAway = 0) {
+export function gerarMomentum(attrsHome, attrsAway, dom, placarHome, placarAway, prepHome = 0, prepAway = 0, estadioHome = 0) {
   const blocos = [
     { rotulo: "0-15", inicio: 0, fim: 15 },
     { rotulo: "16-30", inicio: 16, fim: 30 },
@@ -188,7 +188,7 @@ export function gerarMomentum(attrsHome, attrsAway, dom, placarHome, placarAway,
   const baseFis = 18; // referência média (6 atributos ~nível 3)
 
   const dados = blocos.map((b, i) => {
-    let domHome = dom.dominancia_home + (Math.random() * 20 - 10); // ruído ±10
+    let domHome = dom.dominancia_home + (Math.random() * 20 - 10) + (estadioHome || 0) * 0.25; // ruído ±10 + moral do estádio (fator casa ampliado pelas instalações)
     // cansaço nos dois últimos blocos: quem tem menos físico perde dominância
     if (i >= 4) {
       const redHome = Math.min(0.8, 0.1 * (prepHome || 0));
@@ -312,25 +312,117 @@ export function gerarCartoes(defHome, defAway) {
   return { eventos, expulsoes };
 }
 
-// Mapeia cada tipo de lance narrado a um atributo tático demandado na partida.
-const ATRIBUTO_POR_LANCE = {
-  GOL: "Eficácia de Finalização",
-  CHUTE_PERIGOSO: "Eficácia de Finalização",
-  DEFESA: "Organização Defensiva",
-  CONTRA_ATAQUE: "Transição Ofensiva",
-  FALTA: "Força de Duelo Individual",
-  CARTAO_AMARELO: "Concentração Tática",
-  CARTAO_VERMELHO: "Concentração Tática",
+// Catálogo de ações da partida. Cada ação confronta um atributo de ataque (lado
+// que age) contra um atributo de defesa (lado que defende). O sucesso de cada
+// duelo resulta do confronto direto entre os níveis investidos em cada atributo.
+const ACOES = [
+  { key: "PASSE", atk: "Passe Entre Linhas", def: "Pressão no Portador", cat: "tecnica" },
+  { key: "CONSTRUCAO", atk: "Organização Ofensiva", def: "Bloco Baixo / Cobertura", cat: "tecnica" },
+  { key: "CRIACAO", atk: "Leitura de Jogo", def: "Organização Defensiva", cat: "tecnica" },
+  { key: "POSICIONAL", atk: "Ataque Posicional", def: "Defesa de Funil", cat: "tecnica" },
+  { key: "DUELO", atk: "Força de Duelo Individual", def: "Força de Duelo Individual", cat: "fisico" },
+  { key: "TRANSICAO", atk: "Transição Ofensiva", def: "Transição Defensiva (Perda-Pressiona)", cat: "transicao" },
+  { key: "FINALIZACAO", atk: "Eficácia de Finalização", def: "Defesa de Funil", cat: "finalizacao" },
+  { key: "PRESSAO", atk: "Intensidade de Pressão", def: "Passe Entre Linhas", cat: "pressao" },
+  { key: "DESARME", atk: "Pressão no Portador", def: "Passe Entre Linhas", cat: "pressao" },
+  { key: "BOLAS_PARADAS", atk: "Bolas Paradas Ofensivas", def: "Bolas Paradas Defensivas", cat: "bola_parada" },
+  { key: "RESILIENCIA", atk: "Liderança / Resiliência", def: "Intensidade de Pressão", cat: "mental" },
+  { key: "CONCENTRACAO", atk: "Concentração Tática", def: "Ataque Posicional", cat: "mental" },
+  { key: "RESISTENCIA", atk: "Resistência Física", def: "Resistência Física", cat: "fisico" },
+];
+
+// Ponderação das ações por especialização. Times de Posse geram muito mais
+// passes/construção/criação; Contra-Ataque privilegia transições e duelos;
+// Pressão privilegia pressão e desarme; Equilibrado é neutro. Isto garante a
+// consistência tática: o estilo adotado determina quais atributos são exigidos.
+const PESOS_POR_ESP = {
+  POSSE: { PASSE: 3.0, CONSTRUCAO: 3.0, CRIACAO: 2.5, POSICIONAL: 2.0, DUELO: 1.0, TRANSICAO: 0.5, FINALIZACAO: 1.5, PRESSAO: 0.4, DESARME: 0.4, BOLAS_PARADAS: 0.6, RESILIENCIA: 0.6, CONCENTRACAO: 0.6, RESISTENCIA: 1.0 },
+  CONTRA_ATAQUE: { PASSE: 1.0, CONSTRUCAO: 0.6, CRIACAO: 1.0, POSICIONAL: 0.5, DUELO: 2.0, TRANSICAO: 3.0, FINALIZACAO: 1.5, PRESSAO: 1.0, DESARME: 1.5, BOLAS_PARADAS: 0.6, RESILIENCIA: 1.2, CONCENTRACAO: 1.0, RESISTENCIA: 1.5 },
+  PRESSAO: { PASSE: 1.0, CONSTRUCAO: 0.5, CRIACAO: 1.0, POSICIONAL: 0.6, DUELO: 2.0, TRANSICAO: 1.5, FINALIZACAO: 1.0, PRESSAO: 3.0, DESARME: 3.0, BOLAS_PARADAS: 0.6, RESILIENCIA: 1.5, CONCENTRACAO: 1.5, RESISTENCIA: 1.8 },
+  EQUILIBRADO: { PASSE: 1.3, CONSTRUCAO: 1.3, CRIACAO: 1.3, POSICIONAL: 1.3, DUELO: 1.3, TRANSICAO: 1.3, FINALIZACAO: 1.3, PRESSAO: 1.3, DESARME: 1.3, BOLAS_PARADAS: 1.0, RESILIENCIA: 1.0, CONCENTRACAO: 1.0, RESISTENCIA: 1.3 },
 };
 
-// Gera o painel de estatísticas pós-jogo: gerais (chutes, chutes a gol, posse,
-// faltas, cartões) + atributos demandados com contagem de solicitações e índice
-// de sucesso (sucesso reflete o nível investido no atributo, com variação).
-export function gerarEstatisticas(attrsHome, attrsAway, desafianteId, desafiadoId, lances, momentum, placarHome, placarAway, xgHome, xgAway) {
+// Engine dinâmica de atributos demandados. A cada bloco da partida, sorteia
+// ações conforme a especialização do lado que está com a bola e resolve cada
+// uma como duelo direto entre o atributo de ataque (em ação) e o de defesa
+// (adversário). Registra demandas e sucessos por atributo/equipe e devolve o
+// Top 10 mais exigidos (por volume de ações) com o índice de sucesso real.
+export function gerarAtributosDemandados(attrsHome, attrsAway, espHome, espAway, momentum, infraHome, infraAway) {
   const nivelHome = Object.fromEntries((attrsHome || []).map((a) => [a.nome_atributo, a.nivel || 1]));
   const nivelAway = Object.fromEntries((attrsAway || []).map((a) => [a.nome_atributo, a.nivel || 1]));
   const getNivel = (side, attr) => (side === "home" ? nivelHome[attr] : nivelAway[attr]) || 1;
 
+  const acc = { home: {}, away: {} };
+  const addDemand = (side, attr, success) => {
+    if (!acc[side][attr]) acc[side][attr] = { solicitacoes: 0, sucessos: 0 };
+    acc[side][attr].solicitacoes++;
+    if (success) acc[side][attr].sucessos++;
+  };
+
+  const drawAction = (esp) => {
+    const pesos = PESOS_POR_ESP[esp] || PESOS_POR_ESP.EQUILIBRADO;
+    const total = ACOES.reduce((s, a) => s + (pesos[a.key] || 0), 0);
+    let r = Math.random() * total;
+    for (const a of ACOES) {
+      r -= (pesos[a.key] || 0);
+      if (r <= 0) return a;
+    }
+    return ACOES[ACOES.length - 1];
+  };
+
+  (momentum || []).forEach((b, idx) => {
+    const domHome = (b.posse_pct?.home || 50) >= 50;
+    const acting = domHome ? "home" : "away";
+    const defending = domHome ? "away" : "home";
+    const espActing = acting === "home" ? espHome : espAway;
+    const domPct = Math.max(b.posse_pct?.home || 50, b.posse_pct?.away || 50);
+    const intensidade = 10 + Math.round(domPct / 8);
+    for (let i = 0; i < intensidade; i++) {
+      const a = drawAction(espActing);
+      let atkNivel = getNivel(acting, a.atk);
+      let defNivel = getNivel(defending, a.def);
+      // Infraestrutura: Centro de Treinamento reduz erros técnicos (passe/construção/criação);
+      // Estádio amplifica a moral do mandante (fator casa) no duelo.
+      if (a.cat === "tecnica") {
+        const ct = acting === "home" ? (infraHome?.ct_nivel || 0) : (infraAway?.ct_nivel || 0);
+        atkNivel *= (1 + ct * 0.02);
+      }
+      if (acting === "home") atkNivel *= (1 + (infraHome?.estadio_nivel || 0) * 0.015);
+      // Fadiga no 2º tempo afeta ações físicas e transições.
+      if (idx >= 4 && (a.cat === "fisico" || a.cat === "transicao")) {
+        atkNivel *= 0.9;
+        defNivel *= 0.9;
+      }
+      const prob = atkNivel / (atkNivel + defNivel + 0.01);
+      const atkSuccess = Math.random() < prob;
+      addDemand(acting, a.atk, atkSuccess);
+      addDemand(defending, a.def, !atkSuccess);
+    }
+  });
+
+  const attrSet = new Set([...Object.keys(acc.home), ...Object.keys(acc.away)]);
+  const pct = (s) => (s.solicitacoes === 0 ? 0 : Math.round((s.sucessos / s.solicitacoes) * 100));
+  const lista = [...attrSet]
+    .map((attr) => {
+      const sH = acc.home[attr] || { solicitacoes: 0, sucessos: 0 };
+      const sA = acc.away[attr] || { solicitacoes: 0, sucessos: 0 };
+      return {
+        atributo: attr,
+        volume: sH.solicitacoes + sA.solicitacoes,
+        solicitacoes: { home: sH.solicitacoes, away: sA.solicitacoes },
+        sucesso: { home: pct(sH), away: pct(sA) },
+      };
+    })
+    .filter((a) => a.volume > 0)
+    .sort((a, b) => b.volume - a.volume)
+    .slice(0, 10);
+  return lista;
+}
+
+// Painel pós-jogo: gerais (chutes, chutes a gol, posse, faltas e cartões
+// extraídos dos lances reais) + Top 10 de atributos demandados gerado pela
+// engine dinâmica de duelos (sem lista fixa).
+export function gerarEstatisticas(attrsHome, attrsAway, espHome, espAway, desafianteId, desafiadoId, lances, momentum, placarHome, placarAway, xgHome, xgAway, infraHome, infraAway) {
   const chutesHome = momentum.reduce((s, b) => s + (b.chutes?.home || 0), 0);
   const chutesAway = momentum.reduce((s, b) => s + (b.chutes?.away || 0), 0);
   const chutesGolHome = Math.min(chutesHome, Math.round((xgHome || 0) * 2.2 + (placarHome || 0)));
@@ -338,9 +430,6 @@ export function gerarEstatisticas(attrsHome, attrsAway, desafianteId, desafiadoI
   const posseHome = momentum.length ? Math.round(momentum.reduce((s, b) => s + (b.posse_pct?.home || 0), 0) / momentum.length) : 50;
 
   let faltasHome = 0, faltasAway = 0, amarelosHome = 0, amarelosAway = 0, vermelhosHome = 0, vermelhosAway = 0;
-  const acc = { home: {}, away: {} };
-  const addSolic = (side, attr, n = 1) => { acc[side][attr] = (acc[side][attr] || 0) + n; };
-
   (lances || []).forEach((l) => {
     const side = l.clube_autor_id === desafianteId ? "home" : "away";
     if (l.tipo === "FALTA" || l.tipo === "CARTAO_AMARELO" || l.tipo === "CARTAO_VERMELHO") {
@@ -348,34 +437,9 @@ export function gerarEstatisticas(attrsHome, attrsAway, desafianteId, desafiadoI
     }
     if (l.tipo === "CARTAO_AMARELO") { if (side === "home") amarelosHome++; else amarelosAway++; }
     if (l.tipo === "CARTAO_VERMELHO") { if (side === "home") vermelhosHome++; else vermelhosAway++; }
-    const attr = ATRIBUTO_POR_LANCE[l.tipo];
-    if (attr) addSolic(side, attr);
   });
 
-  // Posse/defesa derivadas por bloco (liga atributos de construção e pressão ao fluxo).
-  (momentum || []).forEach((b) => {
-    const domSide = (b.posse_pct?.home || 50) >= 50 ? "home" : "away";
-    const defSide = domSide === "home" ? "away" : "home";
-    const domPct = Math.max(b.posse_pct?.home || 50, b.posse_pct?.away || 50);
-    addSolic(domSide, "Passe Entre Linhas", Math.round(domPct / 8));
-    addSolic(defSide, "Pressão no Portador", Math.round((100 - domPct) / 8));
-  });
-
-  const attrSet = new Set([...Object.keys(acc.home), ...Object.keys(acc.away)]);
-  const atributos = [...attrSet]
-    .map((attr) => {
-      const sH = acc.home[attr] || 0;
-      const sA = acc.away[attr] || 0;
-      const sucesso = (side) => {
-        const n = side === "home" ? sH : sA;
-        if (n === 0) return 0;
-        const nivel = getNivel(side, attr);
-        return Math.max(35, Math.min(95, Math.round(45 + nivel * 6 + (Math.random() - 0.5) * 24)));
-      };
-      return { atributo: attr, solicitacoes: { home: sH, away: sA }, sucesso: { home: sucesso("home"), away: sucesso("away") } };
-    })
-    .filter((a) => a.solicitacoes.home > 0 || a.solicitacoes.away > 0)
-    .sort((a, b) => (b.solicitacoes.home + b.solicitacoes.away) - (a.solicitacoes.home + a.solicitacoes.away));
+  const atributos = gerarAtributosDemandados(attrsHome, attrsAway, espHome, espAway, momentum, infraHome, infraAway);
 
   return {
     gerais: {

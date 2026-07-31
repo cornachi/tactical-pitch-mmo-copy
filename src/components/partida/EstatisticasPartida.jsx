@@ -62,32 +62,36 @@ export default function EstatisticasPartida({ estatisticas, clubeHome, clubeAway
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-muted-foreground text-xs">
-                  <th className="text-left py-2">{t("stats.atributos")}</th>
+                  <th className="text-left py-2 w-8">#</th>
+                  <th className="text-left">{t("stats.colAtributo")}</th>
+                  <th className="text-right">{t("stats.volume")}</th>
                   <th className="text-right">{clubeHome?.nome_clube}</th>
                   <th className="text-right">{clubeAway?.nome_clube}</th>
                 </tr>
               </thead>
               <tbody>
-                {(estatisticas.atributos || []).map((a) => (
+                {(estatisticas.atributos || []).map((a, i) => (
                   <tr key={a.atributo} className="border-t">
+                    <td className="py-2 text-muted-foreground font-semibold tabular-nums">{i + 1}</td>
                     <td className="py-2 font-medium">{a.atributo}</td>
-                    <td className="text-right">
-                      <span className="tabular-nums font-semibold" style={{ color: corHome }}>{a.solicitacoes.home}</span>
-                      <span className="text-muted-foreground text-xs"> · {a.sucesso.home}%</span>
+                    <td className="py-2 text-right tabular-nums font-semibold">{a.volume}</td>
+                    <td className="py-2 text-right">
+                      <span className="tabular-nums font-semibold" style={{ color: corHome }}>{a.sucesso.home}%</span>
+                      <span className="text-muted-foreground text-xs"> ({a.solicitacoes.home})</span>
                     </td>
-                    <td className="text-right">
-                      <span className="tabular-nums font-semibold" style={{ color: corAway }}>{a.solicitacoes.away}</span>
-                      <span className="text-muted-foreground text-xs"> · {a.sucesso.away}%</span>
+                    <td className="py-2 text-right">
+                      <span className="tabular-nums font-semibold" style={{ color: corAway }}>{a.sucesso.away}%</span>
+                      <span className="text-muted-foreground text-xs"> ({a.solicitacoes.away})</span>
                     </td>
                   </tr>
                 ))}
                 {(estatisticas.atributos || []).length === 0 && (
-                  <tr><td colSpan={3} className="py-4 text-center text-muted-foreground text-xs">—</td></tr>
+                  <tr><td colSpan={5} className="py-4 text-center text-muted-foreground text-xs">—</td></tr>
                 )}
               </tbody>
             </table>
           </div>
-          <p className="text-[11px] text-muted-foreground mt-2">{t("stats.solicitacoes")} · {t("stats.sucesso")}%</p>
+          <p className="text-[11px] text-muted-foreground mt-2">{t("stats.sucesso")} ({t("stats.solicitacoes")}) · {t("stats.atributos")}</p>
         </Card>
       </TabsContent>
     </Tabs>
