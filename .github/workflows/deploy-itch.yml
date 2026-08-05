@@ -3,7 +3,7 @@ name: Deploy to itch.io via Butler
 on:
   push:
     branches:
-      - main # Altere para 'master' se o nome da sua branch principal for master
+      - main
 
 jobs:
   deploy:
@@ -11,28 +11,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Baixa o código do repositório
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # 2. Configura o Node.js para compilar a aplicação
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
 
-      # 3. Instala dependências e gera os arquivos estáticos de produção
       - name: Install & Build
         run: |
           npm ci
           npm run build
 
-      # 4. Executa o Butler oficial do itch.io para enviar a pasta dist
-      - name: Deploy with Butler
-        uses: ManiruzzamanAkash/action-itchio-butler@v1.0.4
+      - name: Deploy to itch.io via Butler
+        uses: josephbmanley/build-itchio-action@v1.0.0
         with:
-          ITCH_GAME_SECRET: ${{ secrets.BUTLER_CREDENTIALS }}
-          PACKAGE: 'dist' # Pasta gerada pelo comando 'npm run build' do Vite
-          TARGET: 'cornachi/tactical-pitch' # EX: 'joao/tactical-pitch'
-          CHANNEL: 'html5'
+          package: 'dist'
+          itch_username: 'cornachi' # Confirme seu usuário do itch.io
+          game_name: 'tactical-pitch' # Confirme o slug do jogo no itch.io
+          version: ${{ github.sha }}
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_CREDENTIALS }}
