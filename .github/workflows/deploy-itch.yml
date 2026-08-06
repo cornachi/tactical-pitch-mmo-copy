@@ -20,9 +20,7 @@ jobs:
           node-version: 22
           cache: 'npm'
 
-     - name: Install & Build
-        env:
-          VITE_BASE44_API_URL: ${{ secrets.VITE_BASE44_API_URL }} # ou a variável que o SDK do Base44 usa
+      - name: Install & Build
         run: |
           npm ci
           npm run build
@@ -32,10 +30,9 @@ jobs:
           curl -L -o butler.zip https://github.com/itchio/butler/releases/latest/download/butler-linux-amd64.zip
           unzip butler.zip
           chmod +x linux-amd64/butler
-          ./linux-amd64/butler -V
 
       - name: Deploy to itch.io
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_CREDENTIALS }}
         run: |
-          ./linux-amd64/butler push dist cornachi/tactical-pitch:html5
+          ./linux-amd64/butler push dist/. cornachi/tactical-pitch:html5
