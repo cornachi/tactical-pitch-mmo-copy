@@ -1,4 +1,4 @@
-name: Deploy to itch.io via Butler
+name: Deploy to itch.io
 
 on:
   push:
@@ -6,36 +6,30 @@ on:
       - main
 
 jobs:
-  deploy:
-    name: Build & Upload to itch.io
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 18
           cache: 'npm'
 
-      - name: Install & Build
-        env:
-          VITE_BASE44_APP_ID: ${{ secrets.VITE_BASE44_APP_ID }}
-          VITE_BASE44_API_URL: ${{ secrets.VITE_BASE44_API_URL }}
-        run: |
-          npm ci
-          npm run build
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Install Butler
-        run: |
-          curl -L -o butler.zip https://github.com/itchio/butler/releases/latest/download/butler-linux-amd64.zip
-          unzip butler.zip
-          chmod +x linux-amd64/butler
+      - name: Build project
+        run: npm run build
 
-      - name: Deploy to itch.io
-        env:
-          BUTLER_API_KEY: ${{ secrets.BUTLER_CREDENTIALS }}
-        run: |
-          ./linux-amd64/butler push dist/. cornachi/tactical-pitch:html5
+      - name: Deploy to itch.io via Butler
+        uses: ManiruzzamanAkash/action-itchio-butler@v1
+        with:
+          itch_game_id: tactical-pitch
+          itch_user: cornachi
+          package: ./dist
+          channel: html5
+          api_key: ${{ secrets.ITCH_BUTLER_API_KEY }}
