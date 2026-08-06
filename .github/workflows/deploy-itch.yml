@@ -25,11 +25,15 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Push to itch.io
-        uses: fire-eggs/itchio-deploy@v1.0.2
-        with:
-          beke: ${{ secrets.ITCH_BUTLER_API_KEY }}
-          user: cornachi
-          game: tactical-pitch
-          folder: ./dist
-          channel: html5
+      - name: Install Butler
+        run: |
+          curl -L -o butler.zip https://github.com/itchio/butler/releases/latest/download/butler-linux-amd64.zip
+          unzip butler.zip
+          chmod +x ./linux-amd64/butler
+          ./linux-amd64/butler -V
+
+      - name: Deploy to itch.io via Butler
+        env:
+          BUTLER_API_KEY: ${{ secrets.ITCH_BUTLER_API_KEY }}
+        run: |
+          ./linux-amd64/butler push ./dist cornachi/tactical-pitch:html5
