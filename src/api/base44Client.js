@@ -5,10 +5,10 @@ const { appId, token, functionsVersion, appBaseUrl } = appParams;
 
 export const base44 = createClient({
   appId,
-  token,
+  token: token || import.meta.env.VITE_BASE44_TOKEN || '',
   functionsVersion,
   serverUrl: 'https://tactical-pitch-mmo-copy-c24c4540.base44.app',
   requiresAuth: false,
-  checkAuthStateOnInit: false, // <-- ADICIONE ESSA LINHA
+  checkAuthStateOnInit: false,
   appBaseUrl
 });
