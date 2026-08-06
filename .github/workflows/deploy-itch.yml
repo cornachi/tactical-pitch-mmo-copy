@@ -21,6 +21,8 @@ jobs:
           cache: 'npm'
 
       - name: Install & Build
+        env:
+          VITE_BASE44_APP_ID: ${{ secrets.VITE_BASE44_APP_ID }}
         run: |
           npm ci
           npm run build
