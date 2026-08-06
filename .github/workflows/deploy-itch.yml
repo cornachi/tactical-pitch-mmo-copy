@@ -33,7 +33,7 @@ jobs:
           ./linux-amd64/butler -V
 
       - name: Deploy to itch.io via Butler
-        env:
-          BUTLER_API_KEY: ${{ secrets.ITCH_BUTLER_API_KEY }}
         run: |
           ./linux-amd64/butler push ./dist cornachi/tactical-pitch:html5
+        env:
+          BUTLER_API_KEY: ${{ secrets.ITCH_BUTLER_API_KEY }}
