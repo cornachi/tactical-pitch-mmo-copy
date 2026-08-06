@@ -38,4 +38,4 @@ jobs:
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_CREDENTIALS }}
         run: |
-          ./linux-amd64/butler push dist cornachi/tactical-pitch:html5
+          ./linux-amd64/butler push dist/. cornachi/tactical-pitch:html5
