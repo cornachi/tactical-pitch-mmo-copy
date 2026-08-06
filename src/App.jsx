@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -88,7 +88,6 @@ const AuthenticatedApp = () => {
   );
 };
 
-
 function App() {
   useEffect(() => {
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
@@ -113,4 +112,4 @@ function App() {
   )
 }
 
-export default App
+export default App;
