@@ -20,9 +20,10 @@ jobs:
           node-version: 22
           cache: 'npm'
 
-      - name: Install & Build
+- name: Install & Build
         env:
           VITE_BASE44_APP_ID: ${{ secrets.VITE_BASE44_APP_ID }}
+          VITE_BASE44_API_URL: ${{ secrets.VITE_BASE44_API_URL }}
         run: |
           npm ci
           npm run build
