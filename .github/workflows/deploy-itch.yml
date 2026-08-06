@@ -25,13 +25,18 @@ jobs:
       - name: Build project
         run: npm run build
 
+      - name: Zip dist content
+        run: |
+          cd dist
+          zip -r ../game.zip .
+          cd ..
+
       - name: Install Butler
         run: |
           curl -L -o butler.zip https://github.com/itchio/butler/releases/latest/download/butler-linux-amd64.zip
           unzip butler.zip
           chmod +x ./linux-amd64/butler
-          ./linux-amd64/butler -V
 
       - name: Deploy to itch.io via Butler
         run: |
-          BUTLER_API_KEY="${{ secrets.BUTLER_CREDENTIALS }}" ./linux-amd64/butler push ./dist cornachi/tactical-pitch:html5
+          BUTLER_API_KEY="${{ secrets.BUTLER_CREDENTIALS }}" ./linux-amd64/butler push game.zip cornachi/tactical-pitch:html5
