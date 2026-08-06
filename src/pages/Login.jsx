@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
+import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -28,11 +29,19 @@ export const Login = () => {
     }
   };
 
-  const handleGoogleLogin = () => {
-    // Para evitar bloqueio do iframe do itch.io durante o OAuth do Google,
-    // o login social deve abrir em uma nova janela (popup/tab)
-    const googleAuthUrl = 'https://tactical-pitch-mmo-copy-c24c4540.base44.app/api/apps/6a6a15126ba98b43c24c4540/auth/google';
-    window.open(googleAuthUrl, '_blank');
+  const handleGoogleLogin = async () => {
+    try {
+      setError('');
+      if (base44?.auth?.loginWithGoogle) {
+        await base44.auth.loginWithGoogle();
+      } else if (base44?.auth?.redirectToLogin) {
+        await base44.auth.redirectToLogin();
+      } else {
+        window.location.href = 'https://tactical-pitch-mmo-copy-c24c4540.base44.app/auth/google';
+      }
+    } catch (err) {
+      setError(err?.message || 'Erro ao iniciar autenticação com o Google.');
+    }
   };
 
   return (
