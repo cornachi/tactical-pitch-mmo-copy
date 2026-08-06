@@ -35,7 +35,7 @@ import { I18nProvider } from '@/i18n/I18nContext';
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
 
-  // Show loading spinner while checking app public settings or auth
+  // Exibe spinner durante o carregamento inicial de auth
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
@@ -44,20 +44,14 @@ const AuthenticatedApp = () => {
     );
   }
 
-  // Handle authentication errors
-  if (authError) {
-    if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      // Redireciona internamente via React Router mantendo o iframe do itch.io
-      return <Navigate to="/login" replace />;
-    }
+  // Trata apenas erros de cadastro incompleto
+  if (authError && authError.type === 'user_not_registered') {
+    return <UserNotRegisteredError />;
   }
 
-  // Render the main app
+  // Renderiza a estrutura de rotas normalmente (ProtectedRoute cuida do redirecionamento de usuários deslogados)
   return (
     <Routes>
-      {/* Add your page Route elements here */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -99,16 +93,16 @@ function App() {
   return (
     <AuthProvider>
       <I18nProvider>
-      <QueryClientProvider client={queryClientInstance}>
-        <Router>
-          <ScrollToTop />
-          <AuthenticatedApp />
-        </Router>
-        <Toaster />
-      </QueryClientProvider>
+        <QueryClientProvider client={queryClientInstance}>
+          <Router>
+            <ScrollToTop />
+            <AuthenticatedApp />
+          </Router>
+          <Toaster />
+        </QueryClientProvider>
       </I18nProvider>
     </AuthProvider>
-  )
+  );
 }
 
 export default App;
