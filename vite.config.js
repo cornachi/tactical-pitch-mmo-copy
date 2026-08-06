@@ -2,13 +2,11 @@ import base44 from "@base44/vite-plugin"
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
-// https://vite.dev/config/
 export default defineConfig({
-  base: './', // <-- Essencial para o itch.io resolver caminhos relativos de assets
+  base: './', // Mantém caminhos relativos
   plugins: [
     base44({
-      // Support for legacy code that imports the base44 SDK with @/integrations, @/entities, etc.
-      // can be removed if the code has been updated to use the new SDK imports from @base44/sdk
+      serverUrl: process.env.VITE_BASE44_API_URL || 'https://tactical-pitch-mmo-copy-c24c4540.base44.app',
       legacySDKImports: process.env.BASE44_LEGACY_SDK_IMPORTS === 'true',
       hmrNotifier: true,
       navigationNotifier: true,
