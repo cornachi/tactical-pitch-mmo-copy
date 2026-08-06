@@ -24,6 +24,9 @@ jobs:
         env:
           VITE_BASE44_APP_ID: ${{ secrets.VITE_BASE44_APP_ID }}
           VITE_BASE44_API_URL: ${{ secrets.VITE_BASE44_API_URL }}
+          BASE44_APP_ID: ${{ secrets.BASE44_APP_ID || secrets.VITE_BASE44_APP_ID }}
+          BASE44_SERVER_URL: ${{ secrets.BASE44_SERVER_URL || secrets.VITE_BASE44_API_URL }}
+          BASE44_API_URL: ${{ secrets.BASE44_API_URL || secrets.VITE_BASE44_API_URL }}
         run: |
           npm ci
           npm run build
@@ -38,4 +41,4 @@ jobs:
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_CREDENTIALS }}
         run: |
-          ./linux-amd64/butler push dist/. cornachi/tactical-pitch:html5
+          ./linux-amd64/butler push dist cornachi/tactical-pitch:html5
