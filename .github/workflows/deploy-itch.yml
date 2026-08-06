@@ -20,7 +20,9 @@ jobs:
           node-version: 22
           cache: 'npm'
 
-      - name: Install & Build
+     - name: Install & Build
+        env:
+          VITE_BASE44_API_URL: ${{ secrets.VITE_BASE44_API_URL }} # ou a variável que o SDK do Base44 usa
         run: |
           npm ci
           npm run build
