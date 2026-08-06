@@ -1,14 +1,14 @@
 import { useEffect } from "react";
-import { Toaster } from "@/components/ui/toaster"
-import { QueryClientProvider } from '@tanstack/react-query'
-import { queryClientInstance } from '@/lib/query-client'
+import { Toaster } from "@/components/ui/toaster";
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClientInstance } from '@/lib/query-client';
 import { HashRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from '@/components/ProtectedRoute';
-// Add page imports here
+// Page imports
 import Home from './pages/Home';
 import Equipe from './pages/Equipe';
 import ResultadoPartida from './pages/ResultadoPartida';
@@ -35,7 +35,6 @@ import { I18nProvider } from '@/i18n/I18nContext';
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
 
-  // Exibe spinner durante o carregamento inicial de auth
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
@@ -44,12 +43,10 @@ const AuthenticatedApp = () => {
     );
   }
 
-  // Trata apenas erros de cadastro incompleto
   if (authError && authError.type === 'user_not_registered') {
     return <UserNotRegisteredError />;
   }
 
-  // Renderiza a estrutura de rotas normalmente (ProtectedRoute cuida do redirecionamento de usuários deslogados)
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
