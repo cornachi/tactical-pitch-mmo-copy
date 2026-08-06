@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
-import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -30,15 +29,8 @@ export const Login = () => {
   };
 
   const handleGoogleLogin = () => {
-    try {
-      if (typeof base44?.auth?.redirectToLogin === 'function') {
-        base44.auth.redirectToLogin();
-      } else {
-        window.open('https://tactical-pitch-mmo-copy-c24c4540.base44.app/', '_blank');
-      }
-    } catch (err) {
-      setError('Não foi possível iniciar a autenticação com o Google.');
-    }
+    // Abre a página principal do backend Base44 em nova aba para concluir autenticação OAuth
+    window.open('https://tactical-pitch-mmo-copy-c24c4540.base44.app', '_blank');
   };
 
   return (
