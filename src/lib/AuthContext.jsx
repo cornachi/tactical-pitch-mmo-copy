@@ -6,35 +6,25 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
-  const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(true);
+  const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(false);
   const [authError, setAuthError] = useState(null);
 
+  const checkAuth = async () => {
+    try {
+      setIsLoadingAuth(true);
+      const currentUser = await base44.auth.me();
+      setUser(currentUser);
+      setAuthError(null);
+    } catch (error) {
+      setUser(null);
+      setAuthError({ type: 'auth_required', error });
+    } finally {
+      setIsLoadingAuth(false);
+    }
+  };
+
   useEffect(() => {
-    const initAuth = async () => {
-      try {
-        // Carrega public settings sem travar a tela
-        setIsLoadingPublicSettings(false);
-
-        // Tenta obter usuário logado
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
-        setAuthError(null);
-      } catch (error) {
-        setUser(null);
-        // Trata erro de não autenticado (401) sem quebrar o app
-        if (error?.status === 401 || error?.response?.status === 401 || error?.message?.includes('Authentication required')) {
-          setAuthError({ type: 'auth_required' });
-        } else if (error?.type === 'user_not_registered') {
-          setAuthError({ type: 'user_not_registered' });
-        } else {
-          setAuthError({ type: 'auth_required' });
-        }
-      } finally {
-        setIsLoadingAuth(false);
-      }
-    };
-
-    initAuth();
+    checkAuth();
   }, []);
 
   const login = async (credentials) => {
@@ -45,7 +35,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    await base44.auth.logout();
+    try {
+      await base44.auth.logout();
+    } catch (e) {
+      // Ignora erro de logout
+    }
     setUser(null);
     setAuthError({ type: 'auth_required' });
   };
@@ -58,9 +52,12 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider
       value={{
         user,
+        setUser,
         isLoadingAuth,
         isLoadingPublicSettings,
         authError,
+        setAuthError,
+        checkAuth,
         login,
         logout,
         navigateToLogin,
