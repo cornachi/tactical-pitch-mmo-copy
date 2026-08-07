@@ -1,7 +1,6 @@
 import { createClient } from '@base44/sdk';
 
-// Interceptador direto no cliente da Base44 para o Modo Convidado
-const guestSafeFetch = async (url, options = {}) => {
+const guestSafeFetch = async (input, init) => {
   const isGuest = typeof window !== 'undefined' && !!localStorage.getItem('guest_user');
 
   if (isGuest) {
@@ -10,7 +9,6 @@ const guestSafeFetch = async (url, options = {}) => {
         success: true,
         guest: true,
         data: [],
-        user: null,
       }),
       {
         status: 200,
@@ -20,7 +18,7 @@ const guestSafeFetch = async (url, options = {}) => {
     );
   }
 
-  return fetch(url, options);
+  return fetch(input, init);
 };
 
 export const base44 = createClient({
