@@ -1,205 +1,34 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Home, Users, Trophy, ShoppingBag, Building, Medal, ChevronLeft } from "lucide-react";
-import { base44 } from "@/api/base44Client";
-import NotificationCenter from "@/components/notificacao/NotificationCenter";
-import DesafiosNavItem from "@/components/desafio/DesafiosNavItem";
-import LanguageSelector from "@/components/i18n/LanguageSelector";
-import KeepAliveOutlet from "@/components/KeepAliveOutlet";
-import { useI18n } from "@/i18n/I18nContext";
-import { cn } from "@/lib/utils";
-import LogoutButton from "@/components/LogoutButton";
+import React, { useState } from 'react';
+import { useAuth } from '@/lib/AuthContext';
+import ConvertAccountModal from '@/components/ConvertAccountModal';
 
-const LOGO_URL = "https://media.base44.com/images/public/6a6a15126ba98b43c24c4540/546205407_Gemini_Generated_Image_41fdjs41fdjs41fd.png";
-
-const NAV = [
-  { to: "/", labelKey: "nav.dashboard", icon: Home },
-  { to: "/equipe", labelKey: "nav.equipe", icon: Users },
-  { to: "/estadio", labelKey: "nav.estadio", icon: Building },
-  { to: "/ranking", labelKey: "nav.ranking", icon: Trophy },
-  { to: "/copa", labelKey: "nav.copa", icon: Trophy },
-  { to: "/torneios", labelKey: "nav.torneios", icon: Medal },
-  { to: "/loja", labelKey: "nav.loja", icon: ShoppingBag },
-];
-
-const MOBILE_TABS = [
-  { to: "/", labelKey: "nav.dashboard", icon: Home },
-  { to: "/equipe", labelKey: "nav.equipe", icon: Users },
-  { to: "/estadio", labelKey: "nav.estadio", icon: Building },
-  { to: "/copa", labelKey: "nav.copa", icon: Trophy },
-  { to: "/loja", labelKey: "nav.loja", icon: ShoppingBag },
-];
-
-const MAIN_TABS = ["/", "/equipe", "/estadio", "/copa", "/loja"];
-
-// Mapeia qualquer caminho à aba dona (para memória de navegação entre abas).
-function tabOf(p) {
-  if (p.startsWith("/equipe")) return "/equipe";
-  if (p.startsWith("/estadio")) return "/estadio";
-  if (p.startsWith("/copa")) return "/copa";
-  if (p.startsWith("/loja")) return "/loja";
-  if (p.startsWith("/torneios")) return "/copa";
-  return "/";
-}
-
-function resolveHeader(pathname) {
-  if (MAIN_TABS.includes(pathname)) return { sub: false };
-  const staticMap = {
-    "/ranking": "layout.ranking",
-    "/missoes": "layout.missoes",
-    "/desafios": "layout.desafios",
-    "/torneios": "layout.torneios",
-    "/simular-partida": "layout.simulacao",
-    "/pre-partida": "layout.prePartida",
-    "/resultado-partida": "layout.resultado",
-    "/torneios/criar": "layout.criarTorneio",
-    "/relatorio-tatico": "layout.relatorioTatico",
-  };
-  if (staticMap[pathname]) return { sub: true, labelKey: staticMap[pathname] };
-  if (pathname.startsWith("/desafios/relatorio/")) return { sub: true, labelKey: "layout.relatorioDesafio" };
-  if (pathname.startsWith("/torneios/")) {
-    return { sub: true, labelKey: null, torneioId: pathname.split("/")[2] };
-  }
-  return { sub: true, labelKey: "nav.dashboard" };
-}
-
-export default function Layout() {
-  const { pathname } = useLocation();
-  const navigate = useNavigate();
-  const { t } = useI18n();
-  const [torneioNome, setTorneioNome] = useState(null);
-  const lastPaths = useRef({});
-
-  const headerInfo = resolveHeader(pathname);
-
-  useEffect(() => {
-    if (headerInfo.torneioId) {
-      setTorneioNome(null);
-      base44.entities.Torneio.get(headerInfo.torneioId)
-        .then((tr) => setTorneioNome(tr?.nome || t("layout.torneio")))
-        .catch(() => setTorneioNome(t("layout.torneio")));
-    } else {
-      setTorneioNome(null);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
-
-  useEffect(() => {
-    lastPaths.current[tabOf(pathname)] = pathname;
-  }, [pathname]);
-
-  const mobileTitle = headerInfo.sub
-    ? headerInfo.torneioId
-      ? (torneioNome || t("layout.torneio"))
-      : t(headerInfo.labelKey)
-    : "Tactical Pitch";
+export default function Layout({ children }) {
+  const { user } = useAuth();
+  const [showConvertModal, setShowConvertModal] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background tactical-field-bg">
-      {/* Desktop top navbar */}
-      <header
-        className="hidden md:flex sticky top-0 z-40 border-b bg-background/95 backdrop-blur"
-        style={{ paddingTop: "env(safe-area-inset-top)" }}
-      >
-        <div className="max-w-4xl mx-auto w-full flex items-center justify-between px-4 h-14">
-          <Link to="/" className="flex items-center gap-2 shrink-0">
-            <img src={LOGO_URL} alt="Tactical Pitch" className="h-8 w-8 rounded-lg ring-1 ring-primary/50" />
-            <span className="text-base font-extrabold tracking-tight leading-none">
-              <span className="text-foreground">TACTICAL</span>{' '}<span className="text-primary">PITCH</span>
-            </span>
-          </Link>
-          <nav className="flex items-center gap-1">
-            {NAV.map((item) => {
-              const Icon = item.icon;
-              const active = pathname === item.to;
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
-                    active
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                  )}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span>{t(item.labelKey)}</span>
-                </Link>
-              );
-            })}
-          </nav>
-          <div className="flex items-center gap-1">
-            <LanguageSelector />
-            <DesafiosNavItem />
-            <NotificationCenter />
-            <LogoutButton />
-          </div>
+    <div className="min-h-screen flex flex-col bg-slate-900 text-slate-100">
+      {/* Banner de Aviso e Conversão de Conta para Convidado */}
+      {user?.isGuest && (
+        <div className="bg-amber-500/20 border-b border-amber-500/30 px-4 py-2 flex items-center justify-between text-xs sm:text-sm text-amber-200">
+          <span>🎮 Modo Convidado ativo (Progresso temporário)</span>
+          <button
+            onClick={() => setShowConvertModal(true)}
+            className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-3 py-1 rounded shadow transition-colors"
+          >
+            💾 Criar Conta e Salvar
+          </button>
         </div>
-      </header>
+      )}
 
-      {/* Mobile top header (back arrow + section name on sub-routes) */}
-      <header
-        className="flex md:hidden sticky top-0 z-40 border-b bg-background/95 backdrop-blur"
-        style={{ paddingTop: "env(safe-area-inset-top)" }}
-      >
-        <div className="w-full flex items-center gap-1 px-2 h-12">
-          {headerInfo.sub ? (
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="flex items-center gap-0.5 text-sm font-medium text-muted-foreground hover:text-foreground px-1.5 py-1 -ml-1"
-              aria-label={t("layout.voltar")}
-            >
-              <ChevronLeft className="w-5 h-5" />
-              <span>{t("layout.voltar")}</span>
-            </button>
-          ) : (
-            <Link to="/" className="flex items-center gap-2 font-bold px-1.5">
-              <img src={LOGO_URL} alt="Tactical Pitch" className="h-7 w-7 rounded-lg ring-1 ring-primary/50" />
-            </Link>
-          )}
-          <span className="font-semibold truncate flex-1 text-center">
-            {mobileTitle}
-          </span>
-          <div className="flex items-center gap-1">
-            <LanguageSelector />
-            <NotificationCenter />
-            <LogoutButton />
-          </div>
-        </div>
-      </header>
+      {/* Conteúdo principal das páginas do jogo */}
+      <main className="flex-1">{children}</main>
 
-      <main className="pt-[calc(3rem+env(safe-area-inset-top))] md:pt-[calc(3.5rem+env(safe-area-inset-top))] pb-20 md:pb-0">
-        <KeepAliveOutlet />
-      </main>
-
-      {/* Mobile bottom tab bar */}
-      <nav
-        className="md:hidden fixed bottom-0 inset-x-0 z-50 border-t bg-background/95 backdrop-blur"
-        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-      >
-        <div className="flex items-stretch justify-around h-14">
-          {MOBILE_TABS.map((item) => {
-            const Icon = item.icon;
-            const activeTab = tabOf(pathname) === item.to;
-            const dest = activeTab ? item.to : (lastPaths.current[item.to] || item.to);
-            return (
-              <Link
-                key={item.to}
-                to={dest}
-                className={cn(
-                  "flex flex-col items-center justify-center gap-0.5 flex-1 text-[11px] font-medium transition-colors",
-                  activeTab ? "text-primary" : "text-muted-foreground"
-                )}
-              >
-                <Icon className="w-5 h-5" />
-                <span>{t(item.labelKey)}</span>
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
+      {/* Modal de Conversão */}
+      <ConvertAccountModal
+        isOpen={showConvertModal}
+        onClose={() => setShowConvertModal(false)}
+      />
     </div>
   );
 }
