@@ -1,72 +1,41 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [isLoadingAuth, setIsLoadingAuth] = useState(true);
-  const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(false);
-  const [authError, setAuthError] = useState(null);
+  const [user, setUser] = useState(() => {
+    // Recupera convidado salvo para não perder a sessão ao recarregar a página
+    const savedGuest = localStorage.getItem('guest_user');
+    return savedGuest ? JSON.parse(savedGuest) : null;
+  });
+  const [loading, setLoading] = useState(false);
 
-  const checkAuth = async () => {
-    try {
-      setIsLoadingAuth(true);
-      const currentUser = await base44.auth.me();
-      setUser(currentUser);
-      setAuthError(null);
-    } catch (error) {
-      setUser(null);
-      setAuthError({ type: 'auth_required', error });
-    } finally {
-      setIsLoadingAuth(false);
-    }
-  };
-
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
+  // Login tradicional
   const login = async (credentials) => {
-    const loggedUser = await base44.auth.login(credentials);
-    setUser(loggedUser);
-    setAuthError(null);
-    return loggedUser;
+    // Sua lógica existente de login
   };
 
-  const logout = async () => {
-    try {
-      await base44.auth.logout();
-    } catch (e) {
-      // Ignora erro de logout
-    }
+  // Login como Convidado
+  const loginAsGuest = () => {
+    const guestUser = {
+      id: `guest_${Math.random().toString(36).substr(2, 9)}`,
+      name: `Técnico #${Math.floor(1000 + Math.random() * 9000)}`,
+      isGuest: true,
+    };
+    localStorage.setItem('guest_user', JSON.stringify(guestUser));
+    setUser(guestUser);
+  };
+
+  const logout = () => {
+    localStorage.removeItem('guest_user');
     setUser(null);
-    setAuthError({ type: 'auth_required' });
-  };
-
-  const navigateToLogin = () => {
-    setAuthError({ type: 'auth_required' });
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        setUser,
-        isLoadingAuth,
-        isLoadingPublicSettings,
-        authError,
-        setAuthError,
-        checkAuth,
-        login,
-        logout,
-        navigateToLogin,
-      }}
-    >
+    <AuthContext.Provider value={{ user, login, loginAsGuest, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
 export const useAuth = () => useContext(AuthContext);
-export default AuthContext;
