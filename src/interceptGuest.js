@@ -1,33 +1,31 @@
 if (typeof window !== 'undefined') {
-  const isGuest = () => !!localStorage.getItem('guest_user');
+  const isGuestMode = () => !!localStorage.getItem('guest_user');
 
-  // Extrai a URL independentemente de ser String, Request ou objeto URL
-  const getUrl = (input) => {
-    if (!input) return '';
-    if (typeof input === 'string') return input;
-    if (input instanceof Request) return input.url;
-    if (input instanceof URL) return input.href;
-    return String(input);
-  };
-
-  // 1. Intercepta requisições Fetch da SDK
-  const originalFetch = window.fetch;
-  window.fetch = async (...args) => {
-    const url = getUrl(args[0]);
-    if (isGuest() && url.includes('base44.app/api/')) {
-      return new Response(JSON.stringify({ success: true, guest: true }), {
+  const createMockResponse = () =>
+    new Response(
+      JSON.stringify({ success: true, guest: true, data: [] }),
+      {
         status: 200,
+        statusText: 'OK',
         headers: { 'Content-Type': 'application/json' },
-      });
+      }
+    );
+
+  // 1. Intercepta Fetch global
+  const originalFetch = window.fetch;
+  window.fetch = function (input, init) {
+    const url = typeof input === 'string' ? input : input?.url || '';
+    if (isGuestMode() && url.includes('base44.app/api/')) {
+      return Promise.resolve(createMockResponse());
     }
-    return originalFetch(...args);
+    return originalFetch.apply(this, arguments);
   };
 
-  // 2. Intercepta requisições XMLHttpRequest (Axios / Base44 Client)
+  // 2. Intercepta XMLHttpRequest
   const originalOpen = XMLHttpRequest.prototype.open;
   XMLHttpRequest.prototype.open = function (method, url, ...rest) {
-    const urlString = getUrl(url);
-    if (isGuest() && urlString.includes('base44.app/api/')) {
+    const urlString = typeof url === 'string' ? url : url?.href || '';
+    if (isGuestMode() && urlString.includes('base44.app/api/')) {
       Object.defineProperty(this, 'status', { value: 200, writable: true });
       Object.defineProperty(this, 'responseText', {
         value: JSON.stringify({ success: true, guest: true }),
@@ -38,6 +36,6 @@ if (typeof window !== 'undefined') {
         writable: true,
       });
     }
-    return originalOpen.apply(this, [method, urlString, ...rest]);
+    return originalOpen.apply(this, [method, url, ...rest]);
   };
 }
