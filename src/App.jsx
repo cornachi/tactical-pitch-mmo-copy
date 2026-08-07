@@ -2,7 +2,7 @@ import React from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import Login from '@/pages/Login';
-import GameDashboard from '@/pages/GameDashboard'; // Substitua pelo caminho do seu componente principal
+import Home from '@/pages/Home';
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -24,7 +24,7 @@ export default function App() {
             path="/*"
             element={
               <PrivateRoute>
-                <GameDashboard />
+                <Home />
               </PrivateRoute>
             }
           />
