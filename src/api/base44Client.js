@@ -1,12 +1,29 @@
 import { createClient } from '@base44/sdk';
-import { appParams } from '@/lib/app-params';
 
-const BACKEND_URL = appParams.serverUrl || 'https://tactical-pitch-mmo-copy-c24c4540.base44.app';
-const APP_ID = appParams.appId || '6a6a15126ba98b43c24c4540';
+// Interceptador direto no cliente da Base44 para o Modo Convidado
+const guestSafeFetch = async (url, options = {}) => {
+  const isGuest = typeof window !== 'undefined' && !!localStorage.getItem('guest_user');
+
+  if (isGuest) {
+    return new Response(
+      JSON.stringify({
+        success: true,
+        guest: true,
+        data: [],
+        user: null,
+      }),
+      {
+        status: 200,
+        statusText: 'OK',
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+  }
+
+  return fetch(url, options);
+};
 
 export const base44 = createClient({
-  serverUrl: BACKEND_URL,
-  appId: APP_ID,
+  appId: import.meta.env.VITE_BASE44_APP_ID || '6a6a151',
+  fetch: guestSafeFetch,
 });
-
-export default base44;
