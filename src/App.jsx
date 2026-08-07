@@ -1,7 +1,8 @@
 import React from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
-import { Login } from '@/pages/Login';
+import Login from '@/pages/Login';
+import GameDashboard from '@/pages/GameDashboard'; // Substitua pelo caminho do seu componente principal
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -23,9 +24,7 @@ export default function App() {
             path="/*"
             element={
               <PrivateRoute>
-                <div className="min-h-screen flex items-center justify-center text-slate-800 font-bold text-xl">
-                  Bem-vindo ao Tactical Pitch MMO!
-                </div>
+                <GameDashboard />
               </PrivateRoute>
             }
           />
