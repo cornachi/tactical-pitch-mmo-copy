@@ -1,36 +1,52 @@
 import { createClient } from '@base44/sdk';
 
-const isGuest = typeof window !== 'undefined' && !!localStorage.getItem('guest_user');
+// Instância real do SDK (carregada apenas quando o usuário NÃO for convidado)
+let realClientInstance = null;
 
-const realClient = createClient({
-  appId: import.meta.env.VITE_BASE44_APP_ID || '6a6a151',
-});
-
-// Cliente simulado (Mock) para o Modo Convidado (evita chamadas de rede e erros 404)
-const mockClient = {
-  auth: {
-    me: async () => null,
-    register: async (credentials) => {
-      localStorage.removeItem('guest_user');
-      return await realClient.auth.register(credentials);
-    },
-    login: async (credentials) => {
-      localStorage.removeItem('guest_user');
-      return await realClient.auth.login(credentials);
-    },
-    logout: async () => {
-      localStorage.removeItem('guest_user');
-    },
-  },
-  entities: new Proxy({}, {
-    get: () => ({
-      list: async () => [],
-      filter: async () => [],
-      create: async (data) => data,
-      update: async (data) => data,
-      delete: async () => ({}),
-    }),
-  }),
+const getRealClient = () => {
+  if (!realClientInstance) {
+    realClientInstance = createClient({
+      appId: import.meta.env.VITE_BASE44_APP_ID || '6a6a151',
+    });
+  }
+  return realClientInstance;
 };
 
-export const base44 = isGuest ? mockClient : realClient;
+// Verifica em tempo de execução se o usuário é convidado
+const isGuest = () => typeof window !== 'undefined' && !!localStorage.getItem('guest_user');
+
+// Proxy genérico que responde automaticamente a qualquer chamada do SDK no Modo Convidado
+const createMockProxy = () => {
+  return new Proxy(() => Promise.resolve({ success: true, guest: true, data: [] }), {
+    get(target, prop) {
+      if (prop === 'then') return undefined;
+      return createMockProxy();
+    },
+    apply() {
+      return Promise.resolve({ success: true, guest: true, data: [] });
+    },
+  });
+};
+
+const mockAuth = {
+  me: async () => null,
+  login: async () => ({ success: true }),
+  register: async () => ({ success: true }),
+  logout: async () => {
+    localStorage.removeItem('guest_user');
+  },
+};
+
+// Exporta um Proxy inteligente que alterna entre o SDK Real e o Mock sem disparar requisições
+export const base44 = new Proxy(
+  {},
+  {
+    get(target, prop) {
+      if (isGuest()) {
+        if (prop === 'auth') return mockAuth;
+        return createMockProxy();
+      }
+      return getRealClient()[prop];
+    },
+  }
+);
