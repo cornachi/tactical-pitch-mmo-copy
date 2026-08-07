@@ -11,6 +11,19 @@ export const AuthProvider = ({ children }) => {
   });
   const [loading, setLoading] = useState(true);
 
+  const ensureGuest = () => {
+    setUser((prev) => {
+      if (prev) return prev;
+      const guestUser = {
+        id: `guest_${Math.random().toString(36).substr(2, 9)}`,
+        name: `Técnico #${Math.floor(1000 + Math.random() * 9000)}`,
+        isGuest: true,
+      };
+      localStorage.setItem('guest_user', JSON.stringify(guestUser));
+      return guestUser;
+    });
+  };
+
   useEffect(() => {
     const checkAuthStatus = async () => {
       // Se for um usuário convidado local, não chama o backend
@@ -26,8 +39,9 @@ export const AuthProvider = ({ children }) => {
         }
       } catch (err) {
         // Ignora o erro 401 de não autenticado para não sujar o console
-        setUser(null);
       } finally {
+        // Garante que sempre haja um usuário (convidado) para jogar sem login
+        ensureGuest();
         setLoading(false);
       }
     };
