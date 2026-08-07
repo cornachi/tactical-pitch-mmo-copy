@@ -1,5 +1,5 @@
 import React from 'react';
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import Login from '@/pages/Login';
@@ -15,13 +15,18 @@ const queryClient = new QueryClient({
 });
 
 const PrivateRoute = ({ children }) => {
-  const { user, loading } = useAuth();
+  const { loading } = useAuth();
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Carregando...</div>;
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center text-slate-100 font-semibold text-sm">
+        Carregando jogo...
+      </div>
+    );
   }
 
-  return user ? children : <Navigate to="/login" replace />;
+  // Libera o acesso direto ao jogo sem redirecionar obrigatoriamente para /login
+  return children;
 };
 
 export default function App() {
@@ -30,7 +35,6 @@ export default function App() {
       <AuthProvider>
         <Router>
           <Routes>
-            <Route path="/login" element={<Login />} />
             <Route
               path="/*"
               element={
@@ -39,6 +43,7 @@ export default function App() {
                 </PrivateRoute>
               }
             />
+            <Route path="/login" element={<Login />} />
           </Routes>
         </Router>
       </AuthProvider>
