@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { base44 } from '@/api/base44Client';
 
-export const Login = () => {
+export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, loginAsGuest } = useAuth();
+  const { loginAsGuest, user } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -19,8 +20,10 @@ export const Login = () => {
     setLoading(true);
 
     try {
-      await login({ email, password });
-      navigate('/');
+      // Remove o status de convidado para conectar com conta cadastrada
+      localStorage.removeItem('guest_user');
+      await base44.auth.login({ email, password });
+      window.location.href = '/';
     } catch (err) {
       setError(err?.message || 'Falha ao realizar login.');
     } finally {
@@ -38,10 +41,10 @@ export const Login = () => {
       <div className="w-full max-w-md space-y-6 bg-white p-8 rounded-xl shadow-md border border-slate-100">
         <div className="text-center space-y-2">
           <div className="w-12 h-12 bg-lime-500 rounded-lg flex items-center justify-center mx-auto text-white font-bold text-xl">
-            ➔]
+            ⚽
           </div>
           <h1 className="text-2xl font-bold text-slate-900">Tactical Pitch MMO</h1>
-          <p className="text-sm text-slate-500">Escolha como deseja acessar</p>
+          <p className="text-sm text-slate-500">Acesse sua conta ou continue jogando</p>
         </div>
 
         {error && (
@@ -50,18 +53,20 @@ export const Login = () => {
           </div>
         )}
 
-        {/* Botão de Convidado sem cadastro */}
+        {/* Botão de Convidado / Voltar ao Jogo */}
         <Button
           type="button"
           onClick={handleGuestClick}
           className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-lg shadow transition-colors"
         >
-          🎮 Jogar como Convidado
+          🎮 {user?.isGuest ? 'Voltar ao Jogo' : 'Jogar como Convidado'}
         </Button>
 
         <div className="relative flex items-center justify-center my-2">
           <div className="border-t border-slate-200 w-full"></div>
-          <span className="bg-white px-3 text-xs text-slate-400 font-semibold uppercase absolute">OU ENTRAR COM</span>
+          <span className="bg-white px-3 text-xs text-slate-400 font-semibold uppercase absolute">
+            OU ENTRAR COM CONTA
+          </span>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -100,6 +105,4 @@ export const Login = () => {
       </div>
     </div>
   );
-};
-
-export default Login;
+}
