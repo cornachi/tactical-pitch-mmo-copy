@@ -1,9 +1,20 @@
-if (typeof window !== 'undefined' && localStorage.getItem('guest_user')) {
+if (typeof window !== 'undefined') {
+  const isGuest = () => !!localStorage.getItem('guest_user');
+
+  // Extrai a URL independentemente de ser String, Request ou objeto URL
+  const getUrl = (input) => {
+    if (!input) return '';
+    if (typeof input === 'string') return input;
+    if (input instanceof Request) return input.url;
+    if (input instanceof URL) return input.href;
+    return String(input);
+  };
+
   // 1. Intercepta requisições Fetch da SDK
   const originalFetch = window.fetch;
   window.fetch = async (...args) => {
-    const url = typeof args[0] === 'string' ? args[0] : args[0]?.url || '';
-    if (url.includes('base44.app/api/')) {
+    const url = getUrl(args[0]);
+    if (isGuest() && url.includes('base44.app/api/')) {
       return new Response(JSON.stringify({ success: true, guest: true }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
@@ -15,7 +26,8 @@ if (typeof window !== 'undefined' && localStorage.getItem('guest_user')) {
   // 2. Intercepta requisições XMLHttpRequest (Axios / Base44 Client)
   const originalOpen = XMLHttpRequest.prototype.open;
   XMLHttpRequest.prototype.open = function (method, url, ...rest) {
-    if (typeof url === 'string' && url.includes('base44.app/api/')) {
+    const urlString = getUrl(url);
+    if (isGuest() && urlString.includes('base44.app/api/')) {
       Object.defineProperty(this, 'status', { value: 200, writable: true });
       Object.defineProperty(this, 'responseText', {
         value: JSON.stringify({ success: true, guest: true }),
@@ -26,6 +38,6 @@ if (typeof window !== 'undefined' && localStorage.getItem('guest_user')) {
         writable: true,
       });
     }
-    return originalOpen.apply(this, [method, url, ...rest]);
+    return originalOpen.apply(this, [method, urlString, ...rest]);
   };
 }
