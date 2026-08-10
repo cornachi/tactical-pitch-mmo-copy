@@ -19,12 +19,13 @@ export default function SalaTrofeus({ clubeId }) {
     (async () => {
       try {
         const lista = await base44.entities.Trofeu.filter({ clube_id: clubeId });
-        setTrofeus(lista);
+        setTrofeus(Array.isArray(lista) ? lista : []);
       } catch (e) { /* ignore */ } finally { setLoading(false); }
     })();
   }, [clubeId]);
 
-  const contar = (tipo, colocacao) => trofeus.filter((tr) => tr.tipo === tipo && tr.colocacao === colocacao).length;
+  const lista = Array.isArray(trofeus) ? trofeus : [];
+  const contar = (tipo, colocacao) => lista.filter((tr) => tr.tipo === tipo && tr.colocacao === colocacao).length;
   const tipoSel = TIPOS.find((tp) => tp.key === selecionado);
 
   return (
@@ -56,7 +57,7 @@ export default function SalaTrofeus({ clubeId }) {
           {selecionado && (
             <div className="border-t pt-3 space-y-1">
               <p className="text-xs font-medium text-muted-foreground">{t("trofeus.edicoes")} — {t(tipoSel.labelKey)}:</p>
-              {trofeus
+              {lista
                 .filter((tr) => tr.tipo === selecionado)
                 .sort((a, b) => (b.data_conquista || "").localeCompare(a.data_conquista || ""))
                 .map((tr) => (
@@ -68,7 +69,7 @@ export default function SalaTrofeus({ clubeId }) {
             </div>
           )}
 
-          {trofeus.length === 0 && (
+          {lista.length === 0 && (
             <p className="text-xs text-muted-foreground text-center">{t("trofeus.sem")}</p>
           )}
         </>
