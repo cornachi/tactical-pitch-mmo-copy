@@ -18,6 +18,7 @@ import ModalConquistas from "@/components/conquistas/ModalConquistas";
 import TermometroTorcida from "@/components/clube/TermometroTorcida";
 import SalaTrofeus from "@/components/clube/SalaTrofeus";
 import DeletarConta from "@/components/clube/DeletarConta";
+import AccountControl from "@/components/auth/AccountControl";
 import PullToRefresh from "@/components/PullToRefresh";
 import { useI18n } from "@/i18n/I18nContext";
 
@@ -63,11 +64,7 @@ export default function Home() {
   return (
     <PullToRefresh onRefresh={refetch} enabled={pathname === "/"}>
       <div className="max-w-4xl mx-auto p-4 space-y-6">
-        {isGuest && (
-          <div className="bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 p-3 rounded-xl flex items-center justify-between text-sm font-medium">
-            <span>🎮 Modo Convidado ativo. Seu progresso é salvo localmente.</span>
-          </div>
-        )}
+        <AccountControl />
 
         <MetaBanner />
         <ClubeHeader clube={activeClube} />
