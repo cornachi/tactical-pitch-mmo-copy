@@ -2,6 +2,7 @@ import React from 'react';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
+import { I18nProvider } from '@/i18n/I18nContext';
 import Login from '@/pages/Login';
 import Home from '@/pages/Home';
 
@@ -33,19 +34,21 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Router>
-          <Routes>
-            <Route
-              path="/*"
-              element={
-                <PrivateRoute>
-                  <Home />
-                </PrivateRoute>
-              }
-            />
-            <Route path="/login" element={<Login />} />
-          </Routes>
-        </Router>
+        <I18nProvider>
+          <Router>
+            <Routes>
+              <Route
+                path="/*"
+                element={
+                  <PrivateRoute>
+                    <Home />
+                  </PrivateRoute>
+                }
+              />
+              <Route path="/login" element={<Login />} />
+            </Routes>
+          </Router>
+        </I18nProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
