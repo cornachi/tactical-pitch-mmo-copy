@@ -124,6 +124,9 @@ export default function RelatorioTatico() {
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground"><Shield className="w-3 h-3 inline mr-1" />{p.recomendacoes.ajuste}</p>
+                  <Button onClick={() => navigate("/equipe")} size="sm" className="w-full mt-1 bg-primary text-primary-foreground hover:bg-primary/90">
+                    {t("coach.evoluirAtributos")}
+                  </Button>
                 </div>
               )}
             </Card>

@@ -6,6 +6,7 @@ import EscudoClube from "@/components/clube/EscudoClube";
 import PlacarAnimado from "@/components/partida/PlacarAnimado";
 import BarraDominancia from "@/components/partida/BarraDominancia";
 import InsightsTreinador from "@/components/partida/InsightsTreinador";
+import CoachInsightsCard from "@/components/partida/CoachInsightsCard";
 import MomentumTab from "@/components/partida/MomentumTab";
 import { useI18n } from "@/i18n/I18nContext";
 
@@ -173,6 +174,15 @@ export default function RelatorioPartida({ partida, clubeHome, clubeAway, meuClu
         <h2 className="font-semibold flex items-center gap-2"><Activity className="w-5 h-5 text-amber-500" /> {t("relatorio.insights")}</h2>
         <InsightsTreinador insights={ins.insights || []} />
       </div>
+
+      <CoachInsightsCard
+        placar={{ home: ph, away: pa }}
+        xg={{ home: partida.xg_home, away: partida.xg_away }}
+        dominancia={{ home: partida.dominancia_home ?? ins.dominancia_home, away: ins.dominancia_away ?? (100 - (partida.dominancia_home ?? ins.dominancia_home ?? 50)) }}
+        estatisticas={ins.estatisticas}
+        momentum={momentum}
+        viewerSide={viewerSide}
+      />
 
       {momentum.length > 0 && (
         <Card className="p-4">

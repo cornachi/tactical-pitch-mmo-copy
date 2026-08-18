@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import PlacarAnimado from "@/components/partida/PlacarAnimado";
 import BarraDominancia from "@/components/partida/BarraDominancia";
 import InsightsTreinador from "@/components/partida/InsightsTreinador";
+import CoachInsightsCard from "@/components/partida/CoachInsightsCard";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import MomentumTab from "@/components/partida/MomentumTab";
 import EstatisticasPartida from "@/components/partida/EstatisticasPartida";
@@ -127,6 +128,15 @@ export default function ResultadoPartida() {
             </h2>
             <InsightsTreinador insights={r.insights} />
           </div>
+
+          <CoachInsightsCard
+            placar={{ home: r.placar_home, away: r.placar_away }}
+            xg={{ home: r.xg_home, away: r.xg_away }}
+            dominancia={{ home: r.dominancia_home, away: r.dominancia_away ?? (100 - r.dominancia_home) }}
+            estatisticas={r.estatisticas}
+            momentum={r.momentum}
+            viewerSide={viewerSide}
+          />
 
           <div className="selectable-content">
             <VozTorcida
