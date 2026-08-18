@@ -231,6 +231,21 @@ export async function simularCore(base44, opts) {
   updateHome.termometro_torcida = clampTorcida((desafiante.termometro_torcida ?? 50) + deltaTorcida(ganhouHome));
   updateAway.termometro_torcida = clampTorcida((desafiado.termometro_torcida ?? 50) + deltaTorcida(ganhouAway));
 
+  // --- Overall Record: estatísticas agregadas atualizadas atomicamente com o resto ---
+  updateHome.total_partidas = (desafiante.total_partidas || 0) + 1;
+  updateHome.gols_pro = (desafiante.gols_pro || 0) + placar_home;
+  updateHome.gols_contra = (desafiante.gols_contra || 0) + placar_away;
+  if (vencedor === "home") updateHome.vitorias = (desafiante.vitorias || 0) + 1;
+  else if (vencedor === "away") updateHome.derrotas = (desafiante.derrotas || 0) + 1;
+  else updateHome.empates = (desafiante.empates || 0) + 1;
+
+  updateAway.total_partidas = (desafiado.total_partidas || 0) + 1;
+  updateAway.gols_pro = (desafiado.gols_pro || 0) + placar_away;
+  updateAway.gols_contra = (desafiado.gols_contra || 0) + placar_home;
+  if (vencedor === "away") updateAway.vitorias = (desafiado.vitorias || 0) + 1;
+  else if (vencedor === "home") updateAway.derrotas = (desafiado.derrotas || 0) + 1;
+  else updateAway.empates = (desafiado.empates || 0) + 1;
+
   if (Object.keys(updateHome).length > 0) await base44.asServiceRole.entities.Clube.update(desafianteId, updateHome);
   if (Object.keys(updateAway).length > 0) await base44.asServiceRole.entities.Clube.update(desafiadoId, updateAway);
 

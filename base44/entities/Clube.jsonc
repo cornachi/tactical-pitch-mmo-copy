@@ -60,6 +60,42 @@
       "title": "Win Streak",
       "default": 0
     },
+    "total_partidas": {
+      "type": "integer",
+      "title": "Total de Partidas",
+      "default": 0,
+      "description": "Contador agregado do Overall Record (matchmaking + desafio + finais de torneio/copa). Atualizado atomicamente ao finalizar partidas."
+    },
+    "vitorias": {
+      "type": "integer",
+      "title": "Vit\u00f3rias",
+      "default": 0,
+      "description": "Vit\u00f3rias agregadas do Overall Record."
+    },
+    "empates": {
+      "type": "integer",
+      "title": "Empates",
+      "default": 0,
+      "description": "Empates agregados do Overall Record."
+    },
+    "derrotas": {
+      "type": "integer",
+      "title": "Derrotas",
+      "default": 0,
+      "description": "Derrotas agregadas do Overall Record."
+    },
+    "gols_pro": {
+      "type": "integer",
+      "title": "Gols Pr\u00f3",
+      "default": 0,
+      "description": "Gols marcados agregados do Overall Record."
+    },
+    "gols_contra": {
+      "type": "integer",
+      "title": "Gols Contra",
+      "default": 0,
+      "description": "Gols sofridos agregados do Overall Record."
+    },
     "especializacao": {
       "type": "string",
       "title": "Especializa\u00e7\u00e3o",

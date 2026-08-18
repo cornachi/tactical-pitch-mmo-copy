@@ -2,6 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { simularConfrontoCopa } from "../../shared/copa.ts";
 import { resolverByesAuto, finalDecidida } from "../../shared/torneio.ts";
 import { registrarTrofeu } from "../../shared/trofeus.ts";
+import { acrescentarEstatistica } from "../../shared/estatisticas.ts";
 
 export default async function(req) {
   try {
@@ -71,6 +72,15 @@ export default async function(req) {
       } catch (e) { /* best-effort */ }
       await registrarTrofeu(base44, { clube_id: finalInfo.campeao_id, tipo: "TORNEIO_8", colocacao: "CAMPEAO", edicao: torneio.nome });
       if (finalInfo.vice_id) await registrarTrofeu(base44, { clube_id: finalInfo.vice_id, tipo: "TORNEIO_8", colocacao: "VICE", edicao: torneio.nome });
+      // Overall Record do campeão e do vice (jogo da final).
+      const finalMatch = rodadas["Final"]?.[0];
+      if (finalMatch) {
+        const champIsHome = finalMatch.home_id === finalInfo.campeao_id;
+        const champGols = champIsHome ? (finalMatch.placar_home || 0) : (finalMatch.placar_away || 0);
+        const viceGols = champIsHome ? (finalMatch.placar_away || 0) : (finalMatch.placar_home || 0);
+        await acrescentarEstatistica(base44, finalInfo.campeao_id, { partidas: 1, vitorias: 1, gols_pro: champGols, gols_contra: viceGols });
+        if (finalInfo.vice_id) await acrescentarEstatistica(base44, finalInfo.vice_id, { partidas: 1, derrotas: 1, gols_pro: viceGols, gols_contra: champGols });
+      }
       premio = { campeao_id: finalInfo.campeao_id, vice_id: finalInfo.vice_id, premio_campeao: premioCamp, premio_vice: premioVice };
     }
 

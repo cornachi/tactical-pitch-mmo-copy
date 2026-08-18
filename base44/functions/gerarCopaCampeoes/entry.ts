@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { simularConfrontoCopa } from "../../shared/copa.ts";
 import { registrarTrofeu } from "../../shared/trofeus.ts";
+import { acrescentarEstatistica } from "../../shared/estatisticas.ts";
 
 // Gera a Copa dos Campeões Semanal: classifica os 16 melhores por pontuação, monta o
 // mata-mata com seed padrão e simula todas as rodadas até o campeão. Premia o
@@ -123,6 +124,14 @@ export default async function(req) {
     // Troféus (Hall da Fama)
     if (campeao) await registrarTrofeu(base44, { clube_id: campeao.id, tipo: "COPA_CAMPEOES", colocacao: "CAMPEAO", edicao: semanaAno });
     if (viceId) await registrarTrofeu(base44, { clube_id: viceId, tipo: "COPA_CAMPEOES", colocacao: "VICE", edicao: semanaAno });
+    // Overall Record do campeão e do vice (jogo da final da Copa).
+    if (finalJogo && campeao) {
+      const champIsHome = finalJogo.home_id === campeao.id;
+      const champGols = champIsHome ? (finalJogo.placar_home || 0) : (finalJogo.placar_away || 0);
+      const viceGols = champIsHome ? (finalJogo.placar_away || 0) : (finalJogo.placar_home || 0);
+      await acrescentarEstatistica(base44, campeao.id, { partidas: 1, vitorias: 1, gols_pro: champGols, gols_contra: viceGols });
+      if (viceId) await acrescentarEstatistica(base44, viceId, { partidas: 1, derrotas: 1, gols_pro: viceGols, gols_contra: champGols });
+    }
 
     return Response.json({
       success: true,

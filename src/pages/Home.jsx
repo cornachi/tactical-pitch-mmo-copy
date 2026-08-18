@@ -103,7 +103,7 @@ export default function Home() {
         <TermometroTorcida valor={activeClube.termometro_torcida} />
         <SalaTrofeus clubeId={activeClube.id} />
 
-        <RetrospectoCard clubeId={activeClube.id} />
+        <RetrospectoCard clube={activeClube} clubeId={activeClube.id} />
 
         <AlertaTatico />
 
