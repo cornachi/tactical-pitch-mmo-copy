@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Flame, Coins, Trophy, Activity, ArrowLeft, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,13 @@ export default function ResultadoPartida() {
   const { t } = useI18n();
   const location = useLocation();
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const r = location.state?.result;
+
+  // Atualiza os dados do clube na Home assim que a partida é finalizada.
+  useEffect(() => {
+    qc.invalidateQueries({ queryKey: ["clube"] });
+  }, [qc]);
 
   if (!r || !r.desafiante) {
     return (

@@ -42,6 +42,9 @@ export default function AccountControl() {
     setBusy(true);
     try {
       if (isReal) {
+        // Limpa qualquer resquício de sessão convidada antes de sair da conta real.
+        localStorage.removeItem("guest_user");
+        localStorage.removeItem("guest_game_data");
         // SDK recarrega o app; ao voltar, volta como convidado (pode entrar c/ outra conta)
         await base44.auth.logout();
       } else {

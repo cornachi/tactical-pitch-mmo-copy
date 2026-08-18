@@ -1,7 +1,36 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { useAuth } from "@/lib/AuthContext";
 
 export const CLUBE_KEY = ["clube"];
+
+// Fallback exibido no Modo Convidado para que Equipe/Estádio/Missões/Ranking
+// não fiquem sem dados nem quebrem com clube null.
+export const GUEST_CLUBE_FALLBACK = {
+  id: "guest_club_1",
+  nome_clube: "Time Convidado FC",
+  pais: "Brasil",
+  moedas: 1000,
+  xp: 0,
+  pontos_ranking: 0,
+  energia_matchmaking: 6,
+  energia_desafio: 3,
+  win_streak: 0,
+  total_partidas: 0,
+  vitorias: 0,
+  empates: 0,
+  derrotas: 0,
+  gols_pro: 0,
+  gols_contra: 0,
+  especializacao: "EQUILIBRADO",
+  estadio_nivel: 0,
+  ct_nivel: 0,
+  medico_nivel: 0,
+  comissao_prep_fisico: 0,
+  comissao_analista: 0,
+  comissao_auxiliar_tatico: 0,
+  termometro_torcida: 50,
+};
 
 async function fetchMeuClube() {
   const user = await base44.auth.me();
@@ -11,7 +40,12 @@ async function fetchMeuClube() {
 
 // Query compartilhada do clube do usuário (single source of truth entre telas).
 export function useClube() {
-  return useQuery({ queryKey: CLUBE_KEY, queryFn: fetchMeuClube });
+  const { user } = useAuth();
+  const isGuest = !!user?.isGuest;
+  return useQuery({
+    queryKey: CLUBE_KEY,
+    queryFn: async () => (isGuest ? GUEST_CLUBE_FALLBACK : await fetchMeuClube()),
+  });
 }
 
 // Evolução de atributo tático com UI otimista: desconta moedas e sobe o nível
