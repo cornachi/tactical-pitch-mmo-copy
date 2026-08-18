@@ -1,6 +1,7 @@
 import React from "react";
 import { ESPECIALIZACAO_LABELS } from "@/lib/tactical";
 import EscudoClube from "@/components/clube/EscudoClube";
+import LanguageSelector from "@/components/LanguageSelector";
 import { useI18n } from "@/i18n/I18nContext";
 
 export default function ClubeHeader({ clube }) {
@@ -12,7 +13,10 @@ export default function ClubeHeader({ clube }) {
         <h1 className="text-2xl font-bold">{clube.nome_clube}</h1>
         <p className="text-sm text-muted-foreground">{clube.pais}</p>
       </div>
-      <div className="text-right">
+      <div className="text-right space-y-1">
+        <div className="flex justify-end">
+          <LanguageSelector />
+        </div>
         <p className="text-xs text-muted-foreground">{t("clube.especializacao")}</p>
         <p className="font-semibold">
           {t(ESPECIALIZACAO_LABELS[clube.especializacao] || clube.especializacao)}

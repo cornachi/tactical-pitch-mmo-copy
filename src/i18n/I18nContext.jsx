@@ -3,14 +3,17 @@ import { base44 } from "@/api/base44Client";
 import { traducoes, IDIOMAS } from "./dicionario";
 
 const I18nContext = createContext(null);
-const STORAGE_KEY = "tp_idioma";
+const STORAGE_KEY = "app_language";
+const LEGACY_KEY = "tp_idioma";
 const DEFAULT = "pt";
 
 // Provider de internacionalização. Lê o idioma salvo no perfil do usuário
 // (idiomaSelecionado via base44.auth.updateMe) e cai em localStorage como
 // fallback imediato para não logados / latência de carregamento.
 export function I18nProvider({ children }) {
-  const [idioma, setIdiomaState] = useState(() => localStorage.getItem(STORAGE_KEY) || DEFAULT);
+  const [idioma, setIdiomaState] = useState(
+    () => localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_KEY) || DEFAULT
+  );
 
   useEffect(() => {
     (async () => {
@@ -29,6 +32,7 @@ export function I18nProvider({ children }) {
   const setIdioma = useCallback(async (code) => {
     setIdiomaState(code);
     localStorage.setItem(STORAGE_KEY, code);
+    localStorage.removeItem(LEGACY_KEY);
     try {
       await base44.auth.updateMe({ idiomaSelecionado: code });
     } catch (e) {

@@ -4,8 +4,11 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import LanguageSelector from '@/components/LanguageSelector';
+import { useI18n } from '@/i18n/I18nContext';
 
 export default function Login() {
+  const { t } = useI18n();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -20,7 +23,7 @@ export default function Login() {
       await base44.auth.login({ email, password });
       window.location.href = '/';
     } catch (err) {
-      setError(err?.message || 'Falha ao realizar login.');
+      setError(err?.message || t('login.erroPadrao'));
     } finally {
       setLoading(false);
     }
@@ -33,7 +36,7 @@ export default function Login() {
       // O SDK redireciona para o fluxo OAuth do Google e retorna ao app.
       await base44.auth.loginWithProvider('google', '/');
     } catch (err) {
-      setError(err?.message || 'Falha no login com Google.');
+      setError(err?.message || t('login.erroGoogle'));
       setGoogleLoading(false);
     }
   };
@@ -41,12 +44,16 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
       <div className="w-full max-w-md space-y-6 bg-white p-8 rounded-xl shadow-md border border-slate-100">
-        <div className="text-center space-y-2">
+        <div className="flex justify-end">
+          <LanguageSelector />
+        </div>
+
+        <div className="text-center space-y-2 -mt-2">
           <div className="w-12 h-12 bg-lime-500 rounded-lg flex items-center justify-center mx-auto text-white font-bold text-xl">
             ⚽
           </div>
           <h1 className="text-2xl font-bold text-slate-900">Tactical Pitch MMO</h1>
-          <p className="text-sm text-slate-500">Acesse sua conta para jogar</p>
+          <p className="text-sm text-slate-500">{t('login.subtitulo')}</p>
         </div>
 
         {error && (
@@ -62,7 +69,7 @@ export default function Login() {
           className="w-full bg-white hover:bg-slate-50 text-slate-700 font-semibold py-3 rounded-lg shadow-sm border border-slate-200 transition-colors flex items-center justify-center gap-3"
         >
           {googleLoading ? (
-            'Conectando...'
+            t('login.conectando')
           ) : (
             <>
               <svg className="w-5 h-5" viewBox="0 0 24 24" aria-hidden="true">
@@ -71,7 +78,7 @@ export default function Login() {
                 <path fill="#FBBC05" d="M5.84 14.1A6.6 6.6 0 0 1 5.5 12c0-.73.13-1.44.34-2.1V7.06H2.18A11 11 0 0 0 1 12c0 1.78.43 3.46 1.18 4.94l3.66-2.84z" />
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z" />
               </svg>
-              Entrar com Google
+              {t('login.google')}
             </>
           )}
         </Button>
@@ -79,17 +86,17 @@ export default function Login() {
         <div className="relative flex items-center justify-center my-2">
           <div className="border-t border-slate-200 w-full"></div>
           <span className="bg-white px-3 text-xs text-slate-400 font-semibold uppercase absolute">
-            OU ENTRAR COM E-MAIL
+            {t('login.ou')}
           </span>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t('login.email')}</Label>
             <Input
               id="email"
               type="email"
-              placeholder="seu@email.com"
+              placeholder={t('login.placeholderEmail')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -97,7 +104,7 @@ export default function Login() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Senha</Label>
+            <Label htmlFor="password">{t('login.senha')}</Label>
             <Input
               id="password"
               type="password"
@@ -113,14 +120,14 @@ export default function Login() {
             disabled={loading || googleLoading}
             className="w-full bg-lime-500 hover:bg-lime-600 text-white font-bold py-2 rounded-lg transition-colors"
           >
-            {loading ? 'Entrando...' : 'Log in'}
+            {loading ? t('login.entrando') : t('login.entrar')}
           </Button>
         </form>
 
         <p className="text-center text-sm text-slate-500">
-          Não tem conta?{' '}
+          {t('login.semConta')}{' '}
           <Link to="/register" className="text-lime-600 font-semibold hover:underline">
-            Criar conta
+            {t('login.criarConta')}
           </Link>
         </p>
       </div>

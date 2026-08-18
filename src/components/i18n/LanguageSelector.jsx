@@ -13,7 +13,7 @@ import {
 
 // Seletor de idioma: bottom sheet (vaul) no mobile, dropdown no desktop.
 export default function LanguageSelector() {
-  const { idioma, setIdioma } = useI18n();
+  const { idioma, setIdioma, t } = useI18n();
   const [open, setOpen] = useState(false);
   const [ddOpen, setDdOpen] = useState(false);
   const isMobile = useIsMobile();
@@ -57,7 +57,7 @@ export default function LanguageSelector() {
           <button
             type="button"
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-            aria-label="Idioma"
+            aria-label={t("common.idioma")}
           >
             <Globe className="w-4 h-4" />
             <span>{atual.flag}</span>
@@ -65,7 +65,7 @@ export default function LanguageSelector() {
         </DrawerTrigger>
         <DrawerContent>
           <DrawerHeader>
-            <DrawerTitle>Idioma</DrawerTitle>
+            <DrawerTitle>{t("common.idioma")}</DrawerTitle>
           </DrawerHeader>
           <div className="px-2 pb-6">{lista}</div>
         </DrawerContent>
@@ -79,7 +79,7 @@ export default function LanguageSelector() {
         type="button"
         onClick={() => setDdOpen((o) => !o)}
         className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-        aria-label="Idioma"
+        aria-label={t("common.idioma")}
       >
         <Globe className="w-4 h-4" />
         <span>{atual.flag}</span>
