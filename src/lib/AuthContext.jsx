@@ -2,71 +2,41 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 
 const AuthContext = createContext();
-const GUEST_DATA_KEY = 'guest_game_data';
 
+// Autenticação obrigatória: não há mais modo convidado. O estado de carregamento
+// aguarda a verificação real da sessão com base44.auth.me() antes de liberar as rotas.
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    const savedGuest = localStorage.getItem('guest_user');
-    return savedGuest ? JSON.parse(savedGuest) : null;
-  });
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const ensureGuest = () => {
-    setUser((prev) => {
-      if (prev) return prev;
-      const guestUser = {
-        id: `guest_${Math.random().toString(36).substr(2, 9)}`,
-        name: `Técnico #${Math.floor(1000 + Math.random() * 9000)}`,
-        isGuest: true,
-      };
-      localStorage.setItem('guest_user', JSON.stringify(guestUser));
-      return guestUser;
-    });
-  };
-
   useEffect(() => {
-    const checkAuthStatus = async () => {
-      // Se for um usuário convidado local, não chama o backend
-      if (user?.isGuest) {
-        setLoading(false);
-        return;
-      }
-
+    let active = true;
+    (async () => {
       try {
         if (typeof base44?.auth?.me === 'function') {
           const currentUser = await base44.auth.me();
-          setUser(currentUser);
+          if (active) setUser(currentUser);
         }
       } catch (err) {
-        // Ignora o erro 401 de não autenticado para não sujar o console
+        // Não autenticado — user permanece null e a rota redireciona para /login.
       } finally {
-        // Garante que sempre haja um usuário (convidado) para jogar sem login
-        ensureGuest();
-        setLoading(false);
+        if (active) setLoading(false);
       }
-    };
-
-    checkAuthStatus();
+    })();
+    return () => { active = false; };
   }, []);
 
-  const loginAsGuest = () => {
-    const guestUser = {
-      id: `guest_${Math.random().toString(36).substr(2, 9)}`,
-      name: `Técnico #${Math.floor(1000 + Math.random() * 9000)}`,
-      isGuest: true,
-    };
-    localStorage.setItem('guest_user', JSON.stringify(guestUser));
-    setUser(guestUser);
-  };
-
-  const logout = () => {
-    localStorage.removeItem('guest_user');
-    localStorage.removeItem(GUEST_DATA_KEY);
+  const logout = async () => {
+    try {
+      await base44.auth.logout();
+    } catch (e) {
+      /* ignore */
+    }
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, loginAsGuest, logout }}>
+    <AuthContext.Provider value={{ user, loading, logout }}>
       {children}
     </AuthContext.Provider>
   );

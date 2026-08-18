@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useClube } from "@/hooks/useClube";
-import { useAuth } from "@/lib/AuthContext";
 import { Link, useLocation } from "react-router-dom";
 import { Coins, Trophy, Flame, Zap, Swords, Activity, Users, Award, Building, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,44 +21,24 @@ import AccountControl from "@/components/auth/AccountControl";
 import PullToRefresh from "@/components/PullToRefresh";
 import { useI18n } from "@/i18n/I18nContext";
 
-const DEFAULT_GUEST_CLUBE = {
-  id: "guest_club_1",
-  nome: "Time Convidado FC",
-  cor_principal: "#84cc16",
-  cor_secundaria: "#0f172a",
-  moedas: 1000,
-  xp: 150,
-  pontos_ranking: 1000,
-  win_streak: 0,
-  energia_matchmaking: 20,
-  medico_nivel: 0,
-  energia_desafio: 3,
-  termometro_torcida: 75,
-  nivel: 1,
-};
-
 export default function Home() {
   const [desafioOpen, setDesafioOpen] = useState(false);
   const [conquistasOpen, setConquistasOpen] = useState(false);
   const { t } = useI18n();
   const { pathname } = useLocation();
-  const { user } = useAuth();
-  const { data: realClube, isLoading, error, refetch } = useClube();
+  const { data: clube, isLoading, error, refetch } = useClube();
 
-  const isGuest = !!user?.isGuest;
-  const clube = isGuest ? (realClube || DEFAULT_GUEST_CLUBE) : realClube;
-
-  if (isLoading && !isGuest) {
+  if (isLoading) {
     return <div className="p-8 text-center text-muted-foreground">{t("common.carregando")}</div>;
   }
-  if (error && !isGuest) {
+  if (error) {
     return <div className="p-8 text-center text-destructive">{error.message}</div>;
   }
-  if (!clube && !isGuest) {
+  if (!clube) {
     return <CriarClubeForm onCriado={refetch} />;
   }
 
-  const activeClube = clube || DEFAULT_GUEST_CLUBE;
+  const activeClube = clube;
 
   return (
     <PullToRefresh onRefresh={refetch} enabled={pathname === "/"}>
@@ -131,7 +110,7 @@ export default function Home() {
           <Link to="/estadio"><Building className="w-4 h-4 mr-2" />{t("home.estadioComissao")}</Link>
         </Button>
 
-        {!isGuest && <DeletarConta />}
+        <DeletarConta />
       </div>
     </PullToRefresh>
   );

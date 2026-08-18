@@ -1,9 +1,10 @@
 import React from 'react';
-import { HashRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { I18nProvider } from '@/i18n/I18nContext';
 import Login from '@/pages/Login';
+import Register from '@/pages/Register';
 import Home from '@/pages/Home';
 import Equipe from '@/pages/Equipe';
 import Estadio from '@/pages/Estadio';
@@ -30,8 +31,8 @@ const queryClient = new QueryClient({
   },
 });
 
-const PrivateRoute = ({ children }) => {
-  const { loading } = useAuth();
+const PrivateRoute = () => {
+  const { user, loading } = useAuth();
 
   if (loading) {
     return (
@@ -41,7 +42,9 @@ const PrivateRoute = ({ children }) => {
     );
   }
 
-  // Libera o acesso direto ao jogo sem redirecionar obrigatoriamente para /login
+  // Login obrigatório: sem usuário autenticado, redireciona para /login.
+  if (!user) return <Navigate to="/login" replace />;
+
   return <Outlet />;
 };
 
@@ -53,6 +56,7 @@ export default function App() {
           <Router>
             <Routes>
               <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
               <Route element={<PrivateRoute />}>
                 <Route path="/" element={<Home />} />
                 <Route path="/equipe" element={<Equipe />} />
@@ -70,8 +74,8 @@ export default function App() {
                 <Route path="/simular-partida" element={<SimularPartida />} />
                 <Route path="/resultado-partida" element={<ResultadoPartida />} />
                 <Route path="/relatorio-tatico" element={<RelatorioTatico />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
-              <Route path="*" element={<Home />} />
             </Routes>
           </Router>
         </I18nProvider>
