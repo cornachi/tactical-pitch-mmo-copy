@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 // Mantém as abas principais (Dashboard, Equipe, Estádio, Copa, Loja) montadas
 // e preserva o estado/stack ao trocar de aba. Sub-rotas usam transição animada.
-const KEEP_TABS = ["/", "/equipe", "/estadio", "/copa", "/loja"];
+const KEEP_TABS = ["/", "/equipe", "/estadio", "/desafios", "/torneios"];
 
 export default function KeepAliveOutlet() {
   const outlet = useOutlet();

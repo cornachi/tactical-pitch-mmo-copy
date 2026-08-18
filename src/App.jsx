@@ -21,6 +21,9 @@ import SimularPartida from '@/pages/SimularPartida';
 import ResultadoPartida from '@/pages/ResultadoPartida';
 import RelatorioTatico from '@/pages/RelatorioTatico';
 import RelatorioDesafio from '@/pages/RelatorioDesafio';
+import KeepAliveOutlet from '@/components/KeepAliveOutlet';
+import MobileTabBar from '@/components/MobileTabBar';
+import ThemeSync from '@/components/ThemeSync';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,7 +48,12 @@ const PrivateRoute = () => {
   // Login obrigatório: sem usuário autenticado, redireciona para /login.
   if (!user) return <Navigate to="/login" replace />;
 
-  return <Outlet />;
+  return (
+    <div className="min-h-screen bg-background text-foreground safe-top pb-tabbar md:pb-0">
+      <KeepAliveOutlet />
+      <MobileTabBar />
+    </div>
+  );
 };
 
 export default function App() {
@@ -53,6 +61,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <I18nProvider>
+          <ThemeSync />
           <Router>
             <Routes>
               <Route path="/login" element={<Login />} />
